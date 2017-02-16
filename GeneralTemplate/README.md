@@ -1,10 +1,8 @@
 # Data Science Accelerator - *name of the accelerator.*
 
-**The project template is a simplified version for acceleratoR templates which are quick for adoption and expedient for prototype.**
-
 ## Overview
 
-*A brief introduction of the acclerator. Don't have to be long.* 
+*A brief introduction of the acclerator.* 
 
 The repository contains three parts
 
