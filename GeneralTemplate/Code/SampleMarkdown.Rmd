@@ -1,0 +1,13 @@
+---
+title: "Sample Markdown"
+author: "Data Scientist, Organization"
+date: '`r Sys.Date()`'
+output:
+  html_notebook: default
+---
+
+## 1 Introduction
+
+```{r}
+print("Hello World!")
+```

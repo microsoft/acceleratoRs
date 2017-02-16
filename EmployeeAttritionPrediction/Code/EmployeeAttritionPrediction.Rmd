@@ -1,0 +1,666 @@
+---
+title: "Employee Attrition Prediction with Sentiment Analysis"
+author: "Le Zhang, Data Scientist, Microsoft"
+date: '`r Sys.Date()`'
+output:
+  html_notebook: default
+---
+
+## 1 Introduction
+
+Voluntary employee attrition may negatively affect a company in various aspects, i.e., induce labor cost, lose morality of employees, leak IP/talents to competitors, etc. Identifying individual employee with inclination of leaving company is therefore pivotal to save the potential loss. Conventional practices rely on qualitative assessment on factors that may reflect the prospensity of an employee to leave company. For example, studies found that staff churn is correlated with both demographic information as well as behavioral activities, satisfaction, etc. Data-driven techniques which are based on statistical learning methods exhibit more accurate prediction on employee attrition, as by nature they mathematically model the correlation between factors and attrition outcome and maximize the probability of predicting the correct group of people with a properly trained machine learning model.
+
+In the data-driven employee attrition prediction model, normally two types of data are taken into consideration. 
+
+1. First type refers to the demographic and organizational information of an employee such as *age*, *gender*, *title*, etc. The characteristics of this group of data is that **within a certain interval, they don't change or solely increment deterministically over time**. For example, gender will never change for an individual, and other factors such as *years of service* increments every year. 
+
+2. Second type of data is the dynamically involving information about an employee. Recent [studies](http://www.wsj.com/articles/how-do-employees-really-feel-about-their-companies-1444788408) report that *sentiment* is playing a critical role in employee attrition prediction. Classical measures of sentiment include *job satisfaction*, *environment satisfaction*, *relationship satisfaction*, etc. With the machine learning techniques, sentiment patterns can be exploited from daily activities such as text posts on social media for predicting churn inclination.
+
+## 2 Data-driven analytics for HR attrition prediction
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# data wrangling
+
+library(dplyr)
+library(magrittr)
+library(stringr)
+library(stringi)
+library(readr)
+
+# machine learning and advanced analytics
+
+library(DMwR)
+library(caret)
+library(caretEnsemble)
+library(pROC)
+
+# natural language processing
+
+library(languageR)
+library(tm)
+library(jiebaR)
+
+# tools
+
+library(httr)
+library(XML)
+library(jsonlite)
+
+# data visualization
+
+library(ggplot2)
+library(wordcloud)
+```
+```{r}
+# some global variables
+
+DATA1 <- "../Data/DataSet1.csv"
+DATA2 <- "../Data/DataSet2.csv"
+```
+
+### 2.1 Demographic and organizational data
+
+The experiments will be conducted on a data set of employees. The data set is publically available and can be found at [here](https://www.ibm.com/communities/analytics/watson-analytics-blog/hr-employee-attrition/).
+
+#### 2.1.1 Data exploration
+
+The data is loaded from remote blob of cloud storage. 
+```{r}
+df <- read_csv(DATA1)
+```
+```{r}
+head(df)
+```
+```{r}
+dim(df)
+```
+```{r}
+names(df)
+```
+```{r}
+str(df)
+```
+
+The data set contains 1470 rows, each of which includes 34 variables of an employee. The column of "Attrition" is the label of employees about their employment status with the company. The other 33 variables are those which are considered relevant to the label variable. Both demographic data (e.g., *gender*, *age*, etc.), and sentiment data (e.g., *job satisfaction*, etc.) are included. 
+
+#### 2.1.2 Visualization of data
+
+Initial exploratory analysis can be performed to understand the data set. For example,
+
+1. the proportion of employees with different job titles (or any other possible factor) for status of "attrition" and "non-attrition" may vary, and this can be plotted as follows. People titled "Laboratory Technician", "Sales Executive", and "Research Scientist" are among the top 3 groups that exhibit highest attrition rate.
+```{r}
+ggplot(df, aes(JobRole, fill=Attrition)) +
+  geom_bar(aes(y=(..count..)/sum(..count..)), position="dodge") +
+  scale_y_continuous(labels=percent) +
+  xlab("Job Role") +
+  ylab("Percentage")
+```
+2. monthly income, job level, and service year may affect decision of leaving for employees in different departments. For example, junior staffs with lower pay will be more likely to leave compared to those who are paid higher.
+```{r}
+ggplot(filter(df, (YearsAtCompany >= 2) & (YearsAtCompany <= 5) & (JobLevel < 3)),
+       aes(x=factor(Department), y=MonthlyIncome, color=factor(Attrition))) +
+  geom_boxplot() +
+  xlab("Department") +
+  ylab("Monthly income") +
+  scale_fill_discrete(guide=guide_legend(title="Attrition"))
+```
+3. Promotion is a commonly adopted HR strategy for employee retention. It can be observed in the following plot that for a certain department, e.g., Research & Development, employees with higher job level is more likely to leave if there are years since their last promotion.
+```{r}
+ggplot(filter(df, as.character(Attrition) == "Yes"), aes(x=YearsSinceLastPromotion)) +
+  geom_histogram(binwidth=0.5) +
+  aes(y=..density..) +
+  xlab("Years since last promotion.") +
+  ylab("Density") +
+  # scale_fill_discrete(guide=guide_legend(title="Attrition")) +
+  facet_grid(Department ~ JobLevel)
+```
+
+#### 2.1.3 Data pre-processing
+
+To perform further advanced analysis on the data set, initial pre-processing is necessary.
+```{r}
+# get predictors that has no variation.
+
+pred_no_var <- names(df[, nearZeroVar(df)]) %T>% print()
+```
+```{r}
+# remove the zero variation predictor columns.
+
+df %<>% select(-one_of(pred_no_var))
+```
+Integer types of predictors which are nominal are converted to categorical type.
+```{r}
+# convert certain interger variable to factor variable.
+
+int_2_ftr_vars <- c("Education", "EnvironmentSatisfaction", "JobInvolvement", "JobLevel", "JobSatisfaction", "NumCompaniesWorked", "PerformanceRating", "RelationshipSatisfaction", "StockOptionLevel")
+
+df[, int_2_ftr_vars] <- lapply((df[, int_2_ftr_vars]), as.factor)
+```
+The rest of integer type variables are converted to numeric.
+```{r}
+# convert remaining integer variables to be numeric.
+
+names(select_if(df, is.integer))
+
+df %<>% mutate_if(is.integer, as.numeric)
+```
+
+The variables of character type are converted to categorical type. 
+```{r}
+df %<>% mutate_if(is.character, as.factor)
+```
+
+Take a look at the new data set.
+```{r}
+str(df)
+```
+
+#### 2.1.4 Problem formalization
+
+After the data is well prepared, a model can be constructed for attrition prediction. Normally employee attrition prediction is categorized as a binary classification problem, i.e., to predict *whether or not an employee will leave*.
+
+In this study case, the label for prediction is employee status, named as `Attrition` in the data set, which has two levels, `Yes` and `No`, indicating that the employee has left or stayed. 
+
+Check the label column to make sure it is a factor type, as the model to be built is a classifier.
+```{r}
+is.factor(df$Attrition)
+```
+
+#### 2.1.5 Feature selection
+
+It is possible that not all variables are correlated with the label, feature selection is therefore performed to filter out the most relevant ones. 
+
+As the data set is a blend of both numerical and discrete variables, certain correlation analysis (e.g., Pearson correlation) is not applicable. One alternative is to train a model and then rank the variable importance so as to select the most salien ones.
+
+The following shows how to achieve variable importance ranking with a random forest model.
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# set up the training control.
+
+control <- trainControl(method="repeatedcv", number=3, repeats=1)
+
+# train the model
+
+model <- train(dplyr::select(df, -Attrition), 
+               df$Attrition,
+               data=df, 
+               method="rf", 
+               preProcess="scale", 
+               trControl=control)
+```
+```{r}
+# estimate variable importance
+
+imp <- varImp(model, scale=FALSE)
+
+# plot
+
+plot(imp)
+```
+```{r}
+# select the top-ranking variables.
+
+imp_list <- rownames(imp$importance)[order(imp$importance$Overall, decreasing=TRUE)]
+
+# drop the low ranking variables. Here the last 3 variables are dropped. 
+
+top_var <- 
+  imp_list[1:(ncol(df) - 3)] %>%
+  as.character() 
+
+top_var
+```
+```{r}
+# select the top ranking variables 
+
+df %<>% select(., one_of(c(top_var, "Attrition")))
+```
+
+#### 2.1.6 Resampling
+
+A prediction model can be then created for predictive analysis. The whole data is split into training and testing sets. The former is used for model creation while the latter for verification.
+
+```{r}
+train_index <- 
+  createDataPartition(df$Attrition,
+                      times=1,
+                      p=.7) %>%
+  unlist()
+
+df_train <- df[train_index, ]
+df_test <- df[-train_index, ]
+```
+
+One thing worthnoting is that the training set is not balanced, which may deteriorate the performance in training a model.
+```{r}
+table(df_train$Attrition)
+```
+Active employees (864) are more than terminated employees (166). There are several ways to deal with data imbalance issue:
+
+1. Resampling the data - either upsampling the minority class or downsampling the majority class.
+2. Use cost sensitive learning method.
+
+In this case the first method is used. SMOTE is a commonly adopted method fo synthetically upsampling minority class in an imbalanced data set. Package `DMwR` provides methods that apply SMOTE methods on training data set. 
+```{r}
+
+# note DMwR::SMOTE does not handle well with tbl_df. Need to convert to data frame.
+
+df_train %<>% as.data.frame()
+
+df_train <- SMOTE(Attrition ~ .,
+                  df_train,
+                  perc.over=300,
+                  perc.under=150)
+```
+```{r}
+table(df_train$Attrition)
+```
+
+#### 2.1.7 Model building
+
+After balancing the training set, a model can be created for prediction. For comparison purpose, different individual models, as well as ensemble of them, are trained on the data set. `caret` and `caretEnsemble` packages are used for training models.
+
+1. Individual models.
+Three algorithms, support vector machine with radial basis function kernel, random forest, and extreme gradient boosting (xgboost), are used for model building.
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# initialize training control. 
+tc <- trainControl(method="boot", 
+                   number=3, 
+                   repeats=3, 
+                   search="grid",
+                   classProbs=TRUE,
+                   savePredictions="final",
+                   summaryFunction=twoClassSummary)
+
+# SVM model.
+
+time_svm <- system.time(
+  model_svm <- train(Attrition ~ .,
+                     df_train,
+                     method="svmRadial",
+                     trainControl=tc)
+)
+
+# random forest model
+
+time_rf <- system.time(
+  model_rf <- train(Attrition ~ .,
+                     df_train,
+                     method="rf",
+                     trainControl=tc)
+)
+
+# xgboost model.
+
+time_xgb <- system.time(
+  model_xgb <- train(Attrition ~ .,
+                     df_train,
+                     method="xgbLinear",
+                     trainControl=tc)
+)
+```
+2. Ensemble of models.
+Model ensemble is also created for comparative studies on performance. Here a stacking ensemble is demonstrated.
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# ensemble of the three models.
+
+time_ensemble <- system.time(
+  model_list <- caretList(Attrition ~ ., 
+                          data=df_train,
+                          trControl=tc,
+                          methodList=c("svmRadial", "rf", "xgbLinear"))
+)
+```
+```{r}
+# stack of models. Use glm for meta model.
+
+model_stack <- caretStack(
+  model_list,
+  metric="ROC",
+  method="glm",
+  trControl=tc
+)
+```
+
+#### 2.1.8 Model validation
+
+The trained models are applied on testing data sets for model evaluation.
+```{r}
+models <- list(model_svm, model_rf, model_xgb, model_stack)
+
+predictions <-lapply(models, 
+                     predict, 
+                     newdata=select(df_test, -Attrition))
+```
+```{r}
+# confusion matrix evaluation results.
+
+cm_metrics <- lapply(predictions,
+                     confusionMatrix, 
+                     reference=df_test$Attrition, 
+                     positive="Yes")
+```
+The results can be then comparatively studied.
+```{r}
+# accuracy
+
+acc_metrics <- 
+  lapply(cm_metrics, `[[`, "overall") %>%
+  lapply(`[`, 1) %>%
+  unlist()
+
+# recall
+
+rec_metrics <- 
+  lapply(cm_metrics, `[[`, "byClass") %>%
+  lapply(`[`, 1) %>%
+  unlist()
+  
+# precision
+
+pre_metrics <- 
+  lapply(cm_metrics, `[[`, "byClass") %>%
+  lapply(`[`, 3) %>%
+  unlist()
+
+algo_list <- c("SVM RBF", "Random Forest", "Xgboost", "Stacking")
+time_consumption <- c(time_svm[3], time_rf[3], time_xgb[3], time_ensemble[3])
+
+df_comp <- 
+  data.frame(Models=algo_list, 
+             Accuracy=acc_metrics, 
+             Recall=rec_metrics, 
+             Precision=pre_metrics,
+             Time=time_consumption) %T>%
+             {head(.) %>% print()}
+```
+
+### 2.2 Sentiment analysis
+
+#### 2.2.1 Rating score.
+
+Besides the demographic and organizational data, sentiment data may also reflect intention of leave. For example, ratings in employee survey such as job satisfaction may reflect the feelings of employees about company (see plot below). As can be seen in the three plots, employees that have left the company expressed more negatively (i.e., proportion of rating 1 is more).
+```{r}
+ggplot(df, aes(JobSatisfaction, fill=Attrition)) +
+  geom_bar(aes(y=(..count..)/sum(..count..)), position="dodge") +
+  scale_y_continuous(labels=percent) +
+  xlab("Job Satisfaction") +
+  ylab("Percentage")
+
+ggplot(df, aes(RelationshipSatisfaction, fill=Attrition)) +
+  geom_bar(aes(y=(..count..)/sum(..count..)), position="dodge") +
+  scale_y_continuous(labels=percent) +
+  xlab("Relationship Satisfaction") +
+  ylab("Percentage")
+
+ggplot(df, aes(EnvironmentSatisfaction, fill=Attrition)) +
+  geom_bar(aes(y=(..count..)/sum(..count..)), position="dodge") +
+  scale_y_continuous(labels=percent) +
+  xlab("Environment Satisfaction") +
+  ylab("Percentage")
+```
+It can also be observed from the data set that within the group of churned employees, population of lower satisfaction score is higher.
+```{r}
+ggplot(df, aes(x=factor(Attrition), fill=factor(JobSatisfaction))) +
+  geom_bar(width=0.5, position="fill") +
+  coord_flip() +
+  xlab("Attrition") +
+  ylab("Proportion") +
+  scale_fill_discrete(guide=guide_legend(title="Score of\n relationship satisfaction")) 
+
+ggplot(df, aes(x=factor(Attrition), fill=factor(RelationshipSatisfaction))) +
+  geom_bar(width=0.5, position="fill") +
+  coord_flip() +
+  xlab("Attrition") +
+  ylab("Proportion") +
+  scale_fill_discrete(guide=guide_legend(title="Score of\n relationship satisfaction")) 
+
+ggplot(df, aes(x=factor(Attrition), fill=factor(EnvironmentSatisfaction))) +
+  geom_bar(width=0.5, position="fill") +
+  coord_flip() +
+  xlab("Attrition") +
+  ylab("Proportion") +
+  scale_fill_discrete(guide=guide_legend(title="Score of\n environment satisfaction")) 
+```
+
+#### 2.2.2 Review comments
+
+As the proliferation of social media, employees' posts onto social media website may be collected for churn analysis. The hypothesis is that the frequency pattern of terms used by employees that leave is statistically different from that of those that stay. As the original text of social media post and chat may be noisy and random. Pre-processing work such as removal of stop words, sparse terms, and punctuations is required. 
+
+To illustrate, a data set containing review comments of 500 employees about their company is used. The review comments were obtained from [Glassdoor](www.glassdoor.com), which were posted by employees that are currently with and have left the company. Note since the post are anonymous so it may not accurately reflect the true feeling of an employee towards the employer.
+```{r}
+# getting the data.
+
+df <-
+  read_csv(DATA2) %>%
+  mutate(Feedback=as.character(Feedback))
+
+head(df$Feedback, 10)
+```
+The text can be pre-processed with `tm` package. Normally to process text for quantitative analysis, the original non-structural data in text format needes to be transformed into vector. 
+
+For the convenient of text-to-vector transformation, the original review comment data is wrapped into a corpus format. 
+```{r}
+# create a corpus based upon the text data.
+
+corp_text <- Corpus(VectorSource(df$Feedback))
+
+corp_text
+```
+`tm_map` function in `tm` package helps perform transmation on the corpus.
+```{r}
+# the transformation functions can be checked with 
+
+getTransformations()
+```
+Descriptions for each transformation is summarised as follows.
+
+|Function name|Description|
+|--------------------|---------------------------------------------------|
+|`removeNumbers`|Remove numbers from a text document.|
+|`removePunctuation`|Remove punctuation marks from a text document.|
+|`removeWords`|Remove words from a text document.|
+|`stemDocument`|Stem words in a text document using Porter's stemming algorithm.|
+|`stripWhitespace`|Strip extra whitespace from a text document. Multiple whitespace characters are collapsed to a single blank.|
+
+```{r}
+# transformation on the corpus.
+
+corp_text %<>%
+  tm_map(removeNumbers) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("english")) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) 
+
+corp_text
+```
+The produced corpus can be converted to a term frequency matrix that contains the vector of the terms extracted from the corpus. There are two types of weighting methods supported in `tm` package, i.e., `weightTf` and `weightTfIdf`. The former calculates the term frequency as quantitative representation of corpus terms, while the latter calculates TF-IDF scores.
+```{r}
+# transform corpus to document term frequency.
+
+dtm_txt_tf <- 
+  DocumentTermMatrix(corp_text, control=list(wordLengths=c(1, Inf), weighting=weightTf)) 
+
+inspect(dtm_txt_tf[1:10, 1:10])
+```
+
+It can be seen that the original term frequency matrix is very sparse. `removeSparseTerms` can be used for removing sparse terms.
+```{r}
+dtm_txt <-
+  removeSparseTerms(dtm_txt_tf, 0.99) %>%
+  print()
+```
+The finalized matrix can be converted to a data frame.
+```{r}
+df_txt <- 
+  inspect(dtm_txt) %>%
+  as.data.frame()
+
+head(df_txt, 20)
+```
+
+#### 2.2.3 Multi-lingual sentiment analysis
+It is common to see employees in multinational corporations using different languages. To this end, analysis on multi-lingual text is necessary.
+
+There are basically two methods of doing it.
+
+1. Translate text in various languages into one target language and performance the analysis. This can be done directly with translation APIs provided by Microsoft or Google. The example below shows how to use Microsoft Cognitive Services API for text translation.
+```{r}
+# load the API keys.
+
+source("../../sent_analytis/scripts/R/confidential.R")
+```
+
+```{r, eval=FALSE}
+text <- "我非常喜欢现在的工作"
+translated_text1 <- cognitiveTranslation(text, lanFrom="zh-CHS", lanTo="en", apiKey=KEY_TRANS)
+
+translated_text1
+# [1] "I really like the current job."
+```
+```{r, eval=FALSE}
+text <- "Big Data"
+translated_text2 <- cognitiveTranslation(text, lanFrom="en", lanTo="zh-CHS", apiKey="a valid key")
+
+translated_text2
+# [1] "大数据"
+```
+
+2. Second approach is relying on language specific tokenizer. For instance, `jiebaR` provides methods to process Chinese together with English, which can be then converted to vector that is comfortable with `tm` functions.
+
+The following sample set shows how this can be done.
+```{r}
+# sample text data.
+
+df_text <- data.frame(
+  text = c(
+    "工作好辛苦",
+    "每天都只有辛苦的工作",
+    "今天非常开心！",
+    "It is a great honor to work in Microsoft.",
+    "工作压力巨大。",
+    "吃了喜欢的拉面，开心！",
+    "weekend要工作，难过……",
+    "今天放假！",
+    "不想工作。"
+  ),
+  mood = c( # P is positive and N is negative.
+    "N",
+    "N",
+    "P",
+    "N",
+    "P",
+    "P",
+    "N",
+    "P",
+    "N"
+  ),
+  stringsAsFactors = FALSE
+)
+print(df_text$text)
+```
+```{r}
+# firstly make it a corpus.
+
+corp_text <- 
+  Corpus(VectorSource(df_text$text)) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(removeWords, stopwords("en"))
+```
+```{r}
+# instantiate a tokenier. Specify the Chinese stop words dictionary.
+
+cutter2 <- worker(stop_word = "../Data/DataSet3.csv", bylines = TRUE)
+```
+Note as `jiebaR` does not provide methods for term frequency transformation from corpus, `tm` is used for doing this.
+```{r}
+# customize a tokenizer function that can be embedded into DocumentTermMatrix function.
+
+jieba_tokenizer <- function(d) {
+  unlist(segment(d[[1]], cutter2))
+}
+
+dtm_text <- 
+  DocumentTermMatrix(corp_text, 
+                               control = list(wordLengths = c(1, Inf),
+                                              weighting = weightTf, 
+                                              tokenize = jieba_tokenizer)) 
+```
+```{r}
+# produce a data frame of document term frequency.
+df_dtf <- 
+  as.data.frame(inspect(dtm_text)) %>%
+  cbind(mood = df_text$mood) %>%
+  arrange(mood) %T>%
+  {head(.) %>% print()}
+```
+
+#### 2.2.4 Sentiment analysis on review comments
+
+Sentiment analysis on text data by machine learning techniques is discussed in details [Pang's paper](http://www.cs.cornell.edu/home/llee/papers/sentiment.pdf). Basically, the given text data that is lablled with different sentiment is firstly tokenized into segmented terms. Term frequencies, or combined with inverse document term frequencies, are then generated as feature vectors for the text. 
+
+Sometimes multi-gram and part-of-speech tag are also included in the feature vectors. [Pang's studies](http://www.cs.cornell.edu/home/llee/papers/sentiment.pdf) conclude that the performance of unigram features excel over other hybrid methods in terms of model accuracy.
+
+The problem can be defined as a classification problem - given the training data where each piece of text is labelled with employee status, a model can be obtained, which in turn can predict the inclination of employees to leave company. 
+
+The model training part is similar to other classification problem. The previously processed data `df_txt` is used for illustration.
+
+```{r}
+# form the data set
+
+df_txt %<>% cbind(Attrition=df$Attrition)
+```
+```{r}
+# split data set into training and testing set.
+
+train_index <- 
+  createDataPartition(df_txt$Attrition,
+                      times=1,
+                      p=.7) %>%
+  unlist()
+
+df_txt_train <- df_txt[train_index, ]
+df_txt_test <- df_txt[-train_index, ]
+```
+SVM with RBF kernel is used as an illustration.
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# model building
+
+model_svm <- train(Attrition ~ .,
+                   df_txt_train,
+                   method="svmRadial",
+                   trainControl=tc)
+```
+```{r}
+# model evaluation
+
+prediction <- predict(model_svm, newdata=select(df_txt_test, -Attrition))
+
+confusionMatrix(prediction,
+                reference=df_txt_test$Attrition,
+                positive="Yes")
+```
+
+Sentiment analysis on text data can also be done with Text Analytics API of Microsoft Cognitive Services. Package `languageR` wraps functions that call the API for generating sentiment scores.
+```{r}
+senti_score <- cognitiveSentiAnalysis(text=df[-train_index, ]$Feedback, apiKey=KEY_SENTI)
+
+df_senti <- mutate(senti_score$documents, Attrition=ifelse(score < 0.5, "Yes", "No"))
+                   
+confusionMatrix(df_senti$Attrition,
+                reference=df[-train_index, ]$Attrition,
+                positive="Yes")
+```
+Note this method is not applicable to languages other than the supported ones. For instance, for analyzing Chinese, text data needs to be translated into English firstly. This can be done with Bing Translation API, which is available in `languageR` package as `cognitiveTranslation`.
+```{r}
+text_translated <- lapply(df_text$text, cognitiveTranslation,
+                          lanFrom="zh-CHS",
+                          lanTo="en",
+                          apiKey=KEY_TRANS)
+
+text_translated
+```
+
+### Conclusion
+
+This document introduces a data-driven approach for employee attrition prediction with sentiment analysis. Techniques of data analysis, model building, and natural language processing are demonstrated on sample data. The walk through may help corporate HR department or relevant organization to plan in advance for saving any potential loss in recruiting and training.
