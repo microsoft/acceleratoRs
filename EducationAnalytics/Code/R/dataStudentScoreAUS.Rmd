@@ -1,0 +1,849 @@
+---
+title: "Data Science Design Pattern for Student Score Modelling"
+author: "Microsoft"
+output: 
+    rmarkdown::html_vignette:
+        toc: true
+
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, echo=FALSE}
+
+knitr::opts_chunk$set(fig.width = 6,
+                      fig.height = 4,
+                      fig.align='center',
+                      dev = "png")
+
+```
+
+# Introducation
+
+Welcome to the Data Science Design Pattern for Student Score Modelling. This pattern provides a starting point for the data scientist exploring a new dataset. By no means is it the end point of the data science journey. The pattern is under regular revision and improvement and is provided as is. 
+
+We now begin with the task of preparing our data for building models using R. 
+
+# Pre-configuration
+
+We load the R packages required for data preparation. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+########################################################################
+# R SETUP
+# Load required packages from local library into R.
+
+library(rattle)       # The normVarNames().
+library(readr)        # Modern and efficient data reader.
+library(dplyr)        # Wrangling: tbl_df(), group_by(), print(), glimpse().
+library(magrittr)     # Pipe operator %>% %<>% %T>% equals().
+library(lubridate)    # Dates and time.
+library(tidyr)        # Tidy the dataset: gather().
+library(stringi)      # String concat operator %s+%.
+library(stringr)      # String manipulation: str_replace().
+library(randomForest) # Impute missing values with na.roughfix()
+library(FSelector)    # Feature selection: information.gain().
+library(ggplot2)      # Visualise data.
+library(tibble)       # Table data frame: rownames_to_column()
+```
+
+Let's define some utility functions which simplify the coding.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Useful utility functions.
+
+echo <- function(x, big.mark=",", ...)
+{
+  format(x, big.mark=big.mark, ...) %>% cat("\n")
+}
+```
+
+# Step 1.1: Load - Dataset
+
+We use the studentScoreAUS dataset simulated from student data in UCI repository and an Australia Education Organization to illustrate our data preparation. Often though we will be loading the dataset from a CSV file and so we illustrate that step first. We begin by identifying the path to the CSV file we wish to load - in this case we load it from a local directory. Then it is a simple matter of reading the data into the memory of the computer, referring to it as variable studentScoreAUS. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+########################################################################
+# DATA INGESTION
+
+# Identify the source location of the dataset.
+
+dspath <- "C:/Users/zhouf/Documents/Revolution Analytics/Projects/Education2/Demo/studentScoreAUS_20161215.csv"
+
+# Ingest the dataset.
+
+studentScoreAUS <- read_csv(file=dspath)
+
+# Name the dataset.
+
+dsname <- "studentScoreAUS"
+```
+
+# Step 1.2: Load - Generic Variables
+
+Next, we will store the variable studentScoreAUS to a generic variable ds and take a glimpse of it. This will make the following steps somewhat generic and often we can just load a different dataset into ds and these steps can simply be re-run without change. Finally, we save the variable studentScoreAUS into a data folder as a .RData file and reload it for testing.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Prepare the dataset for usage with our template.
+
+ds <- get(dsname)
+glimpse(ds)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Save the dataset to disk as a binary backup if needed.
+
+fpath <- "data"
+fname <- file.path(fpath, dsname %s+% ".RData")
+if (! dir.exists(fpath)) dir.create(fpath)
+save(studentScoreAUS, file=fname)
+
+# Remove the original dataset to save on memory.
+
+rm(studentScoreAUS)
+
+# Test the loading of the saved dataset and then cleanup.
+
+load(fname) %>% print()
+
+rm(studentScoreAUS)
+```
+
+# Step 2.1: Review - Dataset
+
+We check the dimension and variable information of the dataset. There are 1,222 rows and 11 columns totally in the dataset, which includes variables showing information about test history, student demographic, school records and family information in various data types (chr, logi, int, and num).
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+########################################################################
+# DATA OBSERVATION
+
+# Basic size information.
+
+nrow(ds) %>% echo()
+ncol(ds) %>% echo()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# A glimpse into the dataset.
+
+glimpse(ds)
+```
+
+# Step 2.2: Review - Meta Data Cleansing
+
+Then we review the variable names and convert them into a standard form using the function normVarNames() from rattle. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+########################################################################
+# DATA WRANGLING
+
+# Review the variables to optionally normalise their names.
+
+names(ds)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Normalise the variable names.
+
+names(ds) %<>% normVarNames() %T>% print()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Review the dataset.
+
+glimpse(ds)
+```
+
+# Step 2.3: Review - Observations
+
+Once we have normalized the variable names, the next step is to understand the shape of the dataset. A first look at the sample observations by using head(), tail(), and sample_n() give us an initial understanding of the data. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Review the first few observations.
+
+head(ds) %>% print.data.frame()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Review the last few observations.
+
+tail(ds) %>% print.data.frame()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Review a random sample of observations.
+
+sample_n(ds, size=6) %>% print.data.frame()
+```
+
+# Step 2.4: Review - Summary
+
+Next, we use summary() to preview the distributions of each variable.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Traditional dataset summary to get started.
+
+summary(ds)
+```
+
+# Step 2.5: Review - Data Formats
+
+Except for the generic data wrangling, we now do data wrangling customized for studentScoreAUS. For example, we check the number of unique schools in the dataset. Moreover, we may need to correct the format of some of the variables in our dataset. We might first check the data type of each variable. Noting that there are categorical variables in the formats of character, logical and integer, we may like to convert them to factor. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+####################################
+# studentScoreAUS data wrangling.
+
+# How many schools are represented in the dataset? (Why we need to know this)
+
+ds$school_code %>% 
+  unique() %>%
+  length()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Check the class of all the variables.
+
+ds %>% sapply(class)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Select all the character variables.
+
+ds %>%
+  sapply(is.character) %>%
+  which(useNames=TRUE) %>%
+  names() %T>% 
+  print() ->
+vnames
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Review the values of the variables.
+
+ds[vnames] %>%
+  sapply(as.factor) %>%
+  summary()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Choose to convert these variables from character to factor.
+
+vnames %<>% setdiff(c("student_id")) %T>% print()
+
+ds[vnames] %<>% 
+  lapply(factor) %>% 
+  data.frame() %>% 
+  tbl_df() %T>%
+  {head(.) %>% print()}
+
+# Confirm they are now factors.
+
+ds[vnames] %>% sapply(class)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Select all the logical variables.
+
+ds %>%
+  sapply(is.logical) %>%
+  which(useNames=TRUE) %>%
+  names() %T>% 
+  print() ->
+vnames
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Decide to convert these variables from logical to factor.
+
+ds[vnames] %>% head()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+ds[vnames] %<>% 
+  lapply(factor) %>% 
+  data.frame() %>% 
+  tbl_df() %T>%
+  {head(.) %>% print()}
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Select all the integer variables.
+
+ds %>%
+  sapply(is.integer) %>%
+  which(useNames=TRUE) %>%
+  names() %T>% 
+  print() ->
+vnames
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Decide to convert these variables from integer to factor.
+
+ds[vnames] %>% head()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+ds[vnames] %<>% 
+  lapply(factor) %>% 
+  data.frame() %>% 
+  tbl_df() %T>%
+  {head(.) %>% print()}
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Review the distribution of observations across levels.
+
+ds[, sapply(ds, is.factor)] %>% sapply(table)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Note the remaining variables to be dealt with.
+
+sapply(ds, class)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+vnames <- c("score", "attendance_rate") 
+
+# Review the values.
+
+head(ds[vnames])
+sample_n(ds[vnames], 6)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Check the current class of the variables.
+
+ds[vnames] %>% sapply(class)
+```
+
+# Step 2.6: Review - Variable Roles
+
+We are now in a position to identify the roles played by the variables within the dataset. We assign the variable score which we are going to predict to be our target variable and put it in front of all. From our observations so far we note that the variable test_year is not relevant to the modelling. Also we treat the varaibles student_id and school_code as observation identifiers. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+####################################
+# Variable Roles
+
+# Note the available variables.
+
+vars <- names(ds) %T>% print()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Note the target variable.
+
+target <- "score"
+
+# Place the target variable at the beginning of the vars.
+
+vars <- c(target, vars) %>% unique() %T>% print()
+
+# Note any identifiers.
+
+id <- c("student_id", "school_code", "test_year")
+```
+
+# Step 3.1: Clean - Ignore IDs, Outputs, Missing
+
+## IDs and Outputs 
+
+We will want to ignore some variables that are irrelevant or inappropriate for modelling as normal predictors. We start with the identifiers and the risk variable (there is no risk variable in this case). 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+####################################
+# Generic data wrangling.
+
+# Initialise ignored variables: identifiers and risk.
+
+ignore <- union(id, if (exists("risk")) risk) %T>% print()
+```
+
+We might also identify any variable that has a unique value for every observation. These are sometimes identifiers as well and if so are candidates for ignoring.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Heuristic for candidate indentifiers to possibly ignore. 
+
+ds[vars] %>%
+  sapply(function(x) x %>% unique() %>% length()) %>%
+  equals(nrow(ds)) %>%
+  which() %>%
+  names() %T>%
+  print() ->
+ids
+
+# Add them if any to the variables to be ignored for modelling.
+
+ignore <- union(ignore, ids) %T>% print()
+```
+
+## All Missing
+
+We then remove any variable where all of the values are missing.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify variables with only missing values.
+
+ds[vars] %>%
+  sapply(function(x) x %>% is.na %>% sum) %>%
+  equals(nrow(ds)) %>%
+  which() %>%
+  names() %T>%
+  print() ->
+missing
+
+# Add them if any to the variables to be ignored for modelling.
+
+ignore <- union(ignore, missing) %T>% print()
+```
+
+## Many Missing
+
+Perhaps we also want to ignore variables with more than 70% of the values missing.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify a threshold above which proportion missing is fatal.
+
+missing.threshold <- 0.7
+
+# Identify variables that are mostly missing.
+
+ds[vars] %>%
+  sapply(function(x) x %>% is.na() %>% sum()) %>%
+  '>'(missing.threshold*nrow(ds)) %>%
+  which() %>%
+  names() %T>%
+  print() ->
+mostly
+
+# Add them if any to the variables to be ignored for modelling.
+
+ignore <- union(ignore, mostly) %T>% print()
+```
+
+# Step 3.2: Clean - Ignore MultiLevel, Constants
+
+## Too Many Levels
+
+We might also want to ignore variables with too many levels. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify a threshold above which we have too many levels.
+
+levels.threshold <- 20
+
+# Identify variables that have too many levels.
+
+ds[vars] %>%
+  sapply(is.factor) %>%
+  which() %>%
+  names() %>%
+  sapply(function(x) ds %>% extract2(x) %>% levels() %>% length()) %>%
+  '>='(levels.threshold) %>%
+  which() %>%
+  names() %T>%
+  print() ->
+too.many
+
+# Add them if any to the variables to be ignored for modelling.
+
+ignore <- union(ignore, too.many) %T>% print()
+```
+
+## Constants
+
+We ingore variables with constant values as well. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify variables that have a single value.
+
+ds[vars] %>%
+  sapply(function(x) all(x == x[1L])) %>%
+  which() %>%
+  names() %T>%
+  print() ->
+constants 
+
+# Add them if any to the variables to be ignored for modelling.
+
+ignore <- union(ignore, constants) %T>% print()
+```
+
+# Step 3.3: Clean - Ignore Correlated Varaibles
+
+Within all the numeric varaibles, we can identify pairs where we want to keep one but not the other, because they are highly correlated. We will select them manually since it is a judgement call. Normally we might limit the removals to those correlations that are 0.95 or more. In this case, there does not exist a collinearity. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Note which variables are numeric.
+
+vars %>%
+  setdiff(ignore) %>%
+  '['(ds, .) %>%
+  sapply(is.numeric) %>% 
+  which() %>%
+  names() %T>%
+  print() ->
+numc
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# For the numeric variables generate a table of correlations
+
+ds[numc] %>%
+  cor(use="complete.obs") %>%
+  ifelse(upper.tri(., diag=TRUE), NA, .) %>% 
+  abs %>% 
+  data.frame %>%
+  tbl_df %>%
+  set_colnames(numc) %>%
+  mutate(var1=numc) %>% 
+  gather(var2, cor, -var1) %>% 
+  na.omit %>%
+  arrange(-abs(cor)) %T>%
+  print() ->
+mc
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Any variables could be removed because highly correlated?
+
+ignore <- union(ignore, NULL) %T>% print()
+```
+
+# Step 3.4: Clean - Remove the Ignored Variables
+
+Once we have identified the variables to ignore, we remove them from our list of variables to use. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Check the number of variables currently.
+
+length(vars)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Remove the variables to ignore.
+
+vars <- setdiff(vars, ignore) %T>% print()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Confirm they are now ignored.
+
+length(vars)
+```
+
+# Step 3.5: Clean - Feature Selection
+
+The FSelector (Romanski, 2013) package provides functions to identify subsets of variables that might be more effective for modelling. For example, we can use correlation search function cfs() to identify key variables and thus decide which variables to retain. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+####################################
+# Variable Selection
+
+# Formula for modelling.
+
+form <- formula(target %s+% " ~ .") %T>% print()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Use correlation search to identify key variables.
+# Could be useful to decide which variables to retain.
+
+cfs(form, ds[vars])
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Any variables to remove because not useful?
+
+vars %<>% setdiff(NULL) %T>% print()
+```
+
+Or, we can use the function information.gain() to identify varaible importance and decide which varaibles to remove. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Use information gain to identify variable importance.
+
+information.gain(form, ds[vars]) %>%
+  rownames_to_column() %>%
+  arrange(attr_importance)
+
+# Any variables to remove because not useful?
+
+vars %<>% setdiff(NULL)
+```
+
+# Step 3.6: Clean - Remove Missing Target
+
+In addition to varaibles, sometimes there may be further cleansing with the observations. Here, we remove observations with a missing target first.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+####################################
+# Continue Wrangling
+
+# Check the dimensions to start with.
+
+dim(ds) %>% echo()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify observations with a missing target.
+
+ds %>% 
+  extract2(target) %>% 
+  is.na() %T>%
+  {sum(.) %>% print()} ->
+missing.target 
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Remove observations with a missing target.
+
+ds %<>% filter(!missing.target)
+
+# Confirm the filter delivered the expected dataset.
+
+dim(ds) %>% echo()
+```
+
+# Step 3.7: Clean - Deal with Missing Values
+
+To clean observatons with missing predictors, we can impute missing values in the data by using na.roughfix() from package randomForest (Breiman et al, 2012). 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+####################################
+## Optional missing value imputation.
+
+# Count the number of missing values.
+
+ds[vars] %>%  is.na() %>% sum() %>% echo()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Impute missing values.
+
+ds[vars] %<>% na.roughfix()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Confirm that no missing values remain.
+
+ds[vars] %>%  is.na() %>% sum() %>% echo()
+```
+
+Alternatively, we can simply remove observations that have missing values. Here na.omit() identifies the rows to omit based on the vars to be included for modelling. This list of rows to omit is stored as the na.action attribute of the returned object. We then remove these observations from the dataset.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+####################################
+# Optional remove observations with missing values.
+
+# Initialise the list of observations to be removed.
+
+omit <- NULL
+
+# Review the current dataset.
+
+ds[vars] %>% nrow() %>% echo()
+ds[vars] %>% is.na() %>% sum() %>% echo()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify any observations with missing values.
+
+ds[vars] %>%
+  na.omit() %>%
+  attr("na.action") %T>%
+  print() ->
+mo
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Record the observations to omit.
+
+omit <- union(omit, mo) %T>% {length(.) %>% print()}
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# If there are observations to omit then remove them.
+
+if (length(omit)) ds <- ds[-omit,]
+
+# Confirm the observations have been removed.
+
+ds[vars] %>% nrow() %>% echo()
+ds[vars] %>% is.na() %>% sum() %>% echo()
+```
+
+# Step 3.8: Clean - Normalise Factors
+
+Some variables will have levels with spaces, and mixture of cases, etc. We may like to normalise the levels for each of the categoric variables.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+####################################
+# Normalise factors.
+
+# Note which variables are categoric.
+
+ds[vars] %>%
+  sapply(is.factor) %>%
+  which() %>%
+  names() %T>%
+  print() ->
+catc
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Check the levels.
+
+ds[catc] %>% sapply(levels)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Normalise the levels of all categoric variables.
+
+for (v in catc) 
+  levels(ds[[v]]) %<>% normVarNames()
+
+# Review the levels.
+
+ds[catc] %>% sapply(levels)
+```
+
+# Step 3.9: Clean - Ensure Target is Numeric
+
+For regression models, we want to ensure the target is numeric. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Ensure the target is numeric.
+
+class(ds[[target]])
+
+ds[[target]] %<>% as.numeric()
+
+# Confirm the distribution.
+
+ds[target] %>% summary()
+```
+
+Here, we visualise the distribution of the target variable using ggplot2.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+ds %>%
+  ggplot(aes_string(x=target)) +
+  geom_histogram(fill="grey", col="black", binwidth=20) +
+  theme(text=element_text(size=14))
+```
+
+# Step 4.1: Prepare - Variable
+
+We are now ready to identify the variables that we will use to build the model. Previously we identified the variable roles. Now we identify those that we wish to model. We begin with the model input variables, identifying them as a vector of characters (the variable name) and a vector of integers (the variable index).
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+########################################################################
+# VARIABLE ROLES
+
+# Identify the input variables by name.
+
+inputs <- setdiff(vars, target) %T>% print()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify the input variables by index.
+
+inputi <- sapply(inputs, 
+                 function(x) which(x == names(ds)), 
+                 USE.NAMES=FALSE) %T>% print()
+```
+
+For convenience we record the number of observations.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+nobs <- nrow(ds) %T>% echo()
+```
+
+Here we simply report on the dimensions of various data subsets.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Confirm various subset sizes.
+
+dim(ds) %>% echo()
+dim(ds[vars]) %>% echo()
+dim(ds[inputs]) %>% echo()
+dim(ds[inputi]) %>% echo()
+```
+
+# Step 4.2: Prepare - Numeric and Categoric Variables
+
+Sometimes we need to identify the numeric and categoric variables. Many cluster analysis algorithms only deal with numeric variables, for example. Here we identify them both by name and by index. Note that when using the index we have to assume the variables always remain in the same order within the dataset and all variables are present. Otherwise the indicies will get out of sync.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify the numeric variables by index.
+
+ds %>%
+  sapply(is.numeric) %>%
+  which() %>%
+  intersect(inputi) %T>%
+  print() ->
+numi
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify the numeric variables by name.
+
+numc <- 
+  ds %>% 
+  names() %>% 
+  '['(numi) %T>% 
+  print()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify the categoric variables by index.
+
+ds %>%
+  sapply(is.factor) %>%
+  which() %>%
+  intersect(inputi) %T>%
+  print() ->
+cati
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Identify the categoric variables by name.
+
+ds %>% 
+  names() %>% 
+  '['(cati) %T>% 
+  print() ->
+catc
+```
+
+# Step 4.3: Prepare - Save Dataset
+
+For large datasets we may want to save it to a bianry .RData file once we have it in the right shape.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+########################################################################
+# SAVE THE DATASET
+
+# We will use a fixed timestamp to identify our file for convenience.
+
+dsdate <- "_20161215"
+
+# Filename for the saved dataset.
+
+dsrdata <- 
+  file.path(fpath, dsname %s+% dsdate %s+% ".RData") %T>% 
+  print()
+
+# Save relevant R objects to the binary RData file.
+
+save(ds, dsname, dspath, dsdate, nobs,
+     vars, target, id, ignore, omit, 
+     inputi, inputs, numi, numc, cati, catc, 
+     file=dsrdata)
+```
+
