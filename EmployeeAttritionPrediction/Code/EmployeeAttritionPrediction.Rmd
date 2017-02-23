@@ -1,9 +1,12 @@
 ---
-title: "Employee Attrition Prediction with Sentiment Analysis"
-author: "Le Zhang, Data Scientist, Microsoft"
-date: '`r Sys.Date()`'
 output:
   html_notebook: default
+  output: rticles::ctex
+  pdf_document: default
+author: "Le Zhang, Data Scientist, Microsoft"
+date: '`r Sys.Date()`'
+title: "Employee Attrition Prediction with Sentiment Analysis"
+documentclass: ctexart
 ---
 
 ## 1 Introduction
@@ -48,6 +51,7 @@ library(jsonlite)
 
 # data visualization
 
+library(scales)
 library(ggplot2)
 library(wordcloud)
 ```
@@ -505,15 +509,15 @@ It is common to see employees in multinational corporations using different lang
 There are basically two methods of doing it.
 
 1. Translate text in various languages into one target language and performance the analysis. This can be done directly with translation APIs provided by Microsoft or Google. The example below shows how to use Microsoft Cognitive Services API for text translation.
-```{r}
+```{r, eval=FALSE}
 # load the API keys.
 
-source("../../sent_analytis/scripts/R/confidential.R")
+source("path_to_your_confidential_information")
 ```
 
 ```{r, eval=FALSE}
 text <- "我非常喜欢现在的工作"
-translated_text1 <- cognitiveTranslation(text, lanFrom="zh-CHS", lanTo="en", apiKey=KEY_TRANS)
+translated_text1 <- cognitiveTranslation(text, lanFrom="zh-CHS", lanTo="en", apiKey="your_api_key")
 
 translated_text1
 # [1] "I really like the current job."
@@ -529,7 +533,7 @@ translated_text2
 2. Second approach is relying on language specific tokenizer. For instance, `jiebaR` provides methods to process Chinese together with English, which can be then converted to vector that is comfortable with `tm` functions.
 
 The following sample set shows how this can be done.
-```{r}
+```{r, eval=FALSE}
 # sample text data.
 
 df_text <- data.frame(
@@ -559,7 +563,7 @@ df_text <- data.frame(
 )
 print(df_text$text)
 ```
-```{r}
+```{r, eval=FALSE}
 # firstly make it a corpus.
 
 corp_text <- 
@@ -573,7 +577,7 @@ corp_text <-
 cutter2 <- worker(stop_word = "../Data/DataSet3.csv", bylines = TRUE)
 ```
 Note as `jiebaR` does not provide methods for term frequency transformation from corpus, `tm` is used for doing this.
-```{r}
+```{r, eval=FALSE}
 # customize a tokenizer function that can be embedded into DocumentTermMatrix function.
 
 jieba_tokenizer <- function(d) {
@@ -582,11 +586,11 @@ jieba_tokenizer <- function(d) {
 
 dtm_text <- 
   DocumentTermMatrix(corp_text, 
-                               control = list(wordLengths = c(1, Inf),
-                                              weighting = weightTf, 
-                                              tokenize = jieba_tokenizer)) 
+                     control = list(wordLengths = c(1, Inf),
+                                    weighting = weightTf, 
+                                    tokenize = jieba_tokenizer)) 
 ```
-```{r}
+```{r, eval=FALSE}
 # produce a data frame of document term frequency.
 df_dtf <- 
   as.data.frame(inspect(dtm_text)) %>%
@@ -642,8 +646,8 @@ confusionMatrix(prediction,
 ```
 
 Sentiment analysis on text data can also be done with Text Analytics API of Microsoft Cognitive Services. Package `languageR` wraps functions that call the API for generating sentiment scores.
-```{r}
-senti_score <- cognitiveSentiAnalysis(text=df[-train_index, ]$Feedback, apiKey=KEY_SENTI)
+```{r, eval=FALSE}
+senti_score <- cognitiveSentiAnalysis(text=df[-train_index, ]$Feedback, apiKey="your_api_key")
 
 df_senti <- mutate(senti_score$documents, Attrition=ifelse(score < 0.5, "Yes", "No"))
                    
@@ -652,11 +656,11 @@ confusionMatrix(df_senti$Attrition,
                 positive="Yes")
 ```
 Note this method is not applicable to languages other than the supported ones. For instance, for analyzing Chinese, text data needs to be translated into English firstly. This can be done with Bing Translation API, which is available in `languageR` package as `cognitiveTranslation`.
-```{r}
+```{r, eval=FALSE}
 text_translated <- lapply(df_text$text, cognitiveTranslation,
                           lanFrom="zh-CHS",
                           lanTo="en",
-                          apiKey=KEY_TRANS)
+                          apiKey="your_api_key")
 
 text_translated
 ```
