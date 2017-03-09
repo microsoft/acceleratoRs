@@ -33,11 +33,14 @@ Data science and machine learning
 
 ![plot of chunk unnamed-chunk-3](demo-figure/unnamed-chunk-3-1.png)![plot of chunk unnamed-chunk-3](demo-figure/unnamed-chunk-3-2.png)
 
-General work flow of data science project
+- Is that all?
+
+Real-world data science project
 ========================================================
 
-- Cross Industry Standard Process for Data Mining (CRISP-DM)
-- Team Data Science Process (TDSP) https://github.com/Azure/Microsoft-TDSP
+- Team Data Science Process (TDSP) https://github.com/Azure/Microsoft-TDSP.
+    - Collaborative.
+    - Iterative.
 
 ![](./demo-figure/tdsp.png)    
 
@@ -59,7 +62,7 @@ Data collection, exploration, and preparation
 - Static data: not change or change in a deterministic manner.
 - Dynamic data: change randomly over time.
 
-Data collection, exploration, and preparation
+Data collection, exploration, and preparation (Cont'd)
 ========================================================
 
 - Data source 
@@ -68,24 +71,24 @@ Data collection, exploration, and preparation
     - Direct reports.
     - Social media network.
 
-Data collection, exploration, and preparation
+Data collection, exploration, and preparation (Cont'd)
 ========================================================
 
 - Data exploration.
     - Statistical analysis.
     - Visualization!
     
-Data collection, exploration, and preparation
+Data collection, exploration, and preparation (Cont'd)
 ========================================================
 
 <img src="demo-figure/unnamed-chunk-4-1.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" /><img src="demo-figure/unnamed-chunk-4-2.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" /><img src="demo-figure/unnamed-chunk-4-3.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" />
 
-Feature Extraction
+Data collection, exploration, and preparation (Cont'd)
 ========================================================
 
 <center>![](./demo-figure/framework.png)</center>
     
-Feature Extraction (Cont'd)
+Feature Extraction 
 ========================================================
 
 - Feature engineering
@@ -531,10 +534,10 @@ Step 5 Model evaluating (Cont'd)
 
 ```
          Models Accuracy Recall Precision Elapsed
-1       SVM RBF     0.85   0.82      0.52   27.69
-2 Random Forest     0.93   0.86      0.74  220.19
-3       Xgboost     0.93   0.85      0.74  290.05
-4      Stacking     0.91   0.87      0.68   84.36
+1       SVM RBF     0.85   0.79      0.52   27.69
+2 Random Forest     0.92   0.83      0.70  220.19
+3       Xgboost     0.90   0.79      0.67  290.05
+4      Stacking     0.90   0.83      0.63   84.36
 ```
 
 - Analysis
@@ -696,28 +699,28 @@ Confusion Matrix and Statistics
 
           Reference
 Prediction No Yes
-       No  87   9
-       Yes  3  51
-                                         
-               Accuracy : 0.92           
-                 95% CI : (0.8644, 0.958)
-    No Information Rate : 0.6            
-    P-Value [Acc > NIR] : <2e-16         
-                                         
-                  Kappa : 0.8305         
- Mcnemar's Test P-Value : 0.1489         
-                                         
-            Sensitivity : 0.8500         
-            Specificity : 0.9667         
-         Pos Pred Value : 0.9444         
-         Neg Pred Value : 0.9062         
-             Prevalence : 0.4000         
-         Detection Rate : 0.3400         
-   Detection Prevalence : 0.3600         
-      Balanced Accuracy : 0.9083         
-                                         
-       'Positive' Class : Yes            
-                                         
+       No  84  16
+       Yes  6  44
+                                          
+               Accuracy : 0.8533          
+                 95% CI : (0.7864, 0.9057)
+    No Information Rate : 0.6             
+    P-Value [Acc > NIR] : 1.243e-11       
+                                          
+                  Kappa : 0.6857          
+ Mcnemar's Test P-Value : 0.05501         
+                                          
+            Sensitivity : 0.7333          
+            Specificity : 0.9333          
+         Pos Pred Value : 0.8800          
+         Neg Pred Value : 0.8400          
+             Prevalence : 0.4000          
+         Detection Rate : 0.2933          
+   Detection Prevalence : 0.3333          
+      Balanced Accuracy : 0.8333          
+                                          
+       'Positive' Class : Yes             
+                                          
 ```
 
 Takeaways

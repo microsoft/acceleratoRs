@@ -119,11 +119,14 @@ ggplot(data=iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) +
 rattle::fancyRpartPlot(model_iris, main="Decision tree model built on iris data.")
 ```
 
-General work flow of data science project
+- Is that all?
+
+Real-world data science project
 ========================================================
 
-- Cross Industry Standard Process for Data Mining (CRISP-DM)
-- Team Data Science Process (TDSP) https://github.com/Azure/Microsoft-TDSP
+- Team Data Science Process (TDSP) https://github.com/Azure/Microsoft-TDSP.
+    - Collaborative.
+    - Iterative.
 
 ![](./demo-figure/tdsp.png)    
 
@@ -145,7 +148,7 @@ Data collection, exploration, and preparation
 - Static data: not change or change in a deterministic manner.
 - Dynamic data: change randomly over time.
 
-Data collection, exploration, and preparation
+Data collection, exploration, and preparation (Cont'd)
 ========================================================
 
 - Data source 
@@ -154,14 +157,14 @@ Data collection, exploration, and preparation
     - Direct reports.
     - Social media network.
 
-Data collection, exploration, and preparation
+Data collection, exploration, and preparation (Cont'd)
 ========================================================
 
 - Data exploration.
     - Statistical analysis.
     - Visualization!
     
-Data collection, exploration, and preparation
+Data collection, exploration, and preparation (Cont'd)
 ========================================================
 
 ```{r, echo=FALSE, fig.align="center", fig.height=5, fig.width=28}
@@ -199,12 +202,12 @@ ggplot(df1, aes(x=MonthlyIncome, y=JobLevel, color=Attrition)) +
   theme(text=element_text(size=30))
 ```
 
-Feature Extraction
+Data collection, exploration, and preparation (Cont'd)
 ========================================================
 
 <center>![](./demo-figure/framework.png)</center>
     
-Feature Extraction (Cont'd)
+Feature Extraction 
 ========================================================
 
 - Feature engineering
