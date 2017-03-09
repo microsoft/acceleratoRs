@@ -2,7 +2,7 @@ Employee Attrition Prediction with R Accelerator
 ========================================================
 author: Le Zhang, Data Scientist at Microsoft
 date: `r Sys.Date()`
-width: 1600
+width: 1800
 height: 1000
 
 Agenda
@@ -60,16 +60,13 @@ load("./models.RData")
 ```
 
 - Introduction.
-- Employee attrition prediction with sentiment analysis.
+- How to predict employee attrition?
 - Walk-through of an R "accelerator".
 
 Introduction
 ========================================================
 
 - Microsoft Algorithms and Data Science (ADS).
-- ADS Asia Pacific. 
-    - Data science accelerators to resolve real-world problems.
-    - Scalable tools & algorithms for advanced analytics.
 
 ```{r, echo=FALSE, fig.align="center", fig.width=15, fig.height=8}
 
@@ -102,11 +99,15 @@ mp <-
 mp
 ```
 
+- ADS Asia Pacific. 
+    - Data science solution templates to resolve real-world problems.
+    - Scalable tools & algorithms for high performance advanced analytics.
+
 Data science and machine learning
 ========================================================
 
 - Data science & Machine learning
-- A review on iris.
+- A review on iris data.
 
 ```{r, echo=FALSE, fig.height=8, fig.width=10}
 
@@ -118,11 +119,11 @@ ggplot(data=iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) +
 rattle::fancyRpartPlot(model_iris, main="Decision tree model built on iris data.")
 ```
 
-General work flow
+General work flow of data science project
 ========================================================
 
-- Team Data Science Process (TDSP)
-- Github repo: https://github.com/Azure/Microsoft-TDSP
+- Cross Industry Standard Process for Data Mining (CRISP-DM)
+- Team Data Science Process (TDSP) https://github.com/Azure/Microsoft-TDSP
 
 ![](./demo-figure/tdsp.png)    
 
@@ -134,15 +135,15 @@ Use case - employee attrition prediction
 - Consequences of employee attrition.
     - Loss of human resources and cost on new hires.
     - Potential loss of company intellectual properties.
-- Problem formalization: to identify employees with inclination of leaving.
+- Problem formalization: **to identify employees with inclination of leaving.**
 
 Data collection, exploration, and preparation
 ========================================================
 
 ![](./demo-figure/reasons_for_leave.png)
 
-- Static data
-- Dynamic data
+- Static data: not change or change in a deterministic manner.
+- Dynamic data: change randomly over time.
 
 Data collection, exploration, and preparation
 ========================================================
@@ -150,15 +151,18 @@ Data collection, exploration, and preparation
 - Data source 
     - HR department.
     - IT department.
+    - Direct reports.
     - Social media network.
-    - ...
 
 Data collection, exploration, and preparation
 ========================================================
 
 - Data exploration.
-    - Visualization.
-    - Simple statistics.
+    - Statistics.
+    - Visualization!
+    
+Data collection, exploration, and preparation
+========================================================
 
 ```{r, echo=FALSE, fig.align="center", fig.height=5, fig.width=28}
 
@@ -195,38 +199,22 @@ ggplot(df1, aes(x=MonthlyIncome, y=JobLevel, color=Attrition)) +
   theme(text=element_text(size=30))
 ```
 
-Data collection, exploration, and preparation
-========================================================
-
-- Sentiment
-    - Scoring
-        - How do you feel about the job?
-        - Do you have work-life balance?
-        - How is the relationship with colleagues?
-    - Posts on social media
-        1. The work you have done is so cool!
-        2. I do not think I am needed in the company...
-
 Feature Extraction
 ========================================================
 
-- Static data - ready for use.
-- Dynamic data
-    - Data aggregation.
-        - Time series characteristics.
-        - Statistical measures.
-    - Unstructured data.
-        - Text mining.
+<center>![](./demo-figure/framework.png)</center>
     
 Feature Extraction (Cont'd)
 ========================================================
 
-- Statistics
-    - max, min, standard deviation, etc.
-- Time series characterization.
-    - Trend analysis.
-    - Anomaly detection.
-    - Time series model (ARIMA, etc.)
+-Feature engineering
+    - Statistics
+        - max, min, standard deviation, etc.
+    - Time series characterization.
+        - Trend analysis.
+        - Anomaly detection.
+        - Time series model (ARIMA, etc.)
+    - Text mining
 - Feature selection.
     - Correlation analysis.
     - Model based feature selection.

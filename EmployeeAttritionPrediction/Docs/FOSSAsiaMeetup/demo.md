@@ -2,7 +2,7 @@ Employee Attrition Prediction with R Accelerator
 ========================================================
 author: Le Zhang, Data Scientist at Microsoft
 date: 2017-03-09
-width: 1600
+width: 1800
 height: 1000
 
 Agenda
@@ -11,32 +11,33 @@ Agenda
 
 
 - Introduction.
-- Employee attrition prediction with sentiment analysis.
+- How to predict employee attrition?
 - Walk-through of an R "accelerator".
 
 Introduction
 ========================================================
 
 - Microsoft Algorithms and Data Science (ADS).
-- ADS Asia Pacific. 
-    - Data science accelerators to resolve real-world problems.
-    - Scalable tools & algorithms for advanced analytics.
 
 <img src="demo-figure/unnamed-chunk-2-1.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" style="display: block; margin: auto;" />
+
+- ADS Asia Pacific. 
+    - Data science solution templates to resolve real-world problems.
+    - Scalable tools & algorithms for high performance advanced analytics.
 
 Data science and machine learning
 ========================================================
 
 - Data science & Machine learning
-- A review on iris.
+- A review on iris data.
 
 ![plot of chunk unnamed-chunk-3](demo-figure/unnamed-chunk-3-1.png)![plot of chunk unnamed-chunk-3](demo-figure/unnamed-chunk-3-2.png)
 
-General work flow
+General work flow of data science project
 ========================================================
 
-- Team Data Science Process (TDSP)
-- Github repo: https://github.com/Azure/Microsoft-TDSP
+- Cross Industry Standard Process for Data Mining (CRISP-DM)
+- Team Data Science Process (TDSP) https://github.com/Azure/Microsoft-TDSP
 
 ![](./demo-figure/tdsp.png)    
 
@@ -48,15 +49,15 @@ Use case - employee attrition prediction
 - Consequences of employee attrition.
     - Loss of human resources and cost on new hires.
     - Potential loss of company intellectual properties.
-- Problem formalization: to identify employees with inclination of leaving.
+- Problem formalization: **to identify employees with inclination of leaving.**
 
 Data collection, exploration, and preparation
 ========================================================
 
 ![](./demo-figure/reasons_for_leave.png)
 
-- Static data
-- Dynamic data
+- Static data: not change or change in a deterministic manner.
+- Dynamic data: change randomly over time.
 
 Data collection, exploration, and preparation
 ========================================================
@@ -64,50 +65,37 @@ Data collection, exploration, and preparation
 - Data source 
     - HR department.
     - IT department.
+    - Direct reports.
     - Social media network.
-    - ...
 
 Data collection, exploration, and preparation
 ========================================================
 
 - Data exploration.
-    - Visualization.
-    - Simple statistics.
-
-<img src="demo-figure/unnamed-chunk-4-1.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" /><img src="demo-figure/unnamed-chunk-4-2.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" /><img src="demo-figure/unnamed-chunk-4-3.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" />
-
+    - Statistics.
+    - Visualization!
+    
 Data collection, exploration, and preparation
 ========================================================
 
-- Sentiment
-    - Scoring
-        - How do you feel about the job?
-        - Do you have work-life balance?
-        - How is the relationship with colleagues?
-    - Posts on social media
-        1. The work you have done is so cool!
-        2. I do not think I am needed in the company...
+<img src="demo-figure/unnamed-chunk-4-1.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" /><img src="demo-figure/unnamed-chunk-4-2.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" /><img src="demo-figure/unnamed-chunk-4-3.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" />
 
 Feature Extraction
 ========================================================
 
-- Static data - ready for use.
-- Dynamic data
-    - Data aggregation.
-        - Time series characteristics.
-        - Statistical measures.
-    - Unstructured data.
-        - Text mining.
+<center>![](./demo-figure/framework.png)</center>
     
 Feature Extraction (Cont'd)
 ========================================================
 
-- Statistics
-    - max, min, standard deviation, etc.
-- Time series characterization.
-    - Trend analysis.
-    - Anomaly detection.
-    - Time series model (ARIMA, etc.)
+-Feature engineering
+    - Statistics
+        - max, min, standard deviation, etc.
+    - Time series characterization.
+        - Trend analysis.
+        - Anomaly detection.
+        - Time series model (ARIMA, etc.)
+    - Text mining
 - Feature selection.
     - Correlation analysis.
     - Model based feature selection.
@@ -544,10 +532,10 @@ Step 5 Model evaluating (Cont'd)
 
 ```
          Models Accuracy Recall Precision Elapsed
-1       SVM RBF     0.83   0.79      0.49   27.69
-2 Random Forest     0.91   0.85      0.68  220.19
-3       Xgboost     0.92   0.86      0.72  290.05
-4      Stacking     0.91   0.89      0.66   84.36
+1       SVM RBF     0.88   0.86      0.58   27.69
+2 Random Forest     0.93   0.86      0.73  220.19
+3       Xgboost     0.92   0.89      0.68  290.05
+4      Stacking     0.92   0.90      0.71   84.36
 ```
 
 - Analysis
@@ -710,25 +698,25 @@ Confusion Matrix and Statistics
 
           Reference
 Prediction No Yes
-       No  87  15
-       Yes  3  45
+       No  85  13
+       Yes  5  47
                                          
                Accuracy : 0.88           
                  95% CI : (0.817, 0.9273)
     No Information Rate : 0.6            
     P-Value [Acc > NIR] : 3.564e-14      
                                          
-                  Kappa : 0.7414         
- Mcnemar's Test P-Value : 0.009522       
+                  Kappa : 0.7443         
+ Mcnemar's Test P-Value : 0.09896        
                                          
-            Sensitivity : 0.7500         
-            Specificity : 0.9667         
-         Pos Pred Value : 0.9375         
-         Neg Pred Value : 0.8529         
+            Sensitivity : 0.7833         
+            Specificity : 0.9444         
+         Pos Pred Value : 0.9038         
+         Neg Pred Value : 0.8673         
              Prevalence : 0.4000         
-         Detection Rate : 0.3000         
-   Detection Prevalence : 0.3200         
-      Balanced Accuracy : 0.8583         
+         Detection Rate : 0.3133         
+   Detection Prevalence : 0.3467         
+      Balanced Accuracy : 0.8639         
                                          
        'Positive' Class : Yes            
                                          
