@@ -1,7 +1,7 @@
 Employee Attrition Prediction with R Accelerator
 ========================================================
 author: Le Zhang, Data Scientist at Microsoft
-date: 2017-03-08
+date: 2017-03-09
 width: 1600
 height: 1000
 
@@ -53,17 +53,10 @@ Use case - employee attrition prediction
 Data collection, exploration, and preparation
 ========================================================
 
-- Historical records of each employee.
-    - Time series.
-    - Aggregated data.
-    - Unstructured data.
+![](./demo-figure/reasons_for_leave.png)
 
-|Categories|Description|Factors|
-|-----------|-------------------|------------------|
-|Static|All sorts of demographic data, data that changes deterministically over time, etc.|Age, gender, years of service, etc.|
-|Dynamic|Data that evolves over time, temporary data, etc.|Performance, salary, working hour, satisfcation of job, social media posts, etc.|
-
-- Labelled by employment status.
+- Static data
+- Dynamic data
 
 Data collection, exploration, and preparation
 ========================================================
@@ -508,7 +501,13 @@ model_stack <- caretStack(
   model_list,
   metric="ROC",
   method="glm",
-  trControl=tc
+  trControl=trainControl(
+    method="boot",
+    number=10,
+    savePredictions="final",
+    classProbs=TRUE,
+    summaryFunction=twoClassSummary
+  )
 )
 ```
 
@@ -545,10 +544,10 @@ Step 5 Model evaluating (Cont'd)
 
 ```
          Models Accuracy Recall Precision Elapsed
-1       SVM RBF     0.87   0.86      0.55   27.69
-2 Random Forest     0.92   0.93      0.69  220.19
-3       Xgboost     0.92   0.93      0.70  290.05
-4      Stacking     0.92   0.93      0.70   84.36
+1       SVM RBF     0.83   0.79      0.49   27.69
+2 Random Forest     0.91   0.85      0.68  220.19
+3       Xgboost     0.92   0.86      0.72  290.05
+4      Stacking     0.91   0.89      0.66   84.36
 ```
 
 - Analysis
@@ -711,24 +710,24 @@ Confusion Matrix and Statistics
 
           Reference
 Prediction No Yes
-       No  84  13
-       Yes  6  47
+       No  87  15
+       Yes  3  45
                                          
-               Accuracy : 0.8733         
-                 95% CI : (0.8093, 0.922)
+               Accuracy : 0.88           
+                 95% CI : (0.817, 0.9273)
     No Information Rate : 0.6            
-    P-Value [Acc > NIR] : 1.677e-13      
+    P-Value [Acc > NIR] : 3.564e-14      
                                          
-                  Kappa : 0.7309         
- Mcnemar's Test P-Value : 0.1687         
+                  Kappa : 0.7414         
+ Mcnemar's Test P-Value : 0.009522       
                                          
-            Sensitivity : 0.7833         
-            Specificity : 0.9333         
-         Pos Pred Value : 0.8868         
-         Neg Pred Value : 0.8660         
+            Sensitivity : 0.7500         
+            Specificity : 0.9667         
+         Pos Pred Value : 0.9375         
+         Neg Pred Value : 0.8529         
              Prevalence : 0.4000         
-         Detection Rate : 0.3133         
-   Detection Prevalence : 0.3533         
+         Detection Rate : 0.3000         
+   Detection Prevalence : 0.3200         
       Balanced Accuracy : 0.8583         
                                          
        'Positive' Class : Yes            
