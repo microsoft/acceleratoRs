@@ -139,17 +139,10 @@ Use case - employee attrition prediction
 Data collection, exploration, and preparation
 ========================================================
 
-- Historical records of each employee.
-    - Time series.
-    - Aggregated data.
-    - Unstructured data.
+![](./demo-figure/reasons_for_leave.png)
 
-|Categories|Description|Factors|
-|-----------|-------------------|------------------|
-|Static|All sorts of demographic data, data that changes deterministically over time, etc.|Age, gender, years of service, etc.|
-|Dynamic|Data that evolves over time, temporary data, etc.|Performance, salary, working hour, satisfcation of job, social media posts, etc.|
-
-- Labelled by employment status.
+- Static data
+- Dynamic data
 
 Data collection, exploration, and preparation
 ========================================================
@@ -522,7 +515,13 @@ model_stack <- caretStack(
   model_list,
   metric="ROC",
   method="glm",
-  trControl=tc
+  trControl=trainControl(
+    method="boot",
+    number=10,
+    savePredictions="final",
+    classProbs=TRUE,
+    summaryFunction=twoClassSummary
+  )
 )
 ```
 
