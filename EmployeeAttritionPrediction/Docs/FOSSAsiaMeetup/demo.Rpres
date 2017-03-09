@@ -131,51 +131,41 @@ Use case - employee attrition prediction
 
 ![](./demo-figure/employee_sentiment.png)    
 
-- Voluntary and involuntary.
 - Consequences of employee attrition.
     - Loss of human resources and cost on new hires.
     - Potential loss of company intellectual properties.
-- Problem formalization
-    - to identify employees with inclination of leaving.
+- Problem formalization: to identify employees with inclination of leaving.
 
 Data collection, exploration, and preparation
 ========================================================
 
-- historical records of each employee.
+- Historical records of each employee.
     - Time series.
     - Aggregated data.
     - Unstructured data.
-- Labelled by employment status.
 
 |Categories|Description|Factors|
 |-----------|-------------------|------------------|
 |Static|All sorts of demographic data, data that changes deterministically over time, etc.|Age, gender, years of service, etc.|
-|Dynamic|Data that evolves over time, temporary data, etc.|Performance, salary, working hour, satifcation of job, social media posts, etc.|
+|Dynamic|Data that evolves over time, temporary data, etc.|Performance, salary, working hour, satisfcation of job, social media posts, etc.|
+
+- Labelled by employment status.
 
 Data collection, exploration, and preparation
 ========================================================
 
 - Data source 
-    - Employee attrition data: https://community.watsonanalytics.com/wp-content/uploads/2015/03/WA_Fn-UseC_-HR-Employee-Attrition.xlsx
-    - Text data: http://www.glassdoor.com
-
-```{r, echo=FALSE}
-
-table(df1$Attrition)
-
-```
-
-- A glimpse at static data.
-
-```{r, echo=FALSE}
-
-head(select(df1, Age, Gender, JobRole, YearsAtCompany, Attrition), 10) %>%
-  as.data.frame() 
-
-```
+    - HR department.
+    - IT department.
+    - Social media network.
+    - ...
 
 Data collection, exploration, and preparation
 ========================================================
+
+- Data exploration.
+    - Visualization.
+    - Simple statistics.
 
 ```{r, echo=FALSE, fig.align="center", fig.height=5, fig.width=28}
 
@@ -215,9 +205,7 @@ ggplot(df1, aes(x=MonthlyIncome, y=JobLevel, color=Attrition)) +
 Data collection, exploration, and preparation
 ========================================================
 
-Sentiment analysis
-
-- Examples
+- Sentiment
     - Scoring
         - How do you feel about the job?
         - Do you have work-life balance?
@@ -235,33 +223,31 @@ Feature Extraction
         - Time series characteristics.
         - Statistical measures.
     - Unstructured data.
-        - Natural language process.
+        - Text mining.
     
 Feature Extraction (Cont'd)
 ========================================================
 
-- Statistical measures
+- Statistics
     - max, min, standard deviation, etc.
 - Time series characterization.
     - Trend analysis.
-    - Peak detection.
+    - Anomaly detection.
     - Time series model (ARIMA, etc.)
 - Feature selection.
+    - Correlation analysis.
+    - Model based feature selection.
 
 Model creation and validation
 ========================================================
 
-- Model selection
-    - Logistic regression.
-    - Support vector machine.
-    - Decision tree.
-- Ensemble methods
-    - Bagging (bootstrap aggregating).
-    - Boosting.
-    - Stacking.
-- Model training
-    - Data partition.
-    - Resampling.
+- Algorithm selection
+    - Logistic regression, Support vector machine, Decision tree, etc.
+    - Ensemble
+        - Bagging.
+        - Boosting.
+        - Stacking.
+- Model creation
     
 Model creation and validation
 ========================================================
@@ -271,7 +257,7 @@ Model creation and validation
     - Precision.
     - Recall.
     - F Score.
-    - ...
+    - Area-Under-Curve.
 
 Employee attrition prediction - R accelerator
 ========================================================
@@ -294,17 +280,13 @@ print(sessionInfo(), locale=FALSE)
 Step 1 Data exploration
 ========================================================
 
-- Employee attrition data.
+- Employee attrition data: https://www.ibm.com/communities/analytics/watson-analytics-blog/hr-employee-attrition/
 
 ```{r}
 dim(df1)
 ```
 
-- Review comments data.
-
-```{r}
-dim(df2)
-```
+- Review comments data: http://www.glassdoor.com
 
 ```{r}
 head(df2$Feedback, 3)
@@ -342,23 +324,13 @@ df1[, int_2_ftr_vars] <- lapply((df1[, int_2_ftr_vars]), as.factor)
 ```
 
 ```{r}
-# convert remaining integer variables to be numeric.
-
-df1 %<>% mutate_if(is.integer, as.numeric)
-```
-
-```{r}
 df1 %<>% mutate_if(is.character, as.factor)
 ```
 
 Step 2 Feature extraction
 ========================================================
 
-- Extract features from original variables.
-- Reduce dimensionality.
-- Select salient features from all.
-    - Correlation analysis.
-    - Feature selection With a trained model.
+- Feature selection with a trained model.
 
 ```{r, eval=FALSE}
 control <- trainControl(method="repeatedcv", number=3, repeats=1)

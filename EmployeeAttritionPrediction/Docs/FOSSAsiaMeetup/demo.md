@@ -1,7 +1,7 @@
 Employee Attrition Prediction with R Accelerator
 ========================================================
 author: Le Zhang, Data Scientist at Microsoft
-date: 2017-03-02
+date: 2017-03-08
 width: 1600
 height: 1000
 
@@ -45,69 +45,48 @@ Use case - employee attrition prediction
 
 ![](./demo-figure/employee_sentiment.png)    
 
-- Voluntary and involuntary.
 - Consequences of employee attrition.
     - Loss of human resources and cost on new hires.
     - Potential loss of company intellectual properties.
-- Problem formalization
-    - to identify employees with inclination of leaving.
+- Problem formalization: to identify employees with inclination of leaving.
 
 Data collection, exploration, and preparation
 ========================================================
 
-- historical records of each employee.
+- Historical records of each employee.
     - Time series.
     - Aggregated data.
     - Unstructured data.
-- Labelled by employment status.
 
 |Categories|Description|Factors|
 |-----------|-------------------|------------------|
 |Static|All sorts of demographic data, data that changes deterministically over time, etc.|Age, gender, years of service, etc.|
-|Dynamic|Data that evolves over time, temporary data, etc.|Performance, salary, working hour, satifcation of job, social media posts, etc.|
+|Dynamic|Data that evolves over time, temporary data, etc.|Performance, salary, working hour, satisfcation of job, social media posts, etc.|
+
+- Labelled by employment status.
 
 Data collection, exploration, and preparation
 ========================================================
 
 - Data source 
-    - Employee attrition data: https://community.watsonanalytics.com/wp-content/uploads/2015/03/WA_Fn-UseC_-HR-Employee-Attrition.xlsx
-    - Text data: http://www.glassdoor.com
-
-
-```
-
-  No  Yes 
-1233  237 
-```
-
-- A glimpse at static data.
-
-
-```
-   Age Gender                   JobRole YearsAtCompany Attrition
-1   49   Male        Research Scientist             10        No
-2   33 Female        Research Scientist              8        No
-3   27   Male     Laboratory Technician              2        No
-4   32   Male     Laboratory Technician              7        No
-5   59 Female     Laboratory Technician              1        No
-6   30   Male     Laboratory Technician              1        No
-7   38   Male    Manufacturing Director              9        No
-8   36   Male Healthcare Representative              7        No
-9   35   Male     Laboratory Technician              5        No
-10  29 Female     Laboratory Technician              9        No
-```
+    - HR department.
+    - IT department.
+    - Social media network.
+    - ...
 
 Data collection, exploration, and preparation
 ========================================================
 
-<img src="demo-figure/unnamed-chunk-6-1.png" title="plot of chunk unnamed-chunk-6" alt="plot of chunk unnamed-chunk-6" style="display: block; margin: auto;" /><img src="demo-figure/unnamed-chunk-6-2.png" title="plot of chunk unnamed-chunk-6" alt="plot of chunk unnamed-chunk-6" style="display: block; margin: auto;" /><img src="demo-figure/unnamed-chunk-6-3.png" title="plot of chunk unnamed-chunk-6" alt="plot of chunk unnamed-chunk-6" style="display: block; margin: auto;" />
+- Data exploration.
+    - Visualization.
+    - Simple statistics.
+
+<img src="demo-figure/unnamed-chunk-4-1.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" /><img src="demo-figure/unnamed-chunk-4-2.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" /><img src="demo-figure/unnamed-chunk-4-3.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" />
 
 Data collection, exploration, and preparation
 ========================================================
 
-Sentiment analysis
-
-- Examples
+- Sentiment
     - Scoring
         - How do you feel about the job?
         - Do you have work-life balance?
@@ -125,33 +104,31 @@ Feature Extraction
         - Time series characteristics.
         - Statistical measures.
     - Unstructured data.
-        - Natural language process.
+        - Text mining.
     
 Feature Extraction (Cont'd)
 ========================================================
 
-- Statistical measures
+- Statistics
     - max, min, standard deviation, etc.
 - Time series characterization.
     - Trend analysis.
-    - Peak detection.
+    - Anomaly detection.
     - Time series model (ARIMA, etc.)
 - Feature selection.
+    - Correlation analysis.
+    - Model based feature selection.
 
 Model creation and validation
 ========================================================
 
-- Model selection
-    - Logistic regression.
-    - Support vector machine.
-    - Decision tree.
-- Ensemble methods
-    - Bagging (bootstrap aggregating).
-    - Boosting.
-    - Stacking.
-- Model training
-    - Data partition.
-    - Resampling.
+- Algorithm selection
+    - Logistic regression, Support vector machine, Decision tree, etc.
+    - Ensemble
+        - Bagging.
+        - Boosting.
+        - Stacking.
+- Model creation
     
 Model creation and validation
 ========================================================
@@ -161,7 +138,7 @@ Model creation and validation
     - Precision.
     - Recall.
     - F Score.
-    - ...
+    - Area-Under-Curve.
 
 Employee attrition prediction - R accelerator
 ========================================================
@@ -188,13 +165,13 @@ attached base packages:
 [8] base     
 
 other attached packages:
- [1] maps_3.1.1           ggmap_2.6.1          scales_0.4.1        
- [4] jsonlite_1.1         XML_3.98-1.4         httr_1.2.1          
+ [1] maps_3.1.0           ggmap_2.6.1          scales_0.4.0        
+ [4] jsonlite_1.0         XML_3.98-1.4         httr_1.2.1          
  [7] tm_0.6-2             NLP_0.1-9            rattle_4.1.0        
 [10] e1071_1.6-7          pROC_1.8             caretEnsemble_2.0.0 
-[13] caret_6.0-70         ggplot2_2.2.1        DMwR_0.4.1          
+[13] caret_6.0-70         ggplot2_2.1.0        DMwR_0.4.1          
 [16] readr_0.2.2          stringi_1.1.2        stringr_1.1.0       
-[19] magrittr_1.5         dplyr_0.5.0          knitr_1.14.12       
+[19] magrittr_1.5         dplyr_0.5.0          knitr_1.15          
 [22] RevoUtilsMath_10.0.0 RevoUtils_10.0.2     RevoMods_10.0.0     
 [25] MicrosoftML_1.0.0    mrsdeploy_1.0        RevoScaleR_9.0.1    
 [28] lattice_0.20-34      rpart_4.1-10        
@@ -204,31 +181,31 @@ loaded via a namespace (and not attached):
  [4] assertthat_0.1         TTR_0.23-1             highr_0.6             
  [7] sp_1.2-3               stats4_3.3.2           slam_0.1-35           
 [10] quantreg_5.26          chron_2.3-47           digest_0.6.10         
-[13] RColorBrewer_1.1-2     minqa_1.2.4            colorspace_1.2-7      
+[13] RColorBrewer_1.1-2     minqa_1.2.4            colorspace_1.2-6      
 [16] Matrix_1.2-7.1         plyr_1.8.4             SparseM_1.7           
 [19] gdata_2.17.0           jpeg_0.1-8             lme4_1.1-12           
 [22] MatrixModels_0.4-1     tibble_1.2             mgcv_1.8-15           
 [25] car_2.1-2              ROCR_1.0-7             pbapply_1.2-1         
-[28] nnet_7.3-12            lazyeval_0.2.0         proto_1.0.0           
-[31] pbkrtest_0.4-6         quantmod_0.4-5         evaluate_0.10         
+[28] nnet_7.3-12            proto_0.3-10           pbkrtest_0.4-6        
+[31] quantmod_0.4-5         RJSONIO_1.3-0          evaluate_0.10         
 [34] nlme_3.1-128           MASS_7.3-45            gplots_3.0.1          
 [37] xts_0.9-7              class_7.3-14           tools_3.3.2           
 [40] CompatibilityAPI_1.1.0 data.table_1.9.6       geosphere_1.5-5       
-[43] RgoogleMaps_1.4.1      rpart.plot_2.1.0       kernlab_0.9-25        
+[43] RgoogleMaps_1.2.0.7    rpart.plot_2.1.0       kernlab_0.9-24        
 [46] munsell_0.4.3          caTools_1.17.1         nloptr_1.0.4          
 [49] iterators_1.0.8        RGtk2_2.20.31          rjson_0.2.15          
 [52] labeling_0.3           bitops_1.0-6           gtable_0.2.0          
-[55] codetools_0.2-15       abind_1.4-3            DBI_0.5-1             
-[58] curl_2.2               reshape2_1.4.2         R6_2.2.0              
+[55] codetools_0.2-15       abind_1.4-3            DBI_0.5               
+[58] curl_1.2               reshape2_1.4.1         R6_2.1.3              
 [61] gridExtra_2.2.1        zoo_1.7-13             KernSmooth_2.23-15    
-[64] parallel_3.3.2         Rcpp_0.12.7            mapproj_1.2-4         
+[64] parallel_3.3.2         Rcpp_0.12.6            mapproj_1.2-4         
 [67] png_0.1-7             
 ```
 
 Step 1 Data exploration
 ========================================================
 
-- Employee attrition data.
+- Employee attrition data: https://www.ibm.com/communities/analytics/watson-analytics-blog/hr-employee-attrition/
 
 
 ```r
@@ -239,16 +216,7 @@ dim(df1)
 [1] 1470   33
 ```
 
-- Review comments data.
-
-
-```r
-dim(df2)
-```
-
-```
-[1] 500  34
-```
+- Review comments data: http://www.glassdoor.com
 
 
 ```r
@@ -301,24 +269,13 @@ df1[, int_2_ftr_vars] <- lapply((df1[, int_2_ftr_vars]), as.factor)
 
 
 ```r
-# convert remaining integer variables to be numeric.
-
-df1 %<>% mutate_if(is.integer, as.numeric)
-```
-
-
-```r
 df1 %<>% mutate_if(is.character, as.factor)
 ```
 
 Step 2 Feature extraction
 ========================================================
 
-- Extract features from original variables.
-- Reduce dimensionality.
-- Select salient features from all.
-    - Correlation analysis.
-    - Feature selection With a trained model.
+- Feature selection with a trained model.
 
 
 ```r
@@ -346,7 +303,7 @@ imp <- varImp(model, scale=FALSE)
 plot(imp, cex=3)
 ```
 
-<img src="demo-figure/unnamed-chunk-17-1.png" title="plot of chunk unnamed-chunk-17" alt="plot of chunk unnamed-chunk-17" style="display: block; margin: auto;" />
+<img src="demo-figure/unnamed-chunk-13-1.png" title="plot of chunk unnamed-chunk-13" alt="plot of chunk unnamed-chunk-13" style="display: block; margin: auto;" />
 
 Step 2 Feature extraction (Cont'd)
 ========================================================
@@ -588,10 +545,10 @@ Step 5 Model evaluating (Cont'd)
 
 ```
          Models Accuracy Recall Precision Elapsed
-1       SVM RBF     0.85   0.82      0.52   27.69
-2 Random Forest     0.93   0.87      0.73  220.19
-3       Xgboost     0.92   0.83      0.70  290.05
-4      Stacking     0.93   0.92      0.74   84.36
+1       SVM RBF     0.87   0.86      0.55   27.69
+2 Random Forest     0.92   0.93      0.69  220.19
+3       Xgboost     0.92   0.93      0.70  290.05
+4      Stacking     0.92   0.93      0.70   84.36
 ```
 
 - Analysis
@@ -754,25 +711,25 @@ Confusion Matrix and Statistics
 
           Reference
 Prediction No Yes
-       No  88  12
-       Yes  2  48
+       No  84  13
+       Yes  6  47
                                          
-               Accuracy : 0.9067         
-                 95% CI : (0.8484, 0.948)
+               Accuracy : 0.8733         
+                 95% CI : (0.8093, 0.922)
     No Information Rate : 0.6            
-    P-Value [Acc > NIR] : < 2e-16        
+    P-Value [Acc > NIR] : 1.677e-13      
                                          
-                  Kappa : 0.8            
- Mcnemar's Test P-Value : 0.01616        
+                  Kappa : 0.7309         
+ Mcnemar's Test P-Value : 0.1687         
                                          
-            Sensitivity : 0.8000         
-            Specificity : 0.9778         
-         Pos Pred Value : 0.9600         
-         Neg Pred Value : 0.8800         
+            Sensitivity : 0.7833         
+            Specificity : 0.9333         
+         Pos Pred Value : 0.8868         
+         Neg Pred Value : 0.8660         
              Prevalence : 0.4000         
-         Detection Rate : 0.3200         
-   Detection Prevalence : 0.3333         
-      Balanced Accuracy : 0.8889         
+         Detection Rate : 0.3133         
+   Detection Prevalence : 0.3533         
+      Balanced Accuracy : 0.8583         
                                          
        'Positive' Class : Yes            
                                          
