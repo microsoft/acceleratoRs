@@ -141,14 +141,6 @@ int_2_ftr_vars <- c("Education", "EnvironmentSatisfaction", "JobInvolvement", "J
 
 df[, int_2_ftr_vars] <- lapply((df[, int_2_ftr_vars]), as.factor)
 ```
-The rest of integer type variables are converted to numeric.
-```{r}
-# convert remaining integer variables to be numeric.
-
-names(select_if(df, is.integer))
-
-df %<>% mutate_if(is.integer, as.numeric)
-```
 
 The variables of character type are converted to categorical type. 
 ```{r}
@@ -322,7 +314,13 @@ model_stack <- caretStack(
   model_list,
   metric="ROC",
   method="glm",
-  trControl=tc
+  trControl=trainControl(
+    method="boot",
+    number=10,
+    savePredictions="final",
+    classProbs=TRUE,
+    summaryFunction=twoClassSummary
+  )
 )
 ```
 
