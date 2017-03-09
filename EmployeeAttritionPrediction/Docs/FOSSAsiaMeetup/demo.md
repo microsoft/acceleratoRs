@@ -72,7 +72,7 @@ Data collection, exploration, and preparation
 ========================================================
 
 - Data exploration.
-    - Statistics.
+    - Statistical analysis.
     - Visualization!
     
 Data collection, exploration, and preparation
@@ -88,7 +88,7 @@ Feature Extraction
 Feature Extraction (Cont'd)
 ========================================================
 
--Feature engineering
+- Feature engineering
     - Statistics
         - max, min, standard deviation, etc.
     - Time series characterization.
@@ -389,7 +389,6 @@ Step 4 Model building
 
 - Select algorithm for model creation.
 - Tune model parameters.
-- Cross validation for searching the optimal model.
 
 
 ```r
@@ -532,15 +531,15 @@ Step 5 Model evaluating (Cont'd)
 
 ```
          Models Accuracy Recall Precision Elapsed
-1       SVM RBF     0.88   0.86      0.58   27.69
-2 Random Forest     0.93   0.86      0.73  220.19
-3       Xgboost     0.92   0.89      0.68  290.05
-4      Stacking     0.92   0.90      0.71   84.36
+1       SVM RBF     0.85   0.82      0.52   27.69
+2 Random Forest     0.93   0.86      0.74  220.19
+3       Xgboost     0.93   0.85      0.74  290.05
+4      Stacking     0.91   0.87      0.68   84.36
 ```
 
 - Analysis
-    - Ensemble method excels from all.
     - Diversity of model affects ensemble performance.
+    - Data size also impacts.
 
 Step 6 Sentiment analysis - a glimpse of data
 ========================================================
@@ -567,8 +566,7 @@ Step 7 Sentiment analysis - feature extraction
         - Removal of unnecessary elements (stopwords, numbers, punctuations, etc.).
             - Stopwords: yes, no, you, I, etc.
         - Translation or sentence/word alignment.
-            - Multi-lingual text analysis.
-        - POS tagging.
+        - Part-Of-Speech tagging.
     - Bag-of-words model
         - n-Grams.
         - Term frequency (TF) or Term frequency inverse-document frequency (TF-IDF).
@@ -698,25 +696,25 @@ Confusion Matrix and Statistics
 
           Reference
 Prediction No Yes
-       No  85  13
-       Yes  5  47
+       No  87   9
+       Yes  3  51
                                          
-               Accuracy : 0.88           
-                 95% CI : (0.817, 0.9273)
+               Accuracy : 0.92           
+                 95% CI : (0.8644, 0.958)
     No Information Rate : 0.6            
-    P-Value [Acc > NIR] : 3.564e-14      
+    P-Value [Acc > NIR] : <2e-16         
                                          
-                  Kappa : 0.7443         
- Mcnemar's Test P-Value : 0.09896        
+                  Kappa : 0.8305         
+ Mcnemar's Test P-Value : 0.1489         
                                          
-            Sensitivity : 0.7833         
-            Specificity : 0.9444         
-         Pos Pred Value : 0.9038         
-         Neg Pred Value : 0.8673         
+            Sensitivity : 0.8500         
+            Specificity : 0.9667         
+         Pos Pred Value : 0.9444         
+         Neg Pred Value : 0.9062         
              Prevalence : 0.4000         
-         Detection Rate : 0.3133         
-   Detection Prevalence : 0.3467         
-      Balanced Accuracy : 0.8639         
+         Detection Rate : 0.3400         
+   Detection Prevalence : 0.3600         
+      Balanced Accuracy : 0.9083         
                                          
        'Positive' Class : Yes            
                                          
@@ -726,7 +724,8 @@ Takeaways
 ========================================================
 - DS & ML combined with domain knowledge.
 - Feature engineering takes majority of time.
-- Scale up your analytics?
+- Model creation and validation.
+- Sentiment analysis on text data.
 - All resources available on Github!
 
 References

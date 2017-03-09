@@ -158,7 +158,7 @@ Data collection, exploration, and preparation
 ========================================================
 
 - Data exploration.
-    - Statistics.
+    - Statistical analysis.
     - Visualization!
     
 Data collection, exploration, and preparation
@@ -207,7 +207,7 @@ Feature Extraction
 Feature Extraction (Cont'd)
 ========================================================
 
--Feature engineering
+- Feature engineering
     - Statistics
         - max, min, standard deviation, etc.
     - Time series characterization.
@@ -409,7 +409,6 @@ Step 4 Model building
 
 - Select algorithm for model creation.
 - Tune model parameters.
-- Cross validation for searching the optimal model.
 
 ```{r, eval=FALSE}
 # initialize training control. 
@@ -582,8 +581,8 @@ df_comp
 ```
 
 - Analysis
-    - Ensemble method excels from all.
     - Diversity of model affects ensemble performance.
+    - Data size also impacts.
 
 Step 6 Sentiment analysis - a glimpse of data
 ========================================================
@@ -601,8 +600,7 @@ Step 7 Sentiment analysis - feature extraction
         - Removal of unnecessary elements (stopwords, numbers, punctuations, etc.).
             - Stopwords: yes, no, you, I, etc.
         - Translation or sentence/word alignment.
-            - Multi-lingual text analysis.
-        - POS tagging.
+        - Part-Of-Speech tagging.
     - Bag-of-words model
         - n-Grams.
         - Term frequency (TF) or Term frequency inverse-document frequency (TF-IDF).
@@ -710,7 +708,8 @@ Takeaways
 ========================================================
 - DS & ML combined with domain knowledge.
 - Feature engineering takes majority of time.
-- Scale up your analytics?
+- Model creation and validation.
+- Sentiment analysis on text data.
 - All resources available on Github!
 
 References
