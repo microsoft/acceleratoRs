@@ -68,7 +68,6 @@ The experiments will be conducted on a data set of employees. The data set is pu
 
 #### 2.1.1 Data exploration
 
-The data is loaded from remote blob of cloud storage. 
 ```{r}
 df <- read_csv(DATA1)
 ```
@@ -102,11 +101,13 @@ ggplot(df, aes(JobRole, fill=Attrition)) +
 2. monthly income, job level, and service year may affect decision of leaving for employees in different departments. For example, junior staffs with lower pay will be more likely to leave compared to those who are paid higher.
 ```{r}
 ggplot(filter(df, (YearsAtCompany >= 2) & (YearsAtCompany <= 5) & (JobLevel < 3)),
-       aes(x=factor(Department), y=MonthlyIncome, color=factor(Attrition))) +
+       aes(x=factor(JobRole), y=MonthlyIncome, color=factor(Attrition))) +
   geom_boxplot() +
   xlab("Department") +
   ylab("Monthly income") +
-  scale_fill_discrete(guide=guide_legend(title="Attrition"))
+  scale_fill_discrete(guide=guide_legend(title="Attrition")) +
+  theme_bw() +
+  theme(text=element_text(size=13), legend.position="top")
 ```
 3. Promotion is a commonly adopted HR strategy for employee retention. It can be observed in the following plot that for a certain department, e.g., Research & Development, employees with higher job level is more likely to leave if there are years since their last promotion.
 ```{r}
