@@ -206,6 +206,8 @@ Data collection, exploration, and preparation (Cont'd)
 ========================================================
 
 <center>![](./demo-figure/framework.png)</center>
+
+**To predict employee attrition in the next M + 1 months, by analyzing employee data of last N months.**
     
 Feature Extraction 
 ========================================================
@@ -225,6 +227,7 @@ Feature Extraction
 Model creation and validation
 ========================================================
 
+- Supervised classification problem.
 - Algorithm selection
     - Logistic regression, Support vector machine, Decision tree, etc.
     - Ensemble
@@ -713,7 +716,7 @@ Takeaways
 - Feature engineering takes majority of time.
 - Model creation and validation.
 - Sentiment analysis on text data.
-- All resources available on Github!
+- All resources available on Github! https://github.com/Microsoft/acceleratoRs/tree/master/EmployeeAttritionPrediction/Docs/FOSSAsiaMeetup
 
 References
 ========================================================

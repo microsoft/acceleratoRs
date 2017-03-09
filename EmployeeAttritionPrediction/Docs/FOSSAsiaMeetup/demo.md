@@ -87,6 +87,8 @@ Data collection, exploration, and preparation (Cont'd)
 ========================================================
 
 <center>![](./demo-figure/framework.png)</center>
+
+**To predict employee attrition in the next M + 1 months, by analyzing employee data of last N months.**
     
 Feature Extraction 
 ========================================================
@@ -106,6 +108,7 @@ Feature Extraction
 Model creation and validation
 ========================================================
 
+- Supervised classification problem.
 - Algorithm selection
     - Logistic regression, Support vector machine, Decision tree, etc.
     - Ensemble
@@ -534,10 +537,10 @@ Step 5 Model evaluating (Cont'd)
 
 ```
          Models Accuracy Recall Precision Elapsed
-1       SVM RBF     0.85   0.79      0.52   27.69
-2 Random Forest     0.92   0.83      0.70  220.19
-3       Xgboost     0.90   0.79      0.67  290.05
-4      Stacking     0.90   0.83      0.63   84.36
+1       SVM RBF     0.86   0.76      0.55   27.69
+2 Random Forest     0.92   0.80      0.71  220.19
+3       Xgboost     0.92   0.82      0.73  290.05
+4      Stacking     0.92   0.85      0.71   84.36
 ```
 
 - Analysis
@@ -699,25 +702,25 @@ Confusion Matrix and Statistics
 
           Reference
 Prediction No Yes
-       No  84  16
-       Yes  6  44
+       No  87  13
+       Yes  3  47
                                           
-               Accuracy : 0.8533          
-                 95% CI : (0.7864, 0.9057)
+               Accuracy : 0.8933          
+                 95% CI : (0.8326, 0.9378)
     No Information Rate : 0.6             
-    P-Value [Acc > NIR] : 1.243e-11       
+    P-Value [Acc > NIR] : 1.336e-15       
                                           
-                  Kappa : 0.6857          
- Mcnemar's Test P-Value : 0.05501         
+                  Kappa : 0.7714          
+ Mcnemar's Test P-Value : 0.02445         
                                           
-            Sensitivity : 0.7333          
-            Specificity : 0.9333          
-         Pos Pred Value : 0.8800          
-         Neg Pred Value : 0.8400          
+            Sensitivity : 0.7833          
+            Specificity : 0.9667          
+         Pos Pred Value : 0.9400          
+         Neg Pred Value : 0.8700          
              Prevalence : 0.4000          
-         Detection Rate : 0.2933          
+         Detection Rate : 0.3133          
    Detection Prevalence : 0.3333          
-      Balanced Accuracy : 0.8333          
+      Balanced Accuracy : 0.8750          
                                           
        'Positive' Class : Yes             
                                           
@@ -729,7 +732,7 @@ Takeaways
 - Feature engineering takes majority of time.
 - Model creation and validation.
 - Sentiment analysis on text data.
-- All resources available on Github!
+- All resources available on Github! https://github.com/Microsoft/acceleratoRs/tree/master/EmployeeAttritionPrediction/Docs/FOSSAsiaMeetup
 
 References
 ========================================================
