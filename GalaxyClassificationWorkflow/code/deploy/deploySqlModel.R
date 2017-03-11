@@ -72,7 +72,7 @@ spBasePredictGalaxyClass <- function(model, imgData)
         img <- as.raw(strtoi(img, base=16))
         writeBin(img, inFile)
         
-        outFile <- basename(outFile)  # workaround bug in imager::save.image: save to home dir, manually delete on exit
+        outFile <- basename(outFile)  # workaround bug in imager::save.image 0.31: save to workdir, delete on exit
         imager::load.image(inFile) %>% 
             resizeGalaxy(c(424, 424)) %>%  # match dimensions of training images
             cropGalaxy(0.26) %>%

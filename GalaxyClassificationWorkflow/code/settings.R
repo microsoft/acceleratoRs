@@ -3,9 +3,9 @@
 
 settings <- as.environment(list())
 
-settings$imgPath <- 'd:/data/galaxyzoo/img'
+settings$imgPath <- 'data/img'
 
-settings$procImgPath <- 'd:/data/galaxyzoo/processed'
+settings$procImgPath <- 'data/imgProcessed'
 
 settings$deployDbConnStr <- if(file.exists("code/deployDbConnStr.txt")) readLines("code/deployDbConnStr.txt")[1] else NULL
 
