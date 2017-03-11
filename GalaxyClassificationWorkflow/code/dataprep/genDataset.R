@@ -1,9 +1,9 @@
 source("code/settings.R")
-load("data/raw/galaxyCatalog.rdata")
+load("data/processed/galaxyCatalog.rdata")
 
 library(dplyr)
 
-imgFiles <- tools::file_path_sans_ext(dir(imgPath, pattern="\\.jpg$"))
+imgFiles <- tools::file_path_sans_ext(dir(settings$imgPath, pattern="\\.jpg$"))
 
 galaxyData0 <- galaxyCatalog %>%
     select(specobjid, galclass) %>%
@@ -21,7 +21,7 @@ if(any(duplicated(galaxyData0$specobjid)))
 angle <- c(0, 45, 90)
 galaxyImages <- lapply(angle, function(a) {
     message("doing angle ", a)
-    path <- file.path(procImgPath, a)
+    path <- file.path(settings$procImgPath, a)
     files <- dir(path, pattern="\\.jpg$")
 
     data_frame(specobjid=tools::file_path_sans_ext(files), path=file.path(path, files)) %>%
@@ -38,7 +38,7 @@ save(galaxyImages, file="data/processed/galaxyImages.rdata")
 
 # store some images for testing the backend API
 id <- galaxyImages$specobjid[1:20]
-inFiles <- file.path(imgPath, paste0(id, ".jpg"))
+inFiles <- file.path(settings$imgPath, paste0(id, ".jpg"))
 
 file.copy(inFiles, "data/testing")
 

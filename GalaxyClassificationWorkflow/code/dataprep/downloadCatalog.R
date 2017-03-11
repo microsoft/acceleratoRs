@@ -3,14 +3,17 @@ source("code/settings.R")
 library(dplyr)
 
 
-getCatalog <- function(url)
+getCatalog <- function()
 {
-    download.file(url, "data/raw/galaxyCatalog.csv.gz", mode="wb")
+    # galaxy catalog database @ Azure blob storage
+    catalogUrl <- "https://galaxyzoosample.blob.core.windows.net/galaxyzoo/zoo2MainSpecz.csv.gz"
+
+    download.file(catalogUrl, "data/raw/galaxyCatalog.csv.gz", mode="wb")
 
     # only keep object ID, galaxy label columns
     catalog <- gzfile("data/raw/galaxyCatalog.csv.gz")
     catalogCols <- names(read.csv(catalog, nrow=5))
-    colClasses <- setNames(vector("list", length(catCols)), catCols)
+    colClasses <- setNames(vector("list", length(catalogCols)), catalogCols)
     colClasses$dr7objid <- colClasses$specobjid <- colClasses$gz2class <- "character"
 
     catalog <- gzfile("data/raw/galaxyCatalog.csv.gz")
@@ -18,7 +21,7 @@ getCatalog <- function(url)
         filter(as.numeric(specobjid) > 0)
 }
 
-galaxyCatalog <- getCatalog(catalogUrl)
+galaxyCatalog <- getCatalog()
 
 
 getGalaxyClass1 <- function(x)

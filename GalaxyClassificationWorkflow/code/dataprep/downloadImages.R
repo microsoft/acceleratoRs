@@ -4,15 +4,19 @@ load("data/processed/galaxyCatalog.rdata")
 
 # download image archive from Azure blob storage (originally from SDSS dev site)
 # filename of each image matches to specobjid column in catalog
-getImages <- function(url)
+getImages <- function()
 {
-    # save downloaded zip to parent dir -- zip has path embedded in it
-    imgPath <- dirname(imgPath)
-    destFile <- file.path(imgPath, "img.zip")
-    download.file(url, destFile, mode="wb")
-    unzip(destFile, exdir = imgPath)
+    # individual images, zipped up @ Azure blob storage
+    # originally from Sloan Digital Sky Survey dev website: skyservice.pha.jhu.edu
+    imagesUrl <- "https://galaxyzoosample.blob.core.windows.net/galaxyzoo/img.zip"
+
+    destFile <- file.path(settings$imgPath, basename(imagesUrl))
+    download.file(imagesUrl, destFile, mode="wb")
+    unzip(destFile, exdir=settings$imgPath, junkpaths=TRUE)
+    # delete zip to save space, ensure imgPath only contains jpgs
+    unlink(destFile)
     invisible(NULL)
 }
 
-getImages(imagesUrl)
+getImages()
 

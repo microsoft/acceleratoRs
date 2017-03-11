@@ -9,7 +9,7 @@ library(parallel)
 # - resize to 50x50
 processImage <- function(angle, files, chunkSize=10000)
 {
-    outPath <- file.path(procImgPath, angle)
+    outPath <- file.path(settings$procImgPath, angle)
     if(!dir.exists(outPath)) dir.create(outPath, recursive=TRUE)
 
     # do this in chunks to allow checkpointing
@@ -41,10 +41,8 @@ processImage <- function(angle, files, chunkSize=10000)
     invisible(res)
 }
 
-imgFiles <- dir(imgPath, pattern="\\.jpg$", full=TRUE)
+imgFiles <- dir(settings$imgPath, pattern="\\.jpg$", full=TRUE)
 angle <- c(0, 45, 90)
-
-if(!dir.exists(procImgPath)) dir.create(procImgPath, recursive=TRUE)
 
 
 # do preprocessing in parallel

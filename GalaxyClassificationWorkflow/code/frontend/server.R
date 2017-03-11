@@ -2,7 +2,7 @@ library(shiny)
 
 function(input, output, session)
 {
-    remoteLogin("http://localhost:12800", session=FALSE, username=deployCred$username, password=deployCred$password)
+    remoteLogin("http://localhost:12800", session=FALSE, username=deployCred[1], password=deployCred[2])
     api <- getService("apiPredictGalaxyClass", "1.0")
 
     shinyjs::runjs(showImgJs)

@@ -1,27 +1,32 @@
 # Galaxy classification: a data science workflow with Microsoft R Server 9
 
-This is the repo for the data science workflow demo presented at Microsoft Ignite 2017. You can see a video of the presentation on [Channel 9](https://channel9.msdn.com/events/Ignite/Australia-2017/DA334).
+This is the repo for the data science workflow demo presented at Microsoft Ignite 2017. This demo showcases a number of features released as part of Microsoft R Server 9, combined into an example workflow for classifying galaxy images:
+* MicrosoftML, a powerful package for machine learning
+* Easy deployment of models using SQL Server R Services
+* Creating web service APIs with R Server Operationalisation (previously known as DeployR)
 
-The original data for the demo was obtained from the Sloan Digital Sky Survey (http://www.sdss.org). To avoid spamming the SDSS website, the data has been copied to Azure blob storage.
+You can see a video of the presentation on [Channel 9](https://channel9.msdn.com/events/Ignite/Australia-2017/DA334), and the slide deck itself is at [docs/galaxy-ignite.pptx](docs/galaxy-ignite.pptx).
+
+The original data for the demo was obtained from the Sloan Digital Sky Survey (http://www.sdss.org). See [cite.md](cite.md) for a list of acknowledgements and citations. To avoid spamming the SDSS website, the data has been copied to Azure blob storage.
 
 
 ## Setup and configuration
 
-This demo assumes that you have already setup SQL Server R Services and R Server Operationalisation (previously known as DeployR). For more information about these, see the following MSDN pages:
+This demo assumes that you have access to a SQL Server instance, and have already setup SQL Server R Services and R Server Operationalisation. For more information about these, see the following MSDN pages:
 
 * [Setting up SQL Server R Services](https://msdn.microsoft.com/en-us/library/mt696069.aspx)
 * [Configuring R Server for Operationalisation](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial)
 
-The `rxNeuralNet` function can use GPU acceleration to fit models. To enable this, see the help for `rxNeuralNet`. In a nutshell, you have to install the NVidia [CUDA Toolkit 6.5](https://developer.nvidia.com/cuda-toolkit-65) and [cuDNN v2 Library](https://developer.nvidia.com/rdp/cudnn-archive), and then copy some .dlls to the MicrosoftML libs directory. Currently only CUDA acceleration is supported.
+The MicrosoftML package can use GPU acceleration to fit neural network models. To enable this, see the help for `MicrosoftML::rxNeuralNet`. In a nutshell, you install the NVidia [CUDA Toolkit 6.5](https://developer.nvidia.com/cuda-toolkit-65) and [cuDNN v2 Library](https://developer.nvidia.com/rdp/cudnn-archive), and then copy some .dlls to the MicrosoftML mxLibs directory. Currently only CUDA acceleration is supported.
 
-You'll also need the following R packages installed, other than those that come with R Server: dplyr, imager, shiny, shinyjs, RMLtools. All of these are available on CRAN, except for RMLtools which is on Github. You can install this package using devtools:
+You'll also need the following R packages installed, other than those that come with R Server: dplyr, imager, purrr, shiny, shinyjs, RMLtools. All of these are available on CRAN, except for RMLtools which is on Github. You can install this package using devtools:
 
     install.packages("devtools")
     devtools::install_github("andrie/RMLtools")
 
 The script `code/settings.R` is used to set some configuration options. It will read two additional files which you should put into the `code` directory:
 
-* `deployDbConnStr.txt` containing the ODBC connection string for SQL Server.
+* `deployDbConnStr.txt` containing the ODBC connection string for your SQL Server instance.
 * `deployCred.txt` containing your RServe login credentials (for R Server operationalisation).
 
 You should also edit `settings.R` to set the paths where you want the raw and processed galaxy images saved. The image files total about 2.4GB after processing, so make sure you point this to a location that has enough space.
@@ -43,7 +48,7 @@ Once you've setup your backend, carry out the following steps to run the demo.
 
 5. (Optional) Modify `code/model/trainModel.R` to fit only the specific neural network model you want to keep. As supplied, the script will fit three models which are minor variations on each other.
 
-6. Run `code/model/trainModel.R` to fit the chosen model(s).
+6. Run `code/model/trainModel.R` to fit the chosen model(s). It's highly recommended that you have GPU acceleration enabled (see above).
 
 7. Run `code/deploy/deploySqlModel.R`. This will serialise the model(s) to SQL Server, and also create a stored procedure for scoring new data.
 

@@ -9,7 +9,7 @@ library(dplyr)
 
 model1 <- readModel("code/model/modelDef1.R") %>%
     trainModel
-save(model1, "data/output/model1.rdata")
+save(model1, file="data/output/model1.rdata")
 
 print(model1)
 evaluateFit(model1)
@@ -17,7 +17,7 @@ evaluateFit(model1)
 
 model1a <- readModel("code/model/modelDef1a.R") %>%
     trainModel
-save(model1a, "data/output/model1a.rdata")
+save(model1a, file="data/output/model1a.rdata")
 
 print(model1a)
 evaluateFit(model1a)
@@ -25,7 +25,7 @@ evaluateFit(model1a)
 
 model1b <- readModel("code/model/modelDef1b.R") %>%
     trainModel
-save(model1b, "data/output/model1b.rdata")
+save(model1b, file="data/output/model1b.rdata")
 
 print(model1b)
 evaluateFit(model1b)

@@ -3,12 +3,11 @@ source("code/settings.R")
 # test that API works
 library(mrsdeploy)
 
-remoteLogin("http://localhost:12800", session=FALSE)
-#remoteLogin("http://localhost:12800")
+remoteLogin("http://localhost:12800", username=settings$deployCred[1], password=settings$deployCred[2], session=FALSE)
+#remoteLogin("http://localhost:12800", username=settings$deployCred[1], password=settings$deployCred[2], session=TRUE)
 
 
-# generate dataset from test images
-files <- dir("data/testing", pattern="\\.jpg$", full=TRUE)
+files <- dir("data/testing", pattern="\\.jpg$", full=TRUE)[1]
 img <- sapply(files, function(f)
     paste0(as.character(readBin(f, raw(), file.size(f))), collapse=""))
 

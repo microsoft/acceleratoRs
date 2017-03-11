@@ -8,10 +8,10 @@ load("data/output/spPredictGalaxyClass.rdata")
 library(MicrosoftML)
 library(mrsdeploy)
 
-remoteLogin("http://localhost:12800", session=FALSE, username=deployCred$username, password=deployCred$password)
+remoteLogin("http://localhost:12800", session=FALSE, username=settings$deployCred[1], password=settings$deployCred[2])
 
 
-apiObjects <- list(deployDbConnStr=deployDbConnStr, spPredictGalaxyClass=spPredictGalaxyClass)
+apiObjects <- list(deployDbConnStr=settings$deployDbConnStr, spPredictGalaxyClass=spPredictGalaxyClass)
 
 apiPredictGalaxyClass <- function(id, img)
 {
@@ -25,7 +25,7 @@ apiPredictGalaxyClass <- function(id, img)
     sqlrutils::executeStoredProcedure(apiObjects$spPredictGalaxyClass)$data
 }
 
-deleteService("apiPredictGalaxyClass", "1.0")
+try(deleteService("apiPredictGalaxyClass", "1.0"))
 apiGalaxyModel <- publishService("apiPredictGalaxyClass", apiPredictGalaxyClass, apiObjects,
     inputs=list(id="character", img="character"),
     outputs=list(pred="data.frame"),

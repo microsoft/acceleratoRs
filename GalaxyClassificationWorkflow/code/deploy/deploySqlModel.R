@@ -9,9 +9,9 @@ library(MicrosoftML)
 library(sqlrutils)
 
 # save model objects to database
-galaxyModTable <- RxSqlServerData("galaxyModels", connectionString=deployDbConnStr)
+galaxyModTable <- RxSqlServerData("galaxyModels", connectionString=settings$deployDbConnStr)
 
-initObjectTable("galaxyModels", versionName=NULL, connectionString=deployDbConnStr)
+initObjectTable("galaxyModels", versionName=NULL, connectionString=settings$deployDbConnStr)
 
 writeGalaxyModel <- function(model, name, table=galaxyModTable)
 {
@@ -101,11 +101,11 @@ spPredictGalaxyClass <- StoredProcedure(spBasePredictGalaxyClass,
         defaultQuery="select * from galaxyImgData"),
     InputParameter("model", "raw",
         defaultQuery="select value from galaxyModels where id='model1b'"),
-    connectionString=deployDbConnStr,
+    connectionString=settings$deployDbConnStr,
     filePath="data/output"  # store the generated SQL script in this location
 )
 
-registerStoredProcedure(spPredictGalaxyClass, deployDbConnStr)
+registerStoredProcedure(spPredictGalaxyClass, settings$deployDbConnStr)
 
 save(spPredictGalaxyClass, file="data/output/spPredictGalaxyClass.rdata")
 
