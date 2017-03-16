@@ -39,7 +39,7 @@ library(pROC)
 
 # natural language processing
 
-library(languageR)
+library(msLanguageR)
 library(tm)
 library(jiebaR)
 
@@ -644,7 +644,16 @@ confusionMatrix(prediction,
                 positive="Yes")
 ```
 
-Sentiment analysis on text data can also be done with Text Analytics API of Microsoft Cognitive Services. Package `languageR` wraps functions that call the API for generating sentiment scores.
+Sentiment analysis on text data can also be done with Text Analytics API of Microsoft Cognitive Services. Package `msLanguageR` wraps functions that call the API for generating sentiment scores.
+
+`msLanguageR` can be installed from GitHub repository.
+```{r}
+# Install devtools
+if(!require("devtools")) install.packages("devtools")
+devtools::install_github("yueguoguo/Azure-R-Interface/utils/msLanguageR")
+library(msLanguageR)
+```
+
 ```{r, eval=FALSE}
 senti_score <- cognitiveSentiAnalysis(text=df[-train_index, ]$Feedback, apiKey="your_api_key")
 
@@ -654,7 +663,7 @@ confusionMatrix(df_senti$Attrition,
                 reference=df[-train_index, ]$Attrition,
                 positive="Yes")
 ```
-Note this method is not applicable to languages other than the supported ones. For instance, for analyzing Chinese, text data needs to be translated into English firstly. This can be done with Bing Translation API, which is available in `languageR` package as `cognitiveTranslation`.
+Note this method is not applicable to languages other than the supported ones. For instance, for analyzing Chinese, text data needs to be translated into English firstly. This can be done with Bing Translation API, which is available in `msLanguageR` package as `cognitiveTranslation`.
 ```{r, eval=FALSE}
 text_translated <- lapply(df_text$text, cognitiveTranslation,
                           lanFrom="zh-CHS",
