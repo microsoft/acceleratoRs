@@ -11,7 +11,7 @@ documentclass: ctexart
 
 ## 1 Introduction
 
-Voluntary employee attrition may negatively affect a company in various aspects, i.e., induce labor cost, lose morality of employees, leak IP/talents to competitors, etc. Identifying individual employee with inclination of leaving company is therefore pivotal to save the potential loss. Conventional practices rely on qualitative assessment on factors that may reflect the prospensity of an employee to leave company. For example, studies found that staff churn is correlated with both demographic information as well as behavioral activities, satisfaction, etc. Data-driven techniques which are based on statistical learning methods exhibit more accurate prediction on employee attrition, as by nature they mathematically model the correlation between factors and attrition outcome and maximize the probability of predicting the correct group of people with a properly trained machine learning model.
+Voluntary employee attrition may negatively affect a company in various aspects, i.e., induce labor cost, lose morality of employees, leak IP/talents to competitors, etc. Identifying individual employee with inclination of leaving company is therefore pivotal to save the potential loss. Conventional practices rely on qualitative assessment on factors that may reflect the propensity of an employee to leave company. For example, studies found that staff churn is correlated with both demographic information as well as behavioral activities, satisfaction, etc. Data-driven techniques which are based on statistical learning methods exhibit more accurate prediction on employee attrition, as by nature they mathematically model the correlation between factors and attrition outcome and maximize the probability of predicting the correct group of people with a properly trained machine learning model.
 
 In the data-driven employee attrition prediction model, normally two types of data are taken into consideration. 
 
@@ -39,7 +39,7 @@ library(pROC)
 
 # natural language processing
 
-library(languageR)
+library(msLanguageR)
 library(tm)
 library(jiebaR)
 
@@ -64,11 +64,10 @@ DATA2 <- "../Data/DataSet2.csv"
 
 ### 2.1 Demographic and organizational data
 
-The experiments will be conducted on a data set of employees. The data set is publically available and can be found at [here](https://www.ibm.com/communities/analytics/watson-analytics-blog/hr-employee-attrition/).
+The experiments will be conducted on a data set of employees. The data set is publicly available and can be found at [here](https://www.ibm.com/communities/analytics/watson-analytics-blog/hr-employee-attrition/).
 
 #### 2.1.1 Data exploration
 
-The data is loaded from remote blob of cloud storage. 
 ```{r}
 df <- read_csv(DATA1)
 ```
@@ -102,11 +101,13 @@ ggplot(df, aes(JobRole, fill=Attrition)) +
 2. monthly income, job level, and service year may affect decision of leaving for employees in different departments. For example, junior staffs with lower pay will be more likely to leave compared to those who are paid higher.
 ```{r}
 ggplot(filter(df, (YearsAtCompany >= 2) & (YearsAtCompany <= 5) & (JobLevel < 3)),
-       aes(x=factor(Department), y=MonthlyIncome, color=factor(Attrition))) +
+       aes(x=factor(JobRole), y=MonthlyIncome, color=factor(Attrition))) +
   geom_boxplot() +
   xlab("Department") +
   ylab("Monthly income") +
-  scale_fill_discrete(guide=guide_legend(title="Attrition"))
+  scale_fill_discrete(guide=guide_legend(title="Attrition")) +
+  theme_bw() +
+  theme(text=element_text(size=13), legend.position="top")
 ```
 3. Promotion is a commonly adopted HR strategy for employee retention. It can be observed in the following plot that for a certain department, e.g., Research & Development, employees with higher job level is more likely to leave if there are years since their last promotion.
 ```{r}
@@ -134,19 +135,11 @@ df %<>% select(-one_of(pred_no_var))
 ```
 Integer types of predictors which are nominal are converted to categorical type.
 ```{r}
-# convert certain interger variable to factor variable.
+# convert certain integer variable to factor variable.
 
 int_2_ftr_vars <- c("Education", "EnvironmentSatisfaction", "JobInvolvement", "JobLevel", "JobSatisfaction", "NumCompaniesWorked", "PerformanceRating", "RelationshipSatisfaction", "StockOptionLevel")
 
 df[, int_2_ftr_vars] <- lapply((df[, int_2_ftr_vars]), as.factor)
-```
-The rest of integer type variables are converted to numeric.
-```{r}
-# convert remaining integer variables to be numeric.
-
-names(select_if(df, is.integer))
-
-df %<>% mutate_if(is.integer, as.numeric)
 ```
 
 The variables of character type are converted to categorical type. 
@@ -174,7 +167,7 @@ is.factor(df$Attrition)
 
 It is possible that not all variables are correlated with the label, feature selection is therefore performed to filter out the most relevant ones. 
 
-As the data set is a blend of both numerical and discrete variables, certain correlation analysis (e.g., Pearson correlation) is not applicable. One alternative is to train a model and then rank the variable importance so as to select the most salien ones.
+As the data set is a blend of both numerical and discrete variables, certain correlation analysis (e.g., Pearson correlation) is not applicable. One alternative is to train a model and then rank the variable importance so as to select the most salient ones.
 
 The following shows how to achieve variable importance ranking with a random forest model.
 ```{r, echo=TRUE, message=FALSE, warning=FALSE}
@@ -243,7 +236,7 @@ Active employees (864) are more than terminated employees (166). There are sever
 1. Resampling the data - either upsampling the minority class or downsampling the majority class.
 2. Use cost sensitive learning method.
 
-In this case the first method is used. SMOTE is a commonly adopted method fo synthetically upsampling minority class in an imbalanced data set. Package `DMwR` provides methods that apply SMOTE methods on training data set. 
+In this case the first method is used. SMOTE is a commonly adopted method for synthetically upsampling minority class in an imbalanced data set. Package `DMwR` provides methods that apply SMOTE methods on training data set. 
 ```{r}
 
 # note DMwR::SMOTE does not handle well with tbl_df. Need to convert to data frame.
@@ -321,7 +314,13 @@ model_stack <- caretStack(
   model_list,
   metric="ROC",
   method="glm",
-  trControl=tc
+  trControl=trainControl(
+    method="boot",
+    number=10,
+    savePredictions="final",
+    classProbs=TRUE,
+    summaryFunction=twoClassSummary
+  )
 )
 ```
 
@@ -440,7 +439,7 @@ df <-
 
 head(df$Feedback, 10)
 ```
-The text can be pre-processed with `tm` package. Normally to process text for quantitative analysis, the original non-structural data in text format needes to be transformed into vector. 
+The text can be pre-processed with `tm` package. Normally to process text for quantitative analysis, the original non-structural data in text format needs to be transformed into vector. 
 
 For the convenient of text-to-vector transformation, the original review comment data is wrapped into a corpus format. 
 ```{r}
@@ -450,7 +449,7 @@ corp_text <- Corpus(VectorSource(df$Feedback))
 
 corp_text
 ```
-`tm_map` function in `tm` package helps perform transmation on the corpus.
+`tm_map` function in `tm` package helps perform translation on the corpus.
 ```{r}
 # the transformation functions can be checked with 
 
@@ -601,7 +600,7 @@ df_dtf <-
 
 #### 2.2.4 Sentiment analysis on review comments
 
-Sentiment analysis on text data by machine learning techniques is discussed in details [Pang's paper](http://www.cs.cornell.edu/home/llee/papers/sentiment.pdf). Basically, the given text data that is lablled with different sentiment is firstly tokenized into segmented terms. Term frequencies, or combined with inverse document term frequencies, are then generated as feature vectors for the text. 
+Sentiment analysis on text data by machine learning techniques is discussed in details [Pang's paper](http://www.cs.cornell.edu/home/llee/papers/sentiment.pdf). Basically, the given text data that is labelled with different sentiment is firstly tokenized into segmented terms. Term frequencies, or combined with inverse document term frequencies, are then generated as feature vectors for the text. 
 
 Sometimes multi-gram and part-of-speech tag are also included in the feature vectors. [Pang's studies](http://www.cs.cornell.edu/home/llee/papers/sentiment.pdf) conclude that the performance of unigram features excel over other hybrid methods in terms of model accuracy.
 
@@ -645,7 +644,16 @@ confusionMatrix(prediction,
                 positive="Yes")
 ```
 
-Sentiment analysis on text data can also be done with Text Analytics API of Microsoft Cognitive Services. Package `languageR` wraps functions that call the API for generating sentiment scores.
+Sentiment analysis on text data can also be done with Text Analytics API of Microsoft Cognitive Services. Package `msLanguageR` wraps functions that call the API for generating sentiment scores.
+
+`msLanguageR` can be installed from GitHub repository.
+```{r}
+# Install devtools
+if(!require("devtools")) install.packages("devtools")
+devtools::install_github("yueguoguo/Azure-R-Interface/utils/msLanguageR")
+library(msLanguageR)
+```
+
 ```{r, eval=FALSE}
 senti_score <- cognitiveSentiAnalysis(text=df[-train_index, ]$Feedback, apiKey="your_api_key")
 
@@ -655,7 +663,7 @@ confusionMatrix(df_senti$Attrition,
                 reference=df[-train_index, ]$Attrition,
                 positive="Yes")
 ```
-Note this method is not applicable to languages other than the supported ones. For instance, for analyzing Chinese, text data needs to be translated into English firstly. This can be done with Bing Translation API, which is available in `languageR` package as `cognitiveTranslation`.
+Note this method is not applicable to languages other than the supported ones. For instance, for analyzing Chinese, text data needs to be translated into English firstly. This can be done with Bing Translation API, which is available in `msLanguageR` package as `cognitiveTranslation`.
 ```{r, eval=FALSE}
 text_translated <- lapply(df_text$text, cognitiveTranslation,
                           lanFrom="zh-CHS",

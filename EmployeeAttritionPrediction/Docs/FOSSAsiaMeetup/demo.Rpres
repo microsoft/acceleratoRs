@@ -1,0 +1,733 @@
+Employee Attrition Prediction with R Accelerator
+========================================================
+author: Le Zhang, Data Scientist at Microsoft
+date: `r Sys.Date()`
+width: 1800
+height: 1000
+
+Agenda
+========================================================
+
+```{r, echo=FALSE}
+
+# data wrangling
+
+library(dplyr)
+library(magrittr)
+library(stringr)
+library(stringi)
+library(readr)
+
+# machine learning and advanced analytics
+
+library(DMwR)
+library(caret)
+library(caretEnsemble)
+library(pROC)
+library(e1071)
+library(rattle)
+
+# natural language processing 
+
+library(tm)
+
+# tools
+
+library(httr)
+library(XML)
+library(jsonlite)
+
+# data visualization
+
+library(scales)
+library(ggplot2)
+library(ggmap)
+
+# data
+
+data(iris)
+
+DATA1 <- "https://raw.githubusercontent.com/Microsoft/acceleratoRs/master/EmployeeAttritionPrediction/Data/DataSet1.csv"
+DATA2 <- "https://raw.githubusercontent.com/Microsoft/acceleratoRs/master/EmployeeAttritionPrediction/Data/DataSet2.csv"
+
+df1 <- read_csv(DATA1)
+df2 <- read_csv(DATA2)
+
+# model
+
+load("./models.RData")
+
+```
+
+- Introduction.
+- How to predict employee attrition?
+- Walk-through of an R "accelerator".
+
+Introduction
+========================================================
+
+- Microsoft Algorithms and Data Science (ADS).
+
+```{r, echo=FALSE, fig.align="center", fig.width=15, fig.height=8}
+
+location <- c("Seatle", "Sunnyvale", "Boston", "London", "Singapore", "Melbourne")
+ll_location <- geocode(location)
+location_x <- ll_location$lon
+location_y <- ll_location$lat
+
+df <- data.frame(
+  location=location,
+  location_x=location_x,
+  location_y=location_y,
+  adsap=as.factor(c(rep(FALSE, 4), rep(TRUE, 2)))
+)
+
+mp <- NULL
+
+mapWorld <- borders("world", colour="gray50", fill="gray50") 
+
+mp <- 
+  ggplot(data=df, aes(x=location_x, y=location_y, label=location)) + 
+  mapWorld +
+  geom_label(color=df$adsap, size=10) +
+  theme_bw() +
+  scale_x_continuous(breaks=NULL, labels=NULL) +
+  scale_y_continuous(breaks=NULL, labels=NULL) +
+  xlab("") +
+  ylab("") 
+
+mp
+```
+
+- ADS Asia Pacific. 
+    - Data science solution templates to resolve real-world problems.
+    - Scalable tools & algorithms for high performance advanced analytics.
+
+Data science and machine learning
+========================================================
+
+- Data science & Machine learning
+- A review on iris data.
+
+```{r, echo=FALSE, fig.height=8, fig.width=10}
+
+ggplot(data=iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) +
+  geom_jitter(size=5) +
+  theme_bw() +
+  theme(text=element_text(size=30))
+
+rattle::fancyRpartPlot(model_iris, main="Decision tree model built on iris data.")
+```
+
+- Is that all?
+
+Real-world data science project
+========================================================
+
+- Team Data Science Process (TDSP) https://github.com/Azure/Microsoft-TDSP.
+    - Collaborative.
+    - Iterative.
+
+![](./demo-figure/tdsp.png)    
+
+Use case - employee attrition prediction
+========================================================
+
+![](./demo-figure/employee_sentiment.png)    
+
+- Consequences of employee attrition.
+    - Loss of human resources and cost on new hires.
+    - Potential loss of company intellectual properties.
+- Problem formalization: **to identify employees with inclination of leaving.**
+
+Data collection, exploration, and preparation
+========================================================
+
+![](./demo-figure/reasons_for_leave.png)
+
+- Static data: not change or change in a deterministic manner.
+- Dynamic data: change randomly over time.
+
+Data collection, exploration, and preparation (Cont'd)
+========================================================
+
+- Data source 
+    - HR department.
+    - IT department.
+    - Direct reports.
+    - Social media network.
+
+Data collection, exploration, and preparation (Cont'd)
+========================================================
+
+- Data exploration.
+    - Statistical analysis.
+    - Visualization!
+    
+Data collection, exploration, and preparation (Cont'd)
+========================================================
+
+```{r, echo=FALSE, fig.align="center", fig.height=5, fig.width=28}
+
+# how job role imacts attrition.
+
+ggplot(df1, aes(JobLevel, fill=Attrition)) +
+  geom_bar(aes(y=(..count..)/sum(..count..)), position="dodge") +
+  scale_y_continuous(labels=percent) +
+  xlab("Job level") +
+  ylab("Percentage") +
+  ggtitle("Percentage of attrition for each job level.") +
+  theme_bw() +
+  theme(text=element_text(size=30))
+
+# how distribution of income is.
+
+ggplot(df1, aes(x=factor(JobLevel), y=MonthlyIncome, color=factor(Attrition))) +
+  geom_boxplot() +
+  theme_bw() +
+  xlab("Job level") +
+  ylab("Monthly income") +
+  scale_fill_discrete(guide=guide_legend(title="Attrition")) +
+  ggtitle("Distribution of monthly income for employees with different employment status.") + 
+  theme(text=element_text(size=30))
+
+# collective effect of the two factors.
+
+ggplot(df1, aes(x=MonthlyIncome, y=JobLevel, color=Attrition)) +
+  geom_point(size=5) +
+  theme_bw() +
+  xlab("Monthly income") +
+  ylab("Job level") +
+  ggtitle("Separation of groups by role and income.") +
+  theme(text=element_text(size=30))
+```
+
+Data collection, exploration, and preparation (Cont'd)
+========================================================
+
+<center>![](./demo-figure/framework.png)</center>
+
+**To predict employee attrition in the next M + 1 months, by analyzing employee data of last N months.**
+    
+Feature Extraction 
+========================================================
+
+- Feature engineering
+    - Statistics
+        - max, min, standard deviation, etc.
+    - Time series characterization.
+        - Trend analysis.
+        - Anomaly detection.
+        - Time series model (ARIMA, etc.)
+    - Text mining
+- Feature selection.
+    - Correlation analysis.
+    - Model based feature selection.
+
+Model creation and validation
+========================================================
+
+- Supervised classification problem.
+- Algorithm selection
+    - Logistic regression, Support vector machine, Decision tree, etc.
+    - Ensemble
+        - Bagging.
+        - Boosting.
+        - Stacking.
+- Model creation
+    
+Model creation and validation
+========================================================
+
+- Cross validation.
+- Confusion matrix.
+    - Precision.
+    - Recall.
+    - F Score.
+    - Area-Under-Curve.
+
+Employee attrition prediction - R accelerator
+========================================================
+
+- What is R "accelerator"
+    - Lightweight end-to-end solution template.
+    - Follows Microsoft Team Data Science Process (TDSP) format, in a simplified version.
+    - Easy for prototyping, presenting, and documenting.
+    - Github repo https://github.com/Microsoft/acceleratoRs
+
+Step 0 Setup
+========================================================
+
+R session for the employee attrition prediction accelerator.
+
+```{r, echo=FALSE}
+print(sessionInfo(), locale=FALSE)
+```
+
+Step 1 Data exploration
+========================================================
+
+- Employee attrition data: https://www.ibm.com/communities/analytics/watson-analytics-blog/hr-employee-attrition/
+
+```{r}
+dim(df1)
+```
+
+- Review comments data: http://www.glassdoor.com
+
+```{r}
+head(df2$Feedback, 3)
+```
+
+Step 2 Data preprocessing
+========================================================
+
+- Handle NAs.
+- Remove non-variants.
+- Normalization.
+- Data type conversion.
+
+```{r}
+# get predictors that has no variation.
+
+pred_no_var <- names(df1[, nearZeroVar(df1)]) %T>% print()
+```
+
+```{r}
+# remove the zero variation predictor columns.
+
+df1 %<>% select(-one_of(pred_no_var))
+```
+
+Step 2 Data preprocessing (Cont'd)
+========================================================
+
+```{r}
+# convert certain interger variable to factor variable.
+
+int_2_ftr_vars <- c("Education", "EnvironmentSatisfaction", "JobInvolvement", "JobLevel", "JobSatisfaction", "NumCompaniesWorked", "PerformanceRating", "RelationshipSatisfaction", "StockOptionLevel")
+
+df1[, int_2_ftr_vars] <- lapply((df1[, int_2_ftr_vars]), as.factor)
+```
+
+```{r}
+df1 %<>% mutate_if(is.character, as.factor)
+```
+
+Step 2 Feature extraction
+========================================================
+
+- Feature selection with a trained model.
+
+```{r, eval=FALSE}
+control <- trainControl(method="repeatedcv", number=3, repeats=1)
+
+# train the model
+
+model <- train(dplyr::select(df1, -Attrition), 
+               df1$Attrition,
+               data=df1, 
+               method="rf", 
+               preProcess="scale", 
+               trControl=control)
+```
+
+Step 2 Feature extraction (Cont'd)
+========================================================
+
+```{r, fig.align="center", fig.height=8, fig.width=15}
+# estimate variable importance
+
+imp <- varImp(model, scale=FALSE)
+
+plot(imp, cex=3)
+
+```
+
+Step 2 Feature extraction (Cont'd)
+========================================================
+
+```{r}
+# select the top-ranking variables.
+
+imp_list <- rownames(imp$importance)[order(imp$importance$Overall, decreasing=TRUE)]
+
+# drop the low ranking variables. Here the last 3 variables are dropped. 
+
+top_var <- 
+  imp_list[1:(ncol(df1) - 3)] %>%
+  as.character() %T>%
+  print()
+
+```
+
+Step 3 Resampling
+========================================================
+
+- Split data set into trainning and testing sets.
+
+```{r}
+train_index <- 
+  createDataPartition(df1$Attrition,
+                      times=1,
+                      p=.7) %>%
+  unlist()
+
+df1_train <- df1[train_index, ]
+df1_test <- df1[-train_index, ]
+```
+
+```{r}
+table(df1_train$Attrition)
+```
+
+- Training set is not balanced!
+
+Step 3 Resampling (Cont'd)
+========================================================
+
+To handle imbalanced data sets
+
+- Cost-sensitive learning.
+- Resampling of data.
+    - Synthetic Minority Over-sampling TechniquE (SMOTE)
+        - Upsampling minority class synthetically.
+        - Downsampling majority class.
+
+***
+
+```{r}
+
+df1_train %<>% as.data.frame()
+
+df1_train <- SMOTE(Attrition ~ .,
+                  df1_train,
+                  perc.over=300,
+                  perc.under=150)
+```
+
+```{r}
+table(df1_train$Attrition)
+```
+
+Step 4 Model building
+========================================================
+
+- Select algorithm for model creation.
+- Tune model parameters.
+
+```{r, eval=FALSE}
+# initialize training control. 
+
+tc <- trainControl(method="repeatedcv", 
+                   number=3, 
+                   repeats=3, 
+                   search="grid",
+                   classProbs=TRUE,
+                   savePredictions="final",
+                   summaryFunction=twoClassSummary)
+```
+
+Step 4 Model building (Cont'd)
+========================================================
+
+Let's try several machine learning algorithms.
+
+- Support vector machine.
+
+```{r, eval=FALSE}
+# SVM model.
+
+time_svm <- system.time(
+  model_svm <- train(Attrition ~ .,
+                     df1_train,
+                     method="svmRadial",
+                     trainControl=tc)
+)
+```
+
+Step 4 Model building (Cont'd)
+========================================================
+
+- Random forest.
+
+```{r, eval=FALSE}
+# random forest model
+
+time_rf <- system.time(
+  model_rf <- train(Attrition ~ .,
+                     df1_train,
+                     method="rf",
+                     trainControl=tc)
+)
+```
+
+Step 4 Model building (Cont'd)
+========================================================
+
+- Extreme gradient boosting (XGBoost).
+
+```{r, eval=FALSE}
+# xgboost model.
+
+time_xgb <- system.time(
+  model_xgb <- train(Attrition ~ .,
+                     df1_train,
+                     method="xgbLinear",
+                     trainControl=tc)
+)
+```
+
+Step 4 Model building (Cont'd)
+========================================================
+
+An ensemble may be better?
+
+- Ensemble of models.
+- Ensemble methods - bagging, boosting, and stacking.
+
+![](./demo-figure/stacking.png)
+
+***
+
+```{r, eval=FALSE}
+# ensemble of the three models.
+
+time_ensemble <- system.time(
+  model_list <- caretList(Attrition ~ ., 
+                          data=df1_train,
+                          trControl=tc,
+                          methodList=c("svmRadial", "rf", "xgbLinear"))
+)
+```
+
+```{r, eval=FALSE}
+# stack of models. Use glm for meta model.
+
+model_stack <- caretStack(
+  model_list,
+  metric="ROC",
+  method="glm",
+  trControl=trainControl(
+    method="boot",
+    number=10,
+    savePredictions="final",
+    classProbs=TRUE,
+    summaryFunction=twoClassSummary
+  )
+)
+```
+
+Step 5 Model evaluating
+========================================================
+
+- Confusion matrix.
+- Performance measure.
+
+```{r}
+predictions <-lapply(models, 
+                     predict, 
+                     newdata=select(df1_test, -Attrition))
+```
+
+```{r}
+# confusion matrix evaluation results.
+
+cm_metrics <- lapply(predictions,
+                     confusionMatrix, 
+                     reference=df1_test$Attrition, 
+                     positive="Yes")
+```
+
+Step 5 Model evaluating (Cont'd)
+========================================================
+
+- Comparison of different models in terms of accuracy, recall, precision, and elapsed time.
+
+```{r, echo=FALSE}
+# accuracy
+
+acc_metrics <- 
+  lapply(cm_metrics, `[[`, "overall") %>%
+  lapply(`[`, 1) %>%
+  unlist()
+
+# recall
+
+rec_metrics <- 
+  lapply(cm_metrics, `[[`, "byClass") %>%
+  lapply(`[`, 1) %>%
+  unlist()
+  
+# precision
+
+pre_metrics <- 
+  lapply(cm_metrics, `[[`, "byClass") %>%
+  lapply(`[`, 3) %>%
+  unlist()
+```
+
+```{r, echo=FALSE}
+algo_list <- c("SVM RBF", "Random Forest", "Xgboost", "Stacking")
+time_consumption <- c(time_svm[3], time_rf[3], time_xgb[3], time_ensemble[3])
+
+specify_decimal <- function(x, k) format(round(x, k), nsmall=k)
+
+df_comp <- 
+  data.frame(Models=algo_list, 
+             Accuracy=acc_metrics, 
+             Recall=rec_metrics, 
+             Precision=pre_metrics,
+             Elapsed=time_consumption) %>%
+  mutate(Accuracy=specify_decimal(Accuracy, 2),
+         Recall=specify_decimal(Recall, 2),
+         Precision=specify_decimal(Precision, 2)) 
+
+df_comp
+```
+
+- Analysis
+    - Diversity of model affects ensemble performance.
+    - Data size also impacts.
+
+Step 6 Sentiment analysis - a glimpse of data
+========================================================
+```{r}
+# getting the data.
+
+head(df2$Feedback, 5)
+```
+
+Step 7 Sentiment analysis - feature extraction
+========================================================
+
+- General methods
+    - Initial transformation 
+        - Removal of unnecessary elements (stopwords, numbers, punctuations, etc.).
+            - Stopwords: yes, no, you, I, etc.
+        - Translation or sentence/word alignment.
+        - Part-Of-Speech tagging.
+    - Bag-of-words model
+        - n-Grams.
+        - Term frequency (TF) or Term frequency inverse-document frequency (TF-IDF).
+    - Model creation
+
+Step 7 Sentiment analysis - feature extraction (Cont'd)
+========================================================
+
+```{r}
+# create a corpus based upon the text data.
+
+corp_text <- Corpus(VectorSource(df2$Feedback))
+```
+
+```{r}
+# transformation on the corpus.
+
+corp_text %<>%
+  tm_map(removeNumbers) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("english")) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) 
+```
+
+```{r}
+dtm_txt_tf <- 
+  DocumentTermMatrix(corp_text, control=list(wordLengths=c(1, Inf), weighting=weightTf)) 
+```
+
+```{r}
+# remove sparse terms.
+
+dtm_txt <-
+  removeSparseTerms(dtm_txt_tf, 0.99)
+```
+
+Step 7 Sentiment analysis - feature extraction (Cont'd)
+========================================================
+
+- Convert corpus to term frequency matrix.
+
+```{r}
+dtm_txt_sample <- removeSparseTerms(dtm_txt_tf, 0.85)
+inspect(dtm_txt_sample[1:10, ]) 
+```
+
+```{r, echo=FALSE, include=FALSE}
+df_txt <- 
+  inspect(dtm_txt) %>%
+  as.data.frame()
+```
+
+Step 8 Sentiment analysis - model creation and validation
+========================================================
+
+- Create and validate a classification model.
+
+```{r}
+# form the data set
+
+df_txt %<>% cbind(Attrition=df2$Attrition)
+```
+```{r}
+# split data set into training and testing set.
+
+train_index <- 
+  createDataPartition(df_txt$Attrition,
+                      times=1,
+                      p=.7) %>%
+  unlist()
+
+df_txt_train <- df_txt[train_index, ]
+df_txt_test <- df_txt[-train_index, ]
+```
+
+Step 8 Sentiment analysis - model creation and validation (Cont'd)
+========================================================
+
+- SVM is used.
+
+```{r, eval=FALSE}
+# model building
+
+model_sent <- train(Attrition ~ .,
+                    df_txt_train,
+                    method="svmRadial",
+                    trainControl=tc)
+```
+
+```{r}
+prediction <- predict(model_sent, newdata=select(df_txt_test, -Attrition))
+```
+
+Step 8 Sentiment analysis - model creation and validation (Cont'd)
+========================================================
+
+```{r, echo=FALSE}
+confusionMatrix(prediction,
+                reference=df_txt_test$Attrition,
+                positive="Yes")
+```
+
+Takeaways
+========================================================
+- DS & ML combined with domain knowledge.
+- Feature engineering takes majority of time.
+- Model creation and validation.
+- Sentiment analysis on text data.
+- All resources available on Github! https://github.com/Microsoft/acceleratoRs/tree/master/EmployeeAttritionPrediction/Docs/FOSSAsiaMeetup
+
+References
+========================================================
+
+1. Terence R. Michelle et al., "Why people stay: using job embeddedness to predict voluntary turnover".
+2. Bo Pang and Lillian Lee, "Opinion mining and sentiment analysis".
+3. Nitesh V. Chawla et al., "SMOTE: Synthetic Minority Over-sampling Technique".
+
+Contact
+========================================================
+
+Le Zhang 
+
+zhle@microsoft.com
