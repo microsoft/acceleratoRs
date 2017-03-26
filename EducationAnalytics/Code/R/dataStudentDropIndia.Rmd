@@ -44,7 +44,6 @@ library(tidyr)        # Tidy the dataset: gather().
 library(stringi)      # String concat operator %s+%.
 library(stringr)      # String manipulation: str_replace().
 library(randomForest) # Impute missing values with na.roughfix()
-library(FSelector)    # Feature selection: information.gain().
 library(ggplot2)      # Visualise data.
 library(tibble)       # Table data frame: rownames_to_column()
 ```
@@ -70,7 +69,7 @@ We use the studentDropIndia dataset simulated from student data in UCI repositor
 
 # Identify the source location of the dataset.
 
-dspath <- "C:/Users/zhouf/Documents/Revolution Analytics/Projects/Education2/Demo/studentDropIndia_20161215.csv"
+dspath <- "../../Data/studentDropIndia_20161215.csv"
 
 # Ingest the dataset.
 
@@ -515,7 +514,7 @@ length(vars)
 
 The FSelector (Romanski, 2013) package provides functions to identify subsets of variables that might be more effective for modelling. For example, we can use correlation search function cfs() to identify key variables and thus decide which variables to retain. 
 
-```{r, message=FALSE, warning=FALSE, error=FALSE}
+```{r, message=FALSE, warning=FALSE, error=FALSE, eval=FALSE}
 ####################################
 # Variable Selection
 
