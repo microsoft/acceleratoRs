@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Microsoft" />
+
+
+<title>Data Science Design Pattern for Student Drop Out</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Data Science Design Pattern for Student Drop Out</h1>
+<h4 class="author"><em>Microsoft</em></h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introducation">Introducation</a></li>
+<li><a href="#pre-configuration">Pre-configuration</a></li>
+<li><a href="#step-1.1-load---dataset">Step 1.1: Load - Dataset</a></li>
+<li><a href="#step-1.2-load---generic-variables">Step 1.2: Load - Generic Variables</a></li>
+<li><a href="#step-2.1-review---dataset">Step 2.1: Review - Dataset</a></li>
+<li><a href="#step-2.2-review---meta-data-cleansing">Step 2.2: Review - Meta Data Cleansing</a></li>
+<li><a href="#step-2.3-review---observations">Step 2.3: Review - Observations</a></li>
+<li><a href="#step-2.4-review---summary">Step 2.4: Review - Summary</a></li>
+<li><a href="#step-2.5-review---data-formats">Step 2.5: Review - Data Formats</a></li>
+<li><a href="#step-2.6-review---variable-roles">Step 2.6: Review - Variable Roles</a></li>
+<li><a href="#step-3.1-clean---ignore-ids-outputs-missing">Step 3.1: Clean - Ignore IDs, Outputs, Missing</a><ul>
+<li><a href="#ids-and-outputs">IDs and Outputs</a></li>
+<li><a href="#all-missing">All Missing</a></li>
+<li><a href="#many-missing">Many Missing</a></li>
+</ul></li>
+<li><a href="#step-3.2-clean---ignore-multilevel-constants">Step 3.2: Clean - Ignore MultiLevel, Constants</a><ul>
+<li><a href="#too-many-levels">Too Many Levels</a></li>
+<li><a href="#constants">Constants</a></li>
+</ul></li>
+<li><a href="#step-3.3-clean---ignore-correlated-varaibles">Step 3.3: Clean - Ignore Correlated Varaibles</a></li>
+<li><a href="#step-3.4-clean---remove-the-ignored-variables">Step 3.4: Clean - Remove the Ignored Variables</a></li>
+<li><a href="#step-3.5-clean---feature-selection">Step 3.5: Clean - Feature Selection</a></li>
+<li><a href="#step-3.6-clean---remove-missing-target">Step 3.6: Clean - Remove Missing Target</a></li>
+<li><a href="#step-3.7-clean---deal-with-missing-values">Step 3.7: Clean - Deal with Missing Values</a></li>
+<li><a href="#step-3.8-clean---normalise-factors">Step 3.8: Clean - Normalise Factors</a></li>
+<li><a href="#step-3.9-clean---ensure-target-is-numeric">Step 3.9: Clean - Ensure Target is Numeric</a></li>
+<li><a href="#step-4.1-prepare---variable">Step 4.1: Prepare - Variable</a></li>
+<li><a href="#step-4.2-prepare---numeric-and-categoric-variables">Step 4.2: Prepare - Numeric and Categoric Variables</a></li>
+<li><a href="#step-4.3-prepare---save-dataset">Step 4.3: Prepare - Save Dataset</a></li>
+</ul>
+</div>
+
+<div id="introducation" class="section level1">
+<h1>Introducation</h1>
+<p>Welcome to the Data Science Design Pattern for Student Drop Out. This pattern provides a starting point for the data scientist exploring a new dataset. By no means is it the end point of the data science journey. The pattern is under regular revision and improvement and is provided as is.</p>
+<p>We now begin with the task of preparing our data for building models using R.</p>
+</div>
+<div id="pre-configuration" class="section level1">
+<h1>Pre-configuration</h1>
+<p>We load the R packages required for data preparation.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># R SETUP</span>
+<span class="co"># Load required packages from local library into R.</span>
+
+<span class="kw">library</span>(rattle)       <span class="co"># The normVarNames().</span>
+<span class="kw">library</span>(readr)        <span class="co"># Modern and efficient data reader.</span>
+<span class="kw">library</span>(dplyr)        <span class="co"># Wrangling: tbl_df(), group_by(), print(), glimpse().</span>
+<span class="kw">library</span>(magrittr)     <span class="co"># Pipe operator %&gt;% %&lt;&gt;% %T&gt;% equals().</span>
+<span class="kw">library</span>(lubridate)    <span class="co"># Dates and time.</span>
+<span class="kw">library</span>(tidyr)        <span class="co"># Tidy the dataset: gather().</span>
+<span class="kw">library</span>(stringi)      <span class="co"># String concat operator %s+%.</span>
+<span class="kw">library</span>(stringr)      <span class="co"># String manipulation: str_replace().</span>
+<span class="kw">library</span>(randomForest) <span class="co"># Impute missing values with na.roughfix()</span>
+<span class="kw">library</span>(FSelector)    <span class="co"># Feature selection: information.gain().</span>
+<span class="kw">library</span>(ggplot2)      <span class="co"># Visualise data.</span>
+<span class="kw">library</span>(tibble)       <span class="co"># Table data frame: rownames_to_column()</span></code></pre></div>
+<p>Let’s define some utility functions which simplify the coding.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Useful utility functions.</span>
+
+echo &lt;-<span class="st"> </span>function(x, <span class="dt">big.mark=</span><span class="st">&quot;,&quot;</span>, ...)
+{
+  <span class="kw">format</span>(x, <span class="dt">big.mark=</span>big.mark, ...) %&gt;%<span class="st"> </span><span class="kw">cat</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+}</code></pre></div>
+</div>
+<div id="step-1.1-load---dataset" class="section level1">
+<h1>Step 1.1: Load - Dataset</h1>
+<p>We use the studentDropIndia dataset simulated from student data in UCI repository and an India State Government to illustrate our data preparation. Often though we will be loading the dataset from a CSV file and so we illustrate that step first. We begin by identifying the path to the CSV file we wish to load - in this case we load it from a local directory. Then it is a simple matter of reading the data into the memory of the computer, referring to it as variable studentDropIndia.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># DATA INGESTION</span>
+
+<span class="co"># Identify the source location of the dataset.</span>
+
+dspath &lt;-<span class="st"> &quot;C:/Users/zhouf/Documents/Revolution Analytics/Projects/Education2/Demo/studentDropIndia_20161215.csv&quot;</span>
+
+<span class="co"># Ingest the dataset.</span>
+
+studentDropIndia &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="dt">file=</span>dspath)
+
+<span class="co"># Name the dataset.</span>
+
+dsname &lt;-<span class="st"> &quot;studentDropIndia&quot;</span></code></pre></div>
+</div>
+<div id="step-1.2-load---generic-variables" class="section level1">
+<h1>Step 1.2: Load - Generic Variables</h1>
+<p>Next, we will store the variable studentDropIndia to a generic variable ds and take a glimpse of it. This will make the following steps somewhat generic and often we can just load a different dataset into ds and these steps can simply be re-run without change. Finally, we save the variable studentDropIndia into a data folder as a .RData file and reload it for testing.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Prepare the dataset for usage with our template.</span>
+
+ds &lt;-<span class="st"> </span><span class="kw">get</span>(dsname)
+<span class="kw">glimpse</span>(ds)</code></pre></div>
+<pre><code>## Observations: 19,100
+## Variables: 15
+## $ continue_drop      &lt;chr&gt; &quot;continue&quot;, &quot;continue&quot;, &quot;continue&quot;, &quot;contin...
+## $ student_id         &lt;chr&gt; &quot;s00001&quot;, &quot;s00002&quot;, &quot;s00003&quot;, &quot;s00004&quot;, &quot;s0...
+## $ gender             &lt;chr&gt; &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;...
+## $ caste              &lt;chr&gt; &quot;SC&quot;, &quot;BC&quot;, &quot;OC&quot;, &quot;BC&quot;, &quot;OC&quot;, &quot;BC&quot;, &quot;OC&quot;, &quot;...
+## $ mathematics_marks  &lt;dbl&gt; 0.409, 0.290, 0.602, 0.378, 0.536, 0.594, 0...
+## $ english_marks      &lt;dbl&gt; 0.514, 0.512, 0.666, 0.526, 0.614, 0.519, 0...
+## $ science_marks      &lt;dbl&gt; 0.409, 0.290, 0.602, 0.378, 0.536, 0.594, 0...
+## $ science_teacher    &lt;int&gt; 6, 4, 4, 8, 9, 4, 6, 2, 2, 8, 8, 2, 0, 1, 0...
+## $ languages_teacher  &lt;int&gt; 0, 7, 2, 7, 4, 8, 7, 9, 2, 10, 6, 2, 4, 6, ...
+## $ guardian           &lt;chr&gt; &quot;mother&quot;, &quot;mother&quot;, &quot;mother&quot;, &quot;mother&quot;, &quot;ot...
+## $ internet           &lt;lgl&gt; TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE, ...
+## $ school_id          &lt;chr&gt; &quot;00310&quot;, &quot;00328&quot;, &quot;00322&quot;, &quot;00305&quot;, &quot;00360&quot;...
+## $ total_students     &lt;int&gt; 262, 356, 179, 354, 273, 335, 251, 99, 299,...
+## $ total_toilets      &lt;int&gt; 28, 14, 8, 86, 2, 43, 100, 14, 1, 18, 31, 2...
+## $ establishment_year &lt;int&gt; 1985, 1943, 1955, 1986, 1995, 1916, 1924, 1...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Save the dataset to disk as a binary backup if needed.</span>
+
+fpath &lt;-<span class="st"> &quot;data&quot;</span>
+fname &lt;-<span class="st"> </span><span class="kw">file.path</span>(fpath, dsname %s+%<span class="st"> &quot;.RData&quot;</span>)
+if (!<span class="st"> </span><span class="kw">dir.exists</span>(fpath)) <span class="kw">dir.create</span>(fpath)
+<span class="kw">save</span>(studentDropIndia, <span class="dt">file=</span>fname)
+
+<span class="co"># Remove the original dataset to save on memory.</span>
+
+<span class="kw">rm</span>(studentDropIndia)
+
+<span class="co"># Test the loading of the saved dataset and then cleanup.</span>
+
+<span class="kw">load</span>(fname) %&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;studentDropIndia&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rm</span>(studentDropIndia)</code></pre></div>
+</div>
+<div id="step-2.1-review---dataset" class="section level1">
+<h1>Step 2.1: Review - Dataset</h1>
+<p>We check the dimension and variable information of the dataset. There are 19,100 rows and 15 columns totally in the dataset, which includes variables showing information about student demographic, school attributes, teacher skills and school record in various data types.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># DATA OBSERVATION</span>
+
+<span class="co"># Basic size information.</span>
+
+<span class="kw">nrow</span>(ds) %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 19,100</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ncol</span>(ds) %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 15</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># A glimpse into the dataset.</span>
+
+<span class="kw">glimpse</span>(ds)</code></pre></div>
+<pre><code>## Observations: 19,100
+## Variables: 15
+## $ continue_drop      &lt;chr&gt; &quot;continue&quot;, &quot;continue&quot;, &quot;continue&quot;, &quot;contin...
+## $ student_id         &lt;chr&gt; &quot;s00001&quot;, &quot;s00002&quot;, &quot;s00003&quot;, &quot;s00004&quot;, &quot;s0...
+## $ gender             &lt;chr&gt; &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;...
+## $ caste              &lt;chr&gt; &quot;SC&quot;, &quot;BC&quot;, &quot;OC&quot;, &quot;BC&quot;, &quot;OC&quot;, &quot;BC&quot;, &quot;OC&quot;, &quot;...
+## $ mathematics_marks  &lt;dbl&gt; 0.409, 0.290, 0.602, 0.378, 0.536, 0.594, 0...
+## $ english_marks      &lt;dbl&gt; 0.514, 0.512, 0.666, 0.526, 0.614, 0.519, 0...
+## $ science_marks      &lt;dbl&gt; 0.409, 0.290, 0.602, 0.378, 0.536, 0.594, 0...
+## $ science_teacher    &lt;int&gt; 6, 4, 4, 8, 9, 4, 6, 2, 2, 8, 8, 2, 0, 1, 0...
+## $ languages_teacher  &lt;int&gt; 0, 7, 2, 7, 4, 8, 7, 9, 2, 10, 6, 2, 4, 6, ...
+## $ guardian           &lt;chr&gt; &quot;mother&quot;, &quot;mother&quot;, &quot;mother&quot;, &quot;mother&quot;, &quot;ot...
+## $ internet           &lt;lgl&gt; TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE, ...
+## $ school_id          &lt;chr&gt; &quot;00310&quot;, &quot;00328&quot;, &quot;00322&quot;, &quot;00305&quot;, &quot;00360&quot;...
+## $ total_students     &lt;int&gt; 262, 356, 179, 354, 273, 335, 251, 99, 299,...
+## $ total_toilets      &lt;int&gt; 28, 14, 8, 86, 2, 43, 100, 14, 1, 18, 31, 2...
+## $ establishment_year &lt;int&gt; 1985, 1943, 1955, 1986, 1995, 1916, 1924, 1...</code></pre>
+</div>
+<div id="step-2.2-review---meta-data-cleansing" class="section level1">
+<h1>Step 2.2: Review - Meta Data Cleansing</h1>
+<p>Then we review the variable names and convert them into a standard form using the function normVarNames() from rattle.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># DATA WRANGLING</span>
+
+<span class="co"># Review the variables to optionally normalise their names.</span>
+
+<span class="kw">names</span>(ds)</code></pre></div>
+<pre><code>##  [1] &quot;continue_drop&quot;      &quot;student_id&quot;         &quot;gender&quot;            
+##  [4] &quot;caste&quot;              &quot;mathematics_marks&quot;  &quot;english_marks&quot;     
+##  [7] &quot;science_marks&quot;      &quot;science_teacher&quot;    &quot;languages_teacher&quot; 
+## [10] &quot;guardian&quot;           &quot;internet&quot;           &quot;school_id&quot;         
+## [13] &quot;total_students&quot;     &quot;total_toilets&quot;      &quot;establishment_year&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Normalise the variable names.</span>
+
+<span class="kw">names</span>(ds) %&lt;&gt;%<span class="st"> </span><span class="kw">normVarNames</span>() %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>##  [1] &quot;continue_drop&quot;      &quot;student_id&quot;         &quot;gender&quot;            
+##  [4] &quot;caste&quot;              &quot;mathematics_marks&quot;  &quot;english_marks&quot;     
+##  [7] &quot;science_marks&quot;      &quot;science_teacher&quot;    &quot;languages_teacher&quot; 
+## [10] &quot;guardian&quot;           &quot;internet&quot;           &quot;school_id&quot;         
+## [13] &quot;total_students&quot;     &quot;total_toilets&quot;      &quot;establishment_year&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Review the dataset.</span>
+
+<span class="kw">glimpse</span>(ds)</code></pre></div>
+<pre><code>## Observations: 19,100
+## Variables: 15
+## $ continue_drop      &lt;chr&gt; &quot;continue&quot;, &quot;continue&quot;, &quot;continue&quot;, &quot;contin...
+## $ student_id         &lt;chr&gt; &quot;s00001&quot;, &quot;s00002&quot;, &quot;s00003&quot;, &quot;s00004&quot;, &quot;s0...
+## $ gender             &lt;chr&gt; &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;...
+## $ caste              &lt;chr&gt; &quot;SC&quot;, &quot;BC&quot;, &quot;OC&quot;, &quot;BC&quot;, &quot;OC&quot;, &quot;BC&quot;, &quot;OC&quot;, &quot;...
+## $ mathematics_marks  &lt;dbl&gt; 0.409, 0.290, 0.602, 0.378, 0.536, 0.594, 0...
+## $ english_marks      &lt;dbl&gt; 0.514, 0.512, 0.666, 0.526, 0.614, 0.519, 0...
+## $ science_marks      &lt;dbl&gt; 0.409, 0.290, 0.602, 0.378, 0.536, 0.594, 0...
+## $ science_teacher    &lt;int&gt; 6, 4, 4, 8, 9, 4, 6, 2, 2, 8, 8, 2, 0, 1, 0...
+## $ languages_teacher  &lt;int&gt; 0, 7, 2, 7, 4, 8, 7, 9, 2, 10, 6, 2, 4, 6, ...
+## $ guardian           &lt;chr&gt; &quot;mother&quot;, &quot;mother&quot;, &quot;mother&quot;, &quot;mother&quot;, &quot;ot...
+## $ internet           &lt;lgl&gt; TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE, ...
+## $ school_id          &lt;chr&gt; &quot;00310&quot;, &quot;00328&quot;, &quot;00322&quot;, &quot;00305&quot;, &quot;00360&quot;...
+## $ total_students     &lt;int&gt; 262, 356, 179, 354, 273, 335, 251, 99, 299,...
+## $ total_toilets      &lt;int&gt; 28, 14, 8, 86, 2, 43, 100, 14, 1, 18, 31, 2...
+## $ establishment_year &lt;int&gt; 1985, 1943, 1955, 1986, 1995, 1916, 1924, 1...</code></pre>
+</div>
+<div id="step-2.3-review---observations" class="section level1">
+<h1>Step 2.3: Review - Observations</h1>
+<p>Once we have normalized the variable names, the next step is to understand the shape of the dataset. A first look at the sample observations by using head(), tail(), and sample_n() give us an initial understanding of the data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Review the first few observations.</span>
+
+<span class="kw">head</span>(ds) %&gt;%<span class="st"> </span><span class="kw">print.data.frame</span>()</code></pre></div>
+<pre><code>##   continue_drop student_id gender caste mathematics_marks english_marks
+## 1      continue     s00001      F    SC             0.409         0.514
+## 2      continue     s00002      F    BC             0.290         0.512
+## 3      continue     s00003      F    OC             0.602         0.666
+## 4      continue     s00004      F    BC             0.378         0.526
+## 5      continue     s00005      F    OC             0.536         0.614
+## 6      continue     s00006      F    BC             0.594         0.519
+##   science_marks science_teacher languages_teacher guardian internet
+## 1         0.409               6                 0   mother     TRUE
+## 2         0.290               4                 7   mother     TRUE
+## 3         0.602               4                 2   mother    FALSE
+## 4         0.378               8                 7   mother     TRUE
+## 5         0.536               9                 4    other     TRUE
+## 6         0.594               4                 8   mother     TRUE
+##   school_id total_students total_toilets establishment_year
+## 1     00310            262            28               1985
+## 2     00328            356            14               1943
+## 3     00322            179             8               1955
+## 4     00305            354            86               1986
+## 5     00360            273             2               1995
+## 6     00333            335            43               1916</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Review the last few observations.</span>
+
+<span class="kw">tail</span>(ds) %&gt;%<span class="st"> </span><span class="kw">print.data.frame</span>()</code></pre></div>
+<pre><code>##   continue_drop student_id gender caste mathematics_marks english_marks
+## 1      continue     s19095      M    OC             0.478         0.642
+## 2      continue     s19096      M    OC             0.323         0.429
+## 3      continue     s19097      M    BC             0.633         0.885
+## 4      continue     s19098      M    SC             0.337         0.283
+## 5      continue     s19099      M    BC             0.344         0.351
+## 6      continue     s19100      M    BC             0.183         0.077
+##   science_marks science_teacher languages_teacher guardian internet
+## 1         0.478               4                 0   father     TRUE
+## 2         0.323               2                 7   mother     TRUE
+## 3         0.633               6                 2   mother     TRUE
+## 4         0.337               2                 6    other     TRUE
+## 5         0.344               6                 0    other     TRUE
+## 6         0.183               4                 6   mother    FALSE
+##   school_id total_students total_toilets establishment_year
+## 1     00389            299             1               1921
+## 2     00320            384            28               1909
+## 3     00378            121            28               1971
+## 4     00378            121            28               1971
+## 5     00374            207            28               1896
+## 6     00343            353            15               1957</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Review a random sample of observations.</span>
+
+<span class="kw">sample_n</span>(ds, <span class="dt">size=</span><span class="dv">6</span>) %&gt;%<span class="st"> </span><span class="kw">print.data.frame</span>()</code></pre></div>
+<pre><code>##   continue_drop student_id gender caste mathematics_marks english_marks
+## 1      continue     s04595      F    OC             0.757         0.664
+## 2          drop     s13959      M    BC             0.438         0.495
+## 3      continue     s03314      M    SC             0.523         0.522
+## 4      continue     s06682      M    BC             0.562         0.530
+## 5      continue     s13285      M    BC             0.737         0.706
+## 6      continue     s09281      F    BC             0.500         0.544
+##   science_marks science_teacher languages_teacher guardian internet
+## 1         0.757               8                 6   mother     TRUE
+## 2         0.438               5                 3   mother     TRUE
+## 3         0.523               7                10   mother     TRUE
+## 4         0.562               8                 5   father     TRUE
+## 5         0.737               2                 2   mother     TRUE
+## 6         0.500               1                 5   mother     TRUE
+##   school_id total_students total_toilets establishment_year
+## 1     00378            121            28               1971
+## 2     00361            287            15               1992
+## 3     00361            287            15               1992
+## 4     00313            399            14               1916
+## 5     00340            134            15               1976
+## 6     00396            129            21               2006</code></pre>
+</div>
+<div id="step-2.4-review---summary" class="section level1">
+<h1>Step 2.4: Review - Summary</h1>
+<p>Next, we use summary() to preview the distributions of each variable.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Traditional dataset summary to get started.</span>
+
+<span class="kw">summary</span>(ds)</code></pre></div>
+<pre><code>##  continue_drop       student_id           gender         
+##  Length:19100       Length:19100       Length:19100      
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##                                                          
+##                                                          
+##                                                          
+##                                                          
+##     caste           mathematics_marks english_marks    science_marks   
+##  Length:19100       Min.   :0.0230    Min.   :0.0770   Min.   :0.0230  
+##  Class :character   1st Qu.:0.3730    1st Qu.:0.4500   1st Qu.:0.3730  
+##  Mode  :character   Median :0.5150    Median :0.5595   Median :0.5150  
+##                     Mean   :0.5203    Mean   :0.5625   Mean   :0.5203  
+##                     3rd Qu.:0.6740    3rd Qu.:0.6670   3rd Qu.:0.6740  
+##                     Max.   :1.0320    Max.   :1.0100   Max.   :1.0320  
+##                                                                        
+##  science_teacher languages_teacher   guardian          internet      
+##  Min.   :0.000   Min.   : 0.000    Length:19100       Mode :logical  
+##  1st Qu.:2.000   1st Qu.: 3.000    Class :character   FALSE:2900     
+##  Median :4.000   Median : 5.000    Mode  :character   TRUE :16200    
+##  Mean   :3.982   Mean   : 5.233                       NA's :0        
+##  3rd Qu.:6.000   3rd Qu.: 7.000                                      
+##  Max.   :9.000   Max.   :12.000                                      
+##                                                                      
+##   school_id         total_students  total_toilets    establishment_year
+##  Length:19100       Min.   : 15.0   Min.   :  1.00   Min.   :1799      
+##  Class :character   1st Qu.:177.0   1st Qu.: 14.00   1st Qu.:1911      
+##  Mode  :character   Median :262.0   Median : 15.00   Median :1929      
+##                     Mean   :273.8   Mean   : 24.16   Mean   :1938      
+##                     3rd Qu.:384.0   3rd Qu.: 28.00   3rd Qu.:1972      
+##                     Max.   :571.0   Max.   :100.00   Max.   :2026      
+##                                     NA's   :338      NA's   :338</code></pre>
+</div>
+<div id="step-2.5-review---data-formats" class="section level1">
+<h1>Step 2.5: Review - Data Formats</h1>
+<p>Except for the generic data wrangling, we now do data wrangling customized for studentDropIndia. For example, we may need to correct the format of some of the variables in our dataset. We might first check the data type of each variable. Noting that there are categorical variables in the formats of character and integer, we may like to convert them to factor.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">####################################
+<span class="co"># studentDropIndia data wrangling.</span>
+
+<span class="co"># How many schools are represented in the dataset? (Why we need to know this)</span>
+
+ds$school_id %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">unique</span>() %&gt;%
+<span class="st">  </span><span class="kw">length</span>()</code></pre></div>
+<pre><code>## [1] 100</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Check the class of all the variables.</span>
+
+ds %&gt;%<span class="st"> </span><span class="kw">sapply</span>(class)</code></pre></div>
+<pre><code>##      continue_drop         student_id             gender 
+##        &quot;character&quot;        &quot;character&quot;        &quot;character&quot; 
+##              caste  mathematics_marks      english_marks 
+##        &quot;character&quot;          &quot;numeric&quot;          &quot;numeric&quot; 
+##      science_marks    science_teacher  languages_teacher 
+##          &quot;numeric&quot;          &quot;integer&quot;          &quot;integer&quot; 
+##           guardian           internet          school_id 
+##        &quot;character&quot;          &quot;logical&quot;        &quot;character&quot; 
+##     total_students      total_toilets establishment_year 
+##          &quot;integer&quot;          &quot;integer&quot;          &quot;integer&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Select all the character variables.</span>
+
+ds %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(is.character) %&gt;%
+<span class="st">  </span><span class="kw">which</span>(<span class="dt">useNames=</span><span class="ot">TRUE</span>) %&gt;%
+<span class="st">  </span><span class="kw">names</span>() %T&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+vnames</code></pre></div>
+<pre><code>## [1] &quot;continue_drop&quot; &quot;student_id&quot;    &quot;gender&quot;        &quot;caste&quot;        
+## [5] &quot;guardian&quot;      &quot;school_id&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Review the values of the variables.</span>
+
+ds[vnames] %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(as.factor) %&gt;%
+<span class="st">  </span><span class="kw">summary</span>()</code></pre></div>
+<pre><code>##   continue_drop     student_id    gender   caste       guardian    
+##  continue:18200   s00001 :    1   F:9900   BC:9700   father: 4400  
+##  drop    :  900   s00002 :    1   M:9200   OC:3000   mixed :  300  
+##                   s00003 :    1            SC:5350   mother:13600  
+##                   s00004 :    1            ST:1050   other :  800  
+##                   s00005 :    1                                    
+##                   s00006 :    1                                    
+##                   (Other):19094                                    
+##    school_id    
+##  00334  :  571  
+##  00331  :  516  
+##  00382  :  470  
+##  00392  :  469  
+##  00365  :  444  
+##  00341  :  430  
+##  (Other):16200</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Choose to convert these variables from character to factor.</span>
+
+vnames %&lt;&gt;%<span class="st"> </span><span class="kw">setdiff</span>(<span class="kw">c</span>(<span class="st">&quot;student_id&quot;</span>)) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;continue_drop&quot; &quot;gender&quot;        &quot;caste&quot;         &quot;guardian&quot;     
+## [5] &quot;school_id&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ds[vnames] %&lt;&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">lapply</span>(factor) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">data.frame</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">tbl_df</span>()
+
+<span class="co"># Confirm they are now factors.</span>
+
+ds[vnames] %&gt;%<span class="st"> </span><span class="kw">sapply</span>(class)</code></pre></div>
+<pre><code>## continue_drop        gender         caste      guardian     school_id 
+##      &quot;factor&quot;      &quot;factor&quot;      &quot;factor&quot;      &quot;factor&quot;      &quot;factor&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Select all the logical variables.</span>
+
+ds %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(is.logical) %&gt;%
+<span class="st">  </span><span class="kw">which</span>(<span class="dt">useNames=</span><span class="ot">TRUE</span>) %&gt;%
+<span class="st">  </span><span class="kw">names</span>() %T&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+vnames</code></pre></div>
+<pre><code>## [1] &quot;internet&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Decide to convert these variables from logical to factor.</span>
+
+ds[vnames] %&gt;%<span class="st"> </span><span class="kw">head</span>()</code></pre></div>
+<pre><code>## # A tibble: 6 x 1
+##   internet
+##      &lt;lgl&gt;
+## 1     TRUE
+## 2     TRUE
+## 3    FALSE
+## 4     TRUE
+## 5     TRUE
+## 6     TRUE</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ds[vnames] %&lt;&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">lapply</span>(factor) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">data.frame</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">tbl_df</span>() %T&gt;%
+<span class="st">  </span>{<span class="kw">head</span>(.) %&gt;%<span class="st"> </span><span class="kw">print</span>()}</code></pre></div>
+<pre><code>## # A tibble: 6 x 1
+##   internet
+##     &lt;fctr&gt;
+## 1     TRUE
+## 2     TRUE
+## 3    FALSE
+## 4     TRUE
+## 5     TRUE
+## 6     TRUE</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Review the distribution of observations across levels.</span>
+
+ds[, <span class="kw">sapply</span>(ds, is.factor)] %&gt;%<span class="st"> </span><span class="kw">sapply</span>(table)</code></pre></div>
+<pre><code>## $continue_drop
+## 
+## continue     drop 
+##    18200      900 
+## 
+## $gender
+## 
+##    F    M 
+## 9900 9200 
+## 
+## $caste
+## 
+##   BC   OC   SC   ST 
+## 9700 3000 5350 1050 
+## 
+## $guardian
+## 
+## father  mixed mother  other 
+##   4400    300  13600    800 
+## 
+## $internet
+## 
+## FALSE  TRUE 
+##  2900 16200 
+## 
+## $school_id
+## 
+## 00300 00301 00302 00303 00304 00305 00306 00307 00308 00309 00310 00311 
+##   198    49   191    28   390   354    72   177    38    28   262   209 
+## 00312 00313 00314 00315 00316 00317 00318 00319 00320 00321 00322 00323 
+##   257   399   286   280    59    28    54    96   384    35   179   344 
+## 00324 00325 00326 00327 00328 00329 00330 00331 00332 00333 00334 00335 
+##   170    97   177   251   356   275   125   516    93   335   571    87 
+## 00336 00337 00338 00339 00340 00341 00342 00343 00344 00345 00346 00347 
+##   206   185   145   245   134   430   295   353   220   143    87    67 
+## 00348 00349 00350 00351 00352 00353 00354 00355 00356 00357 00358 00359 
+##    80   132    36   251   177   359   184    96   154    57    26   305 
+## 00360 00361 00362 00363 00364 00365 00366 00367 00368 00369 00370 00371 
+##   273   287   397   148   147   444    62   128   240   387   272   136 
+## 00372 00373 00374 00375 00376 00377 00378 00379 00380 00381 00382 00383 
+##    99    75   207    29    68    86   121    95   228    38   470   132 
+## 00384 00385 00386 00387 00388 00389 00390 00391 00392 00393 00394 00395 
+##   190   193   220   113   155   299   140   161   469   111   122    60 
+## 00396 00397 00398 00399 
+##   129   221   116    15</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Note the remaining variables to be dealt with.</span>
+
+<span class="kw">sapply</span>(ds, class)</code></pre></div>
+<pre><code>##      continue_drop         student_id             gender 
+##           &quot;factor&quot;        &quot;character&quot;           &quot;factor&quot; 
+##              caste  mathematics_marks      english_marks 
+##           &quot;factor&quot;          &quot;numeric&quot;          &quot;numeric&quot; 
+##      science_marks    science_teacher  languages_teacher 
+##          &quot;numeric&quot;          &quot;integer&quot;          &quot;integer&quot; 
+##           guardian           internet          school_id 
+##           &quot;factor&quot;           &quot;factor&quot;           &quot;factor&quot; 
+##     total_students      total_toilets establishment_year 
+##          &quot;integer&quot;          &quot;integer&quot;          &quot;integer&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vnames &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;english_marks&quot;</span>, <span class="st">&quot;science_marks&quot;</span>, <span class="st">&quot;mathematics_marks&quot;</span>) 
+
+<span class="co"># Review the values.</span>
+
+<span class="kw">head</span>(ds[vnames])</code></pre></div>
+<pre><code>## # A tibble: 6 x 3
+##   english_marks science_marks mathematics_marks
+##           &lt;dbl&gt;         &lt;dbl&gt;             &lt;dbl&gt;
+## 1         0.514         0.409             0.409
+## 2         0.512         0.290             0.290
+## 3         0.666         0.602             0.602
+## 4         0.526         0.378             0.378
+## 5         0.614         0.536             0.536
+## 6         0.519         0.594             0.594</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sample_n</span>(ds[vnames], <span class="dv">6</span>)</code></pre></div>
+<pre><code>## # A tibble: 6 x 3
+##   english_marks science_marks mathematics_marks
+##           &lt;dbl&gt;         &lt;dbl&gt;             &lt;dbl&gt;
+## 1         0.411         0.649             0.649
+## 2         0.450         0.447             0.447
+## 3         0.524         0.461             0.461
+## 4         0.556         0.304             0.304
+## 5         0.650         0.926             0.926
+## 6         0.623         0.266             0.266</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Check the current class of the variables.</span>
+
+ds[vnames] %&gt;%<span class="st"> </span><span class="kw">sapply</span>(class)</code></pre></div>
+<pre><code>##     english_marks     science_marks mathematics_marks 
+##         &quot;numeric&quot;         &quot;numeric&quot;         &quot;numeric&quot;</code></pre>
+</div>
+<div id="step-2.6-review---variable-roles" class="section level1">
+<h1>Step 2.6: Review - Variable Roles</h1>
+<p>We are now in a position to identify the roles played by the variables within the dataset. We assign the variable continue_drop which we are going to predict to be our target variable and put it in front of all. We treat the varaibles student_id, and school_id as observation identifiers.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">####################################
+<span class="co"># Variable Roles</span>
+
+<span class="co"># Note the available variables.</span>
+
+vars &lt;-<span class="st"> </span><span class="kw">names</span>(ds) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>##  [1] &quot;continue_drop&quot;      &quot;student_id&quot;         &quot;gender&quot;            
+##  [4] &quot;caste&quot;              &quot;mathematics_marks&quot;  &quot;english_marks&quot;     
+##  [7] &quot;science_marks&quot;      &quot;science_teacher&quot;    &quot;languages_teacher&quot; 
+## [10] &quot;guardian&quot;           &quot;internet&quot;           &quot;school_id&quot;         
+## [13] &quot;total_students&quot;     &quot;total_toilets&quot;      &quot;establishment_year&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Note the target variable.</span>
+
+target &lt;-<span class="st"> &quot;continue_drop&quot;</span>
+
+<span class="co"># Place the target variable at the beginning of the vars.</span>
+
+vars &lt;-<span class="st"> </span><span class="kw">c</span>(target, vars) %&gt;%<span class="st"> </span><span class="kw">unique</span>() %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>##  [1] &quot;continue_drop&quot;      &quot;student_id&quot;         &quot;gender&quot;            
+##  [4] &quot;caste&quot;              &quot;mathematics_marks&quot;  &quot;english_marks&quot;     
+##  [7] &quot;science_marks&quot;      &quot;science_teacher&quot;    &quot;languages_teacher&quot; 
+## [10] &quot;guardian&quot;           &quot;internet&quot;           &quot;school_id&quot;         
+## [13] &quot;total_students&quot;     &quot;total_toilets&quot;      &quot;establishment_year&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Note any identifiers.</span>
+
+id &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;student_id&quot;</span>, <span class="st">&quot;school_id&quot;</span>)</code></pre></div>
+</div>
+<div id="step-3.1-clean---ignore-ids-outputs-missing" class="section level1">
+<h1>Step 3.1: Clean - Ignore IDs, Outputs, Missing</h1>
+<div id="ids-and-outputs" class="section level2">
+<h2>IDs and Outputs</h2>
+<p>We will want to ignore some variables that are irrelevant or inappropriate for modelling as normal predictors. We start with the identifiers and the risk variable (there is no risk variable in this case).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">####################################
+<span class="co"># Generic data wrangling.</span>
+
+<span class="co"># Initialise ignored variables: identifiers and risk.</span>
+
+ignore &lt;-<span class="st"> </span><span class="kw">union</span>(id, if (<span class="kw">exists</span>(<span class="st">&quot;risk&quot;</span>)) risk) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;student_id&quot; &quot;school_id&quot;</code></pre>
+<p>We might also identify any variable that has a unique value for every observation. These are sometimes identifiers as well and if so are candidates for ignoring.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Heuristic for candidate identifiers to possibly ignore. </span>
+
+ds[vars] %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(function(x) x %&gt;%<span class="st"> </span><span class="kw">unique</span>() %&gt;%<span class="st"> </span><span class="kw">length</span>()) %&gt;%
+<span class="st">  </span><span class="kw">equals</span>(<span class="kw">nrow</span>(ds)) %&gt;%
+<span class="st">  </span><span class="kw">which</span>() %&gt;%
+<span class="st">  </span><span class="kw">names</span>() %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+ids</code></pre></div>
+<pre><code>## [1] &quot;student_id&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Add them if any to the variables to be ignored for modelling.</span>
+
+ignore &lt;-<span class="st"> </span><span class="kw">union</span>(ignore, ids) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;student_id&quot; &quot;school_id&quot;</code></pre>
+</div>
+<div id="all-missing" class="section level2">
+<h2>All Missing</h2>
+<p>We then remove any variable where all of the values are missing.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify variables with only missing values.</span>
+
+ds[vars] %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(function(x) x %&gt;%<span class="st"> </span>is.na %&gt;%<span class="st"> </span>sum) %&gt;%
+<span class="st">  </span><span class="kw">equals</span>(<span class="kw">nrow</span>(ds)) %&gt;%
+<span class="st">  </span><span class="kw">which</span>() %&gt;%
+<span class="st">  </span><span class="kw">names</span>() %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+missing</code></pre></div>
+<pre><code>## character(0)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Add them if any to the variables to be ignored for modelling.</span>
+
+ignore &lt;-<span class="st"> </span><span class="kw">union</span>(ignore, missing) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;student_id&quot; &quot;school_id&quot;</code></pre>
+</div>
+<div id="many-missing" class="section level2">
+<h2>Many Missing</h2>
+<p>Perhaps we also want to ignore variables with more than 70% of the values missing.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify a threshold above which proportion missing is fatal.</span>
+
+missing.threshold &lt;-<span class="st"> </span><span class="fl">0.7</span>
+
+<span class="co"># Identify variables that are mostly missing.</span>
+
+ds[vars] %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(function(x) x %&gt;%<span class="st"> </span><span class="kw">is.na</span>() %&gt;%<span class="st"> </span><span class="kw">sum</span>()) %&gt;%
+<span class="st">  '&gt;'</span>(missing.threshold*<span class="kw">nrow</span>(ds)) %&gt;%
+<span class="st">  </span><span class="kw">which</span>() %&gt;%
+<span class="st">  </span><span class="kw">names</span>() %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+mostly</code></pre></div>
+<pre><code>## character(0)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Add them if any to the variables to be ignored for modelling.</span>
+
+ignore &lt;-<span class="st"> </span><span class="kw">union</span>(ignore, mostly) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;student_id&quot; &quot;school_id&quot;</code></pre>
+</div>
+</div>
+<div id="step-3.2-clean---ignore-multilevel-constants" class="section level1">
+<h1>Step 3.2: Clean - Ignore MultiLevel, Constants</h1>
+<div id="too-many-levels" class="section level2">
+<h2>Too Many Levels</h2>
+<p>We might also want to ignore variables with too many levels.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify a threshold above which we have too many levels.</span>
+
+levels.threshold &lt;-<span class="st"> </span><span class="dv">20</span>
+
+<span class="co"># Identify variables that have too many levels.</span>
+
+ds[vars] %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(is.factor) %&gt;%
+<span class="st">  </span><span class="kw">which</span>() %&gt;%
+<span class="st">  </span><span class="kw">names</span>() %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(function(x) ds %&gt;%<span class="st"> </span><span class="kw">extract2</span>(x) %&gt;%<span class="st"> </span><span class="kw">levels</span>() %&gt;%<span class="st"> </span><span class="kw">length</span>()) %&gt;%
+<span class="st">  '&gt;='</span>(levels.threshold) %&gt;%
+<span class="st">  </span><span class="kw">which</span>() %&gt;%
+<span class="st">  </span><span class="kw">names</span>() %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+too.many</code></pre></div>
+<pre><code>## [1] &quot;school_id&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Add them if any to the variables to be ignored for modelling.</span>
+
+ignore &lt;-<span class="st"> </span><span class="kw">union</span>(ignore, too.many) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;student_id&quot; &quot;school_id&quot;</code></pre>
+</div>
+<div id="constants" class="section level2">
+<h2>Constants</h2>
+<p>We ingore variables with constant values as well.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify variables that have a single value.</span>
+
+ds[vars] %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(function(x) <span class="kw">all</span>(x ==<span class="st"> </span>x[1L])) %&gt;%
+<span class="st">  </span><span class="kw">which</span>() %&gt;%
+<span class="st">  </span><span class="kw">names</span>() %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+constants </code></pre></div>
+<pre><code>## character(0)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Add them if any to the variables to be ignored for modelling.</span>
+
+ignore &lt;-<span class="st"> </span><span class="kw">union</span>(ignore, constants) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;student_id&quot; &quot;school_id&quot;</code></pre>
+</div>
+</div>
+<div id="step-3.3-clean---ignore-correlated-varaibles" class="section level1">
+<h1>Step 3.3: Clean - Ignore Correlated Varaibles</h1>
+<p>Within all the numeric varaibles, we can identify pairs where we want to keep one but not the other, because they are highly correlated. We will select them manually since it is a judgement call. Normally we might limit the removals to those correlations that are 0.95 or more. In this case, there does not exist a collinearity.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Note which variables are numeric.</span>
+
+vars %&gt;%
+<span class="st">  </span><span class="kw">setdiff</span>(ignore) %&gt;%
+<span class="st">  '['</span>(ds, .) %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(is.numeric) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">which</span>() %&gt;%
+<span class="st">  </span><span class="kw">names</span>() %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+numc</code></pre></div>
+<pre><code>## [1] &quot;mathematics_marks&quot;  &quot;english_marks&quot;      &quot;science_marks&quot;     
+## [4] &quot;science_teacher&quot;    &quot;languages_teacher&quot;  &quot;total_students&quot;    
+## [7] &quot;total_toilets&quot;      &quot;establishment_year&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># For the numeric variables generate a table of correlations</span>
+
+ds[numc] %&gt;%
+<span class="st">  </span><span class="kw">cor</span>(<span class="dt">use=</span><span class="st">&quot;complete.obs&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">ifelse</span>(<span class="kw">upper.tri</span>(., <span class="dt">diag=</span><span class="ot">TRUE</span>), <span class="ot">NA</span>, .) %&gt;%<span class="st"> </span>
+<span class="st">  </span>abs %&gt;%<span class="st"> </span>
+<span class="st">  </span>data.frame %&gt;%
+<span class="st">  </span>tbl_df %&gt;%
+<span class="st">  </span><span class="kw">set_colnames</span>(numc) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">var1=</span>numc) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">gather</span>(var2, cor, -var1) %&gt;%<span class="st"> </span>
+<span class="st">  </span>na.omit %&gt;%
+<span class="st">  </span><span class="kw">arrange</span>(-<span class="kw">abs</span>(cor)) %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+mc</code></pre></div>
+<pre><code>## # A tibble: 28 x 3
+##                  var1              var2        cor
+##                 &lt;chr&gt;             &lt;chr&gt;      &lt;dbl&gt;
+## 1       science_marks mathematics_marks 1.00000000
+## 2       english_marks mathematics_marks 0.54978698
+## 3       science_marks     english_marks 0.54978698
+## 4       total_toilets    total_students 0.30231358
+## 5  establishment_year     total_toilets 0.16805996
+## 6     science_teacher mathematics_marks 0.03872271
+## 7     science_teacher     science_marks 0.03872271
+## 8  establishment_year    total_students 0.03666162
+## 9     science_teacher     english_marks 0.03473078
+## 10  languages_teacher     english_marks 0.02543076
+## # ... with 18 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Any variables could be removed because highly correlated?</span>
+
+ignore &lt;-<span class="st"> </span><span class="kw">union</span>(ignore, <span class="ot">NULL</span>) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;student_id&quot; &quot;school_id&quot;</code></pre>
+</div>
+<div id="step-3.4-clean---remove-the-ignored-variables" class="section level1">
+<h1>Step 3.4: Clean - Remove the Ignored Variables</h1>
+<p>Once we have identified the variables to ignore, we remove them from our list of variables to use.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Check the number of variables currently.</span>
+
+<span class="kw">length</span>(vars)</code></pre></div>
+<pre><code>## [1] 15</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Remove the variables to ignore.</span>
+
+vars &lt;-<span class="st"> </span><span class="kw">setdiff</span>(vars, ignore) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>##  [1] &quot;continue_drop&quot;      &quot;gender&quot;             &quot;caste&quot;             
+##  [4] &quot;mathematics_marks&quot;  &quot;english_marks&quot;      &quot;science_marks&quot;     
+##  [7] &quot;science_teacher&quot;    &quot;languages_teacher&quot;  &quot;guardian&quot;          
+## [10] &quot;internet&quot;           &quot;total_students&quot;     &quot;total_toilets&quot;     
+## [13] &quot;establishment_year&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Confirm they are now ignored.</span>
+
+<span class="kw">length</span>(vars)</code></pre></div>
+<pre><code>## [1] 13</code></pre>
+</div>
+<div id="step-3.5-clean---feature-selection" class="section level1">
+<h1>Step 3.5: Clean - Feature Selection</h1>
+<p>The FSelector (Romanski, 2013) package provides functions to identify subsets of variables that might be more effective for modelling. For example, we can use correlation search function cfs() to identify key variables and thus decide which variables to retain.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">####################################
+<span class="co"># Variable Selection</span>
+
+<span class="co"># Formula for modelling.</span>
+
+form &lt;-<span class="st"> </span><span class="kw">formula</span>(target %s+%<span class="st"> &quot; ~ .&quot;</span>) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## continue_drop ~ .</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Use correlation search to identify key variables.</span>
+<span class="co"># Could be useful to decide which variables to retain.</span>
+
+<span class="kw">cfs</span>(form, ds[vars])</code></pre></div>
+<pre><code>## [1] &quot;mathematics_marks&quot; &quot;english_marks&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Any variables to remove because not useful?</span>
+
+vars %&lt;&gt;%<span class="st"> </span><span class="kw">setdiff</span>(<span class="ot">NULL</span>) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>##  [1] &quot;continue_drop&quot;      &quot;gender&quot;             &quot;caste&quot;             
+##  [4] &quot;mathematics_marks&quot;  &quot;english_marks&quot;      &quot;science_marks&quot;     
+##  [7] &quot;science_teacher&quot;    &quot;languages_teacher&quot;  &quot;guardian&quot;          
+## [10] &quot;internet&quot;           &quot;total_students&quot;     &quot;total_toilets&quot;     
+## [13] &quot;establishment_year&quot;</code></pre>
+<p>Or, we can use the function information.gain() to identify varaible importance and decide which varaibles to remove.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Use information gain to identify variable importance.</span>
+
+<span class="kw">information.gain</span>(form, ds[vars]) %&gt;%
+<span class="st">  </span><span class="kw">rownames_to_column</span>() %&gt;%
+<span class="st">  </span><span class="kw">arrange</span>(attr_importance)</code></pre></div>
+<pre><code>##               rowname attr_importance
+## 1      total_students    0.0000000000
+## 2       total_toilets    0.0001336230
+## 3  establishment_year    0.0001336230
+## 4              gender    0.0008611377
+## 5            guardian    0.0011585567
+## 6            internet    0.0022360914
+## 7               caste    0.0087435209
+## 8   languages_teacher    0.0158443590
+## 9     science_teacher    0.0248176746
+## 10  mathematics_marks    0.1518071497
+## 11      science_marks    0.1518071497
+## 12      english_marks    0.1645442736</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Any variables to remove because not useful?</span>
+
+vars %&lt;&gt;%<span class="st"> </span><span class="kw">setdiff</span>(<span class="ot">NULL</span>)</code></pre></div>
+</div>
+<div id="step-3.6-clean---remove-missing-target" class="section level1">
+<h1>Step 3.6: Clean - Remove Missing Target</h1>
+<p>In addition to varaibles, sometimes there may be further cleansing with the observations. Here, we remove observations with a missing target first.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">####################################
+<span class="co"># Continue Wrangling</span>
+
+<span class="co"># Check the dimensions to start with.</span>
+
+<span class="kw">dim</span>(ds) %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 19,100     15</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify observations with a missing target.</span>
+
+ds %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">extract2</span>(target) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">is.na</span>() %T&gt;%
+<span class="st">  </span>{<span class="kw">sum</span>(.) %&gt;%<span class="st"> </span><span class="kw">print</span>()} -&gt;
+missing.target </code></pre></div>
+<pre><code>## [1] 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Remove observations with a missing target.</span>
+
+ds %&lt;&gt;%<span class="st"> </span><span class="kw">filter</span>(!missing.target)
+
+<span class="co"># Confirm the filter delivered the expected dataset.</span>
+
+<span class="kw">dim</span>(ds) %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 19,100     15</code></pre>
+</div>
+<div id="step-3.7-clean---deal-with-missing-values" class="section level1">
+<h1>Step 3.7: Clean - Deal with Missing Values</h1>
+<p>To clean observatons with missing predictors, we can impute missing values in the data by using na.roughfix() from package randomForest (Breiman et al, 2012).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">####################################
+## Optional missing value imputation.
+
+<span class="co"># Count the number of missing values.</span>
+
+ds[vars] %&gt;%<span class="st">  </span><span class="kw">is.na</span>() %&gt;%<span class="st"> </span><span class="kw">sum</span>() %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 676</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Impute missing values.</span>
+
+ds[vars] %&lt;&gt;%<span class="st"> </span><span class="kw">na.roughfix</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Confirm that no missing values remain.</span>
+
+ds[vars] %&gt;%<span class="st">  </span><span class="kw">is.na</span>() %&gt;%<span class="st"> </span><span class="kw">sum</span>() %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 0</code></pre>
+<p>Alternatively, we can simply remove observations that have missing values. Here na.omit() identifies the rows to omit based on the vars to be included for modelling. This list of rows to omit is stored as the na.action attribute of the returned object. We then remove these observations from the dataset.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">####################################
+<span class="co"># Optional remove observations with missing values.</span>
+
+<span class="co"># Initialise the list of observations to be removed.</span>
+
+omit &lt;-<span class="st"> </span><span class="ot">NULL</span>
+
+<span class="co"># Review the current dataset.</span>
+
+ds[vars] %&gt;%<span class="st"> </span><span class="kw">nrow</span>() %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 19,100</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ds[vars] %&gt;%<span class="st"> </span><span class="kw">is.na</span>() %&gt;%<span class="st"> </span><span class="kw">sum</span>() %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify any observations with missing values.</span>
+
+ds[vars] %&gt;%
+<span class="st">  </span><span class="kw">na.omit</span>() %&gt;%
+<span class="st">  </span><span class="kw">attr</span>(<span class="st">&quot;na.action&quot;</span>) %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+mo</code></pre></div>
+<pre><code>## NULL</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Record the observations to omit.</span>
+
+omit &lt;-<span class="st"> </span><span class="kw">union</span>(omit, mo) %T&gt;%<span class="st"> </span>{<span class="kw">length</span>(.) %&gt;%<span class="st"> </span><span class="kw">print</span>()}</code></pre></div>
+<pre><code>## [1] 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># If there are observations to omit then remove them.</span>
+
+if (<span class="kw">length</span>(omit)) ds &lt;-<span class="st"> </span>ds[-omit,]
+
+<span class="co"># Confirm the observations have been removed.</span>
+
+ds[vars] %&gt;%<span class="st"> </span><span class="kw">nrow</span>() %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 19,100</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ds[vars] %&gt;%<span class="st"> </span><span class="kw">is.na</span>() %&gt;%<span class="st"> </span><span class="kw">sum</span>() %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 0</code></pre>
+</div>
+<div id="step-3.8-clean---normalise-factors" class="section level1">
+<h1>Step 3.8: Clean - Normalise Factors</h1>
+<p>Some variables will have levels with spaces, and mixture of cases, etc. We may like to normalise the levels for each of the categoric variables.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">####################################
+<span class="co"># Normalise factors.</span>
+
+<span class="co"># Note which variables are categoric.</span>
+
+ds[vars] %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(is.factor) %&gt;%
+<span class="st">  </span><span class="kw">which</span>() %&gt;%
+<span class="st">  </span><span class="kw">names</span>() %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+catc</code></pre></div>
+<pre><code>## [1] &quot;continue_drop&quot; &quot;gender&quot;        &quot;caste&quot;         &quot;guardian&quot;     
+## [5] &quot;internet&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Check the levels.</span>
+
+ds[catc] %&gt;%<span class="st"> </span><span class="kw">sapply</span>(levels)</code></pre></div>
+<pre><code>## $continue_drop
+## [1] &quot;continue&quot; &quot;drop&quot;    
+## 
+## $gender
+## [1] &quot;F&quot; &quot;M&quot;
+## 
+## $caste
+## [1] &quot;BC&quot; &quot;OC&quot; &quot;SC&quot; &quot;ST&quot;
+## 
+## $guardian
+## [1] &quot;father&quot; &quot;mixed&quot;  &quot;mother&quot; &quot;other&quot; 
+## 
+## $internet
+## [1] &quot;FALSE&quot; &quot;TRUE&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Normalise the levels of all categoric variables.</span>
+
+for (v in catc) 
+  <span class="kw">levels</span>(ds[[v]]) %&lt;&gt;%<span class="st"> </span><span class="kw">normVarNames</span>()
+
+<span class="co"># Review the levels.</span>
+
+ds[catc] %&gt;%<span class="st"> </span><span class="kw">sapply</span>(levels)</code></pre></div>
+<pre><code>## $continue_drop
+## [1] &quot;continue&quot; &quot;drop&quot;    
+## 
+## $gender
+## [1] &quot;f&quot; &quot;m&quot;
+## 
+## $caste
+## [1] &quot;bc&quot; &quot;oc&quot; &quot;sc&quot; &quot;st&quot;
+## 
+## $guardian
+## [1] &quot;father&quot; &quot;mixed&quot;  &quot;mother&quot; &quot;other&quot; 
+## 
+## $internet
+## [1] &quot;false&quot; &quot;true&quot;</code></pre>
+</div>
+<div id="step-3.9-clean---ensure-target-is-numeric" class="section level1">
+<h1>Step 3.9: Clean - Ensure Target is Numeric</h1>
+<p>For classification models, we want to ensure the target is factor.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Ensure the target is factor.</span>
+
+<span class="kw">class</span>(ds[[target]])</code></pre></div>
+<pre><code>## [1] &quot;factor&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ds[[target]] %&lt;&gt;%<span class="st"> </span><span class="kw">as.factor</span>()
+
+<span class="co"># Confirm the distribution.</span>
+
+ds[target] %&gt;%<span class="st"> </span><span class="kw">summary</span>()</code></pre></div>
+<pre><code>##   continue_drop  
+##  continue:18200  
+##  drop    :  900</code></pre>
+<p>Here, we visualise the distribution of the target variable using ggplot2.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(ds, <span class="kw">aes_string</span>(<span class="dt">x=</span>target))
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">geom_bar</span>(<span class="dt">width=</span><span class="fl">0.2</span>)
+<span class="kw">print</span>(p)</code></pre></div>
+<p><img src="data:image/png;base64,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" title alt style="display: block; margin: auto;" /></p>
+</div>
+<div id="step-4.1-prepare---variable" class="section level1">
+<h1>Step 4.1: Prepare - Variable</h1>
+<p>We are now ready to identify the variables that we will use to build the model. Previously we identified the variable roles. Now we identify those that we wish to model. We begin with the model input variables, identifying them as a vector of characters (the variable name) and a vector of integers (the variable index).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># VARIABLE ROLES</span>
+
+<span class="co"># Identify the input variables by name.</span>
+
+inputs &lt;-<span class="st"> </span><span class="kw">setdiff</span>(vars, target) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>##  [1] &quot;gender&quot;             &quot;caste&quot;              &quot;mathematics_marks&quot; 
+##  [4] &quot;english_marks&quot;      &quot;science_marks&quot;      &quot;science_teacher&quot;   
+##  [7] &quot;languages_teacher&quot;  &quot;guardian&quot;           &quot;internet&quot;          
+## [10] &quot;total_students&quot;     &quot;total_toilets&quot;      &quot;establishment_year&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify the input variables by index.</span>
+
+inputi &lt;-<span class="st"> </span><span class="kw">sapply</span>(inputs, 
+                 function(x) <span class="kw">which</span>(x ==<span class="st"> </span><span class="kw">names</span>(ds)), 
+                 <span class="dt">USE.NAMES=</span><span class="ot">FALSE</span>) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>##  [1]  3  4  5  6  7  8  9 10 11 13 14 15</code></pre>
+<p>For convenience we record the number of observations.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nobs &lt;-<span class="st"> </span><span class="kw">nrow</span>(ds) %T&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 19,100</code></pre>
+<p>Here we simply report on the dimensions of various data subsets.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Confirm various subset sizes.</span>
+
+<span class="kw">dim</span>(ds) %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 19,100     15</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(ds[vars]) %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 19,100     13</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(ds[inputs]) %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 19,100     12</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(ds[inputi]) %&gt;%<span class="st"> </span><span class="kw">echo</span>()</code></pre></div>
+<pre><code>## 19,100     12</code></pre>
+</div>
+<div id="step-4.2-prepare---numeric-and-categoric-variables" class="section level1">
+<h1>Step 4.2: Prepare - Numeric and Categoric Variables</h1>
+<p>Sometimes we need to identify the numeric and categoric variables. Many cluster analysis algorithms only deal with numeric variables, for example. Here we identify them both by name and by index. Note that when using the index we have to assume the variables always remain in the same order within the dataset and all variables are present. Otherwise the indicies will get out of sync.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify the numeric variables by index.</span>
+
+ds %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(is.numeric) %&gt;%
+<span class="st">  </span><span class="kw">which</span>() %&gt;%
+<span class="st">  </span><span class="kw">intersect</span>(inputi) %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+numi</code></pre></div>
+<pre><code>## [1]  5  6  7  8  9 13 14 15</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify the numeric variables by name.</span>
+
+numc &lt;-<span class="st"> </span>
+<span class="st">  </span>ds %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">names</span>() %&gt;%<span class="st"> </span>
+<span class="st">  '['</span>(numi) %T&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;mathematics_marks&quot;  &quot;english_marks&quot;      &quot;science_marks&quot;     
+## [4] &quot;science_teacher&quot;    &quot;languages_teacher&quot;  &quot;total_students&quot;    
+## [7] &quot;total_toilets&quot;      &quot;establishment_year&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify the categoric variables by index.</span>
+
+ds %&gt;%
+<span class="st">  </span><span class="kw">sapply</span>(is.factor) %&gt;%
+<span class="st">  </span><span class="kw">which</span>() %&gt;%
+<span class="st">  </span><span class="kw">intersect</span>(inputi) %T&gt;%
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+cati</code></pre></div>
+<pre><code>## [1]  3  4 10 11</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Identify the categoric variables by name.</span>
+
+ds %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">names</span>() %&gt;%<span class="st"> </span>
+<span class="st">  '['</span>(cati) %T&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">print</span>() -&gt;
+catc</code></pre></div>
+<pre><code>## [1] &quot;gender&quot;   &quot;caste&quot;    &quot;guardian&quot; &quot;internet&quot;</code></pre>
+</div>
+<div id="step-4.3-prepare---save-dataset" class="section level1">
+<h1>Step 4.3: Prepare - Save Dataset</h1>
+<p>For large datasets we may want to save it to a bianry .RData file once we have it in the right shape.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># SAVE THE DATASET</span>
+
+<span class="co"># We will use a fixed timestamp to identify our file for convenience.</span>
+
+dsdate &lt;-<span class="st"> &quot;_20161215&quot;</span>
+
+<span class="co"># Filename for the saved dataset.</span>
+
+dsrdata &lt;-<span class="st"> </span>
+<span class="st">  </span><span class="kw">file.path</span>(fpath, dsname %s+%<span class="st"> </span>dsdate %s+%<span class="st"> &quot;.RData&quot;</span>) %T&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;data/studentDropIndia_20161215.RData&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Save relevant R objects to the binary RData file.</span>
+
+<span class="kw">save</span>(ds, dsname, dspath, dsdate, nobs,
+     vars, target, id, ignore, omit, 
+     inputi, inputs, numi, numc, cati, catc, 
+     <span class="dt">file=</span>dsrdata)</code></pre></div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

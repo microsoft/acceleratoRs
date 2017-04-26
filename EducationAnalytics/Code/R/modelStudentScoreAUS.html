@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Microsoft" />
+
+
+<title>Data Science Design Pattern for Student Score Modelling</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Data Science Design Pattern for Student Score Modelling</h1>
+<h4 class="author"><em>Microsoft</em></h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introducation">Introducation</a></li>
+<li><a href="#pre-configuration">Pre-configuration</a></li>
+<li><a href="#step-4.4-re-load-dataset">Step 4.4: Re-load Dataset</a></li>
+<li><a href="#step-4.5-prepare---formula-to-describe-the-goal">Step 4.5: Prepare - Formula to Describe the Goal</a></li>
+<li><a href="#step-5-build---mixed-effect-regression-model">Step 5: Build - Mixed Effect Regression Model</a></li>
+<li><a href="#step-6-evaluate">Step 6: Evaluate</a></li>
+<li><a href="#step-7-predict">Step 7: Predict</a></li>
+<li><a href="#step-8-finish-up---save-model">Step 8: Finish Up - Save Model</a></li>
+</ul>
+</div>
+
+<div id="introducation" class="section level1">
+<h1>Introducation</h1>
+<p>Welcome to the Data Science Design Pattern for Student Score Modelling. This pattern provides a starting point for the data scientist exploring a new dataset. By no means is it the end point of the data science journey. The pattern is under regular revision and improvement and is provided as is.</p>
+<p>We now introduce a generic pattern for building mixed effect regression models using R.</p>
+</div>
+<div id="pre-configuration" class="section level1">
+<h1>Pre-configuration</h1>
+<p>We load the R packages required for modelling.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># R SETUP</span>
+
+<span class="co"># Load required packages from local library into R.</span>
+
+<span class="kw">library</span>(magrittr)     <span class="co"># Data pipelines: %&gt;% %T&gt;% %&lt;&gt;%.</span>
+<span class="kw">library</span>(stringi)      <span class="co"># String operator: %s+%.</span>
+<span class="kw">library</span>(rattle)       <span class="co"># Evaluate using riskchart().</span>
+<span class="kw">library</span>(ggplot2)      <span class="co"># Visually evaluate performance.</span>
+<span class="kw">library</span>(lme4)         <span class="co"># Linear mixed effect model.</span></code></pre></div>
+</div>
+<div id="step-4.4-re-load-dataset" class="section level1">
+<h1>Step 4.4: Re-load Dataset</h1>
+<p>In the Data template we loaded the studentScoreAUS dataset, processed it, and saved it to file. Here we re-load the dataset and review its contents.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># DATA INGESTION</span>
+
+<span class="co"># Identify the dataset.</span>
+
+dsname &lt;-<span class="st"> &quot;studentScoreAUS&quot;</span>
+
+<span class="co"># Identify the dataset to load.</span>
+
+fpath  &lt;-<span class="st"> &quot;data&quot;</span>
+dsdate &lt;-<span class="st"> &quot;_&quot;</span> %s+%<span class="st"> &quot;20161215&quot;</span>
+
+<span class="co"># Filename of the saved dataset.</span>
+
+dsrdata &lt;-
+<span class="st">  </span><span class="kw">file.path</span>(fpath, dsname %s+%<span class="st"> </span>dsdate %s+%<span class="st"> &quot;.RData&quot;</span>) %T&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;data/studentScoreAUS_20161215.RData&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Load the R objects from file and list them.</span>
+
+<span class="kw">load</span>(dsrdata) %&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>##  [1] &quot;ds&quot;     &quot;dsname&quot; &quot;dspath&quot; &quot;dsdate&quot; &quot;nobs&quot;   &quot;vars&quot;   &quot;target&quot;
+##  [8] &quot;id&quot;     &quot;ignore&quot; &quot;omit&quot;   &quot;inputi&quot; &quot;inputs&quot; &quot;numi&quot;   &quot;numc&quot;  
+## [15] &quot;cati&quot;   &quot;catc&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Review the metadata.</span>
+
+dsname</code></pre></div>
+<pre><code>## [1] &quot;studentScoreAUS&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dspath</code></pre></div>
+<pre><code>## [1] &quot;C:/Users/zhouf/Documents/Revolution Analytics/Projects/Education2/Demo/studentScoreAUS_20161215.csv&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dsdate</code></pre></div>
+<pre><code>## [1] &quot;_20161215&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nobs</code></pre></div>
+<pre><code>## [1] 1222</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vars</code></pre></div>
+<pre><code>## [1] &quot;score&quot;             &quot;indigenous&quot;        &quot;english_language&quot; 
+## [4] &quot;father_occupation&quot; &quot;mother_occupation&quot; &quot;attendance_rate&quot;  
+## [7] &quot;guardian&quot;          &quot;level&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">target</code></pre></div>
+<pre><code>## [1] &quot;score&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">id</code></pre></div>
+<pre><code>## [1] &quot;student_id&quot;  &quot;school_code&quot; &quot;test_year&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ignore</code></pre></div>
+<pre><code>## [1] &quot;student_id&quot;  &quot;school_code&quot; &quot;test_year&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">omit</code></pre></div>
+<pre><code>## NULL</code></pre>
+</div>
+<div id="step-4.5-prepare---formula-to-describe-the-goal" class="section level1">
+<h1>Step 4.5: Prepare - Formula to Describe the Goal</h1>
+<p>After re-loading the data into memory, we continue on from the Data template where we had Steps 1, 2, and 3 and the beginnings of Step 4 of a data mining process.</p>
+<p>The next step is to describe the model to be built by way of writing a formula to capture our intent. The formula describes the model to be built as being constructed to predict the target variable based on the other (suitable) variables available in the dataset.</p>
+<p>In this particular case, we address the problem as a regression problem, but taking random effects for student and school into account. Statistically speaking, parameters associated with the particular levels of a covariate in a model are sometimes called the “effects” of the levels. If the set of possible levels of the covariate is fixed and reproducible we model the covariate using fixed-effects parameters. If the levels that we observed represent a random sample from the set of all possible levels we incorporate random effects in the model. For example, here the levels of the english_language covariate, true and false, are fixed. If we consider data from another school or we incorporate scores from earlier tests, we will not change those levels. On the other hand, the students whose scores we observed would generally be regarded as a sample from the set of all possible students whom we could have observed. Adding more data, either from more school or from results on previous or subsequent tests, will increase the number of distinct levels of the student identifier. Understanding this point, we will need a formula for mixed effects regression model, where the two identifiers student_id and school_code are specified as random effects and other covariates are treated as fixed effects. The notation used to express this is to name the target (score), followed by a tilde (~), and followed by an addition of crossed random effects represented by (1|student_id)+(1|school_code) and fixed effects.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># PREPARE FOR MODELLING</span>
+
+<span class="co"># Formula for modelling.</span>
+rvars &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;student_id&quot;</span>, <span class="st">&quot;school_code&quot;</span>)
+reffect &lt;-<span class="st"> &quot;(1|&quot;</span> %s+%<span class="st"> </span>rvars[<span class="dv">1</span>] %s+%<span class="st"> &quot;)+(1|&quot;</span> %s+%<span class="st"> </span>rvars[<span class="dv">2</span>] %s+%<span class="st"> &quot;)&quot;</span> %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;(1|student_id)+(1|school_code)&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fvars &lt;-<span class="st"> </span><span class="kw">setdiff</span>(vars, target) 
+feffect &lt;-<span class="st"> </span><span class="kw">paste</span>(fvars, <span class="dt">collapse=</span><span class="st">&quot;+&quot;</span>) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## [1] &quot;indigenous+english_language+father_occupation+mother_occupation+attendance_rate+guardian+level&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">form &lt;-<span class="st"> </span><span class="kw">as.formula</span>(target %s+%<span class="st"> &quot;~&quot;</span> %s+%<span class="st"> </span>reffect %s+%<span class="st"> &quot;+&quot;</span> %s+%<span class="st"> </span>feffect) %T&gt;%<span class="st"> </span><span class="kw">print</span>()</code></pre></div>
+<pre><code>## score ~ (1 | student_id) + (1 | school_code) + indigenous + english_language + 
+##     father_occupation + mother_occupation + attendance_rate + 
+##     guardian + level</code></pre>
+</div>
+<div id="step-5-build---mixed-effect-regression-model" class="section level1">
+<h1>Step 5: Build - Mixed Effect Regression Model</h1>
+<p>Now we build a mixed effect regression model using the function ‘lmer’ from the R package ‘lme4’.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Initialise random numbers for repeatable results.</span>
+
+seed &lt;-<span class="st"> </span><span class="dv">123</span>
+<span class="kw">set.seed</span>(seed)
+
+########################################################################
+<span class="co"># TRAIN MODEL</span>
+
+<span class="co"># Train a mixed effect regression model.</span>
+m.lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(form, <span class="dt">data=</span>ds)
+
+model &lt;-<span class="st"> </span>m.lmer
+mtype &lt;-<span class="st"> &quot;lmer&quot;</span>
+mdesc &lt;-<span class="st"> &quot;Linear Mixed Effect Model&quot;</span>
+
+<span class="co"># Basic model summary.</span>
+
+model</code></pre></div>
+<pre><code>## Linear mixed model fit by REML ['lmerMod']
+## Formula: 
+## score ~ (1 | student_id) + (1 | school_code) + indigenous + english_language +  
+##     father_occupation + mother_occupation + attendance_rate +  
+##     guardian + level
+##    Data: ds
+## REML criterion at convergence: 13566.48
+## Random effects:
+##  Groups      Name        Std.Dev.
+##  student_id  (Intercept) 74.22   
+##  school_code (Intercept) 13.98   
+##  Residual                47.14   
+## Number of obs: 1222, groups:  student_id, 380; school_code, 2
+## Fixed Effects:
+##               (Intercept)             indigenoustrue  
+##                  314.9855                   -48.4786  
+##      english_languagetrue    father_occupationhealth  
+##                   19.2053                   -24.0325  
+##    father_occupationother  father_occupationservices  
+##                  -28.3204                   -30.4842  
+##  father_occupationteacher    mother_occupationhealth  
+##                    4.1558                    51.3506  
+##    mother_occupationother  mother_occupationservices  
+##                    7.6443                    27.1775  
+##  mother_occupationteacher            attendance_rate  
+##                   28.4483                   203.0815  
+##             guardianmixed             guardianmother  
+##                  -27.0913                    -1.0574  
+##             guardianother                     level5  
+##                  -20.9788                    61.4488  
+##                    level7                     level9  
+##                   -0.4535                    61.4016</code></pre>
+<p>The printed display of the model fit with lmer() has four major sections: a description of the model that was fit, some statistics characterizing the model fit, a summary of properties of the random effects and a summary of the fixed-effects parameter estimates.</p>
+<p>The description section states that this is a linear mixed model in which the parameters have been estimated as those that minimize the REML (Residual Maximum Likelihood) criterion. The formula and data arguments are displayed for later reference.</p>
+<p>The statistic describing the model fit is the value of the REML criterion, which is equal to 13566.48. This criterion is usually used to describe the model fit, where crossed random effects (1|r1)+(1|r2) exist. If your random effects are nested (1|r1/r2), or you have only one random effect, and if your data are balanced, you can use ML (Maximum Likelihood) criterion, which can be obtained by specifying the argument REML = FALSE in the lmer() function.</p>
+<p>The third section is the table of estimates of parameters associated with the random effects. There are three sources of variability in the model we have fit, a student-to-student variability, a school-to-school variability and the residual or per-observation variability. These variabilities are measured by standard deviations. The value of the standard deviation for random effect, like student or school, is important, because if it is indistinguishable from zero, then this random effect probably doesn’t matter and you can delete it or go ahead and do a regular linear model instead. Here, we can actually delete the random effect for school.</p>
+<p>The last section shows the estimates of the fixed effect parameters. For example, the estimated parameter of english_languagetrue equal to 19.2053 means that the student who is an english native speaker has a higher probability in achieving a better test score.</p>
+</div>
+<div id="step-6-evaluate" class="section level1">
+<h1>Step 6: Evaluate</h1>
+<p>We do model diagonosis by checking a set of goodness-of-fit measures, for example, residual plot and R-square. A residual plot without any trend or pattern and a R-square equal to 83% as shown in the below output roughly indicate a good initial model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># DIAGONOSE MODEL</span>
+
+<span class="co"># Draw residual plot.</span>
+
+m.res &lt;-<span class="st"> </span><span class="kw">resid</span>(model)
+m.fit &lt;-<span class="st"> </span><span class="kw">fitted</span>(model)
+<span class="kw">plot</span>(m.res ~<span class="st"> </span>m.fit)</code></pre></div>
+<p><img src="data:image/png;base64,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" title alt style="display: block; margin: auto;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate R-square.</span>
+
+<span class="kw">cor</span>(m.fit, model@frame$score)^<span class="dv">2</span></code></pre></div>
+<pre><code>## [1] 0.8290851</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare impact of effects.</span>
+
+<span class="kw">summary</span>(model, <span class="dt">cor=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## Linear mixed model fit by REML ['lmerMod']
+## Formula: 
+## score ~ (1 | student_id) + (1 | school_code) + indigenous + english_language +  
+##     father_occupation + mother_occupation + attendance_rate +  
+##     guardian + level
+##    Data: ds
+## 
+## REML criterion at convergence: 13566.5
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.1363 -0.5455 -0.0325  0.5519  3.9712 
+## 
+## Random effects:
+##  Groups      Name        Variance Std.Dev.
+##  student_id  (Intercept) 5508.7   74.22   
+##  school_code (Intercept)  195.5   13.98   
+##  Residual                2221.9   47.14   
+## Number of obs: 1222, groups:  student_id, 380; school_code, 2
+## 
+## Fixed effects:
+##                           Estimate Std. Error t value
+## (Intercept)               314.9855    61.5294   5.119
+## indigenoustrue            -48.4786    33.5530  -1.445
+## english_languagetrue       19.2053    19.6396   0.978
+## father_occupationhealth   -24.0325    28.4770  -0.844
+## father_occupationother    -28.3204    20.8976  -1.355
+## father_occupationservices -30.4842    21.5449  -1.415
+## father_occupationteacher    4.1558    25.0300   0.166
+## mother_occupationhealth    51.3506    18.1908   2.823
+## mother_occupationother      7.6443    13.1932   0.579
+## mother_occupationservices  27.1775    13.9698   1.945
+## mother_occupationteacher   28.4483    15.5993   1.824
+## attendance_rate           203.0815    56.3149   3.606
+## guardianmixed             -27.0913    34.1323  -0.794
+## guardianmother             -1.0574    10.2736  -0.103
+## guardianother             -20.9788    21.8914  -0.958
+## level5                     61.4488     3.9210  15.672
+## level7                     -0.4535     3.9397  -0.115
+## level9                     61.4016     3.9173  15.674</code></pre>
+</div>
+<div id="step-7-predict" class="section level1">
+<h1>Step 7: Predict</h1>
+<p>We pre-define the function lmeForecast() that we will use for forecasting. Within this function, we select the data which contains only final test score for each student and then use the trained model in Step 5 to predict on the selected data without taking student effect into account. The design of this function benefits in comparing overall student test scores across school corhorts.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">########################################################################
+<span class="co"># FORECAST</span>
+
+<span class="co"># We define the function that we will use for forecasting.</span>
+
+lmeForecast &lt;-<span class="st"> </span>function(model, data) 
+{
+  <span class="co"># variables in the functions: student_id, school_code, test_year, level, score.</span>
+  <span class="co"># i.e., id, target, level</span>
+  
+  <span class="kw">require</span>(dplyr)
+  <span class="kw">require</span>(lme4)
+  data &lt;-<span class="st"> </span>data %&gt;%
+<span class="st">    </span><span class="kw">arrange</span>(student_id, level) %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(student_id) %&gt;%
+<span class="st">    </span><span class="kw">filter</span>(<span class="kw">row_number</span>() ==<span class="st"> </span><span class="kw">n</span>(), <span class="co"># keep final test result for each student</span>
+           level !=<span class="st"> &quot;9&quot;</span>) %&gt;%<span class="st">  </span><span class="co"># but only if student is not already in year 9</span>
+<span class="st">    </span><span class="kw">do</span>({
+      yearLevel &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">as.character</span>(.$level))[<span class="dv">1</span>]
+      year &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">as.character</span>(.$test_year))
+      newRows &lt;-<span class="st"> </span>(<span class="dv">9</span> -<span class="st"> </span>yearLevel)/<span class="dv">2</span> +<span class="st"> </span><span class="dv">1</span>
+      out &lt;-<span class="st"> </span>.[<span class="kw">rep</span>(<span class="dv">1</span>, newRows), ]
+      yearLevel &lt;-<span class="st"> </span><span class="kw">seq</span>(yearLevel, <span class="dt">to=</span><span class="dv">9</span>, <span class="dt">by=</span><span class="dv">2</span>)
+      out$test_year &lt;-<span class="st"> </span>year +<span class="st"> </span>yearLevel -<span class="st"> </span>yearLevel[<span class="dv">1</span>]
+      out$level &lt;-<span class="st"> </span><span class="kw">factor</span>(yearLevel, <span class="dt">levels=</span><span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>))
+      out
+    })
+  dim
+  
+  <span class="co"># get predicted scores without student effect</span>
+  
+  data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(data,
+                     <span class="dt">pred=</span><span class="kw">predict</span>(model, data, <span class="dt">allow.new.levels=</span><span class="ot">TRUE</span>, <span class="dt">re.form=</span>~(<span class="dv">1</span>|school_code)))
+  
+  <span class="co"># adjust predicted scores based on most recent test result, keep only forecasted rows</span>
+  
+  <span class="kw">left_join</span>(data,
+            data %&gt;%
+<span class="st">              </span><span class="kw">group_by</span>(student_id) %&gt;%
+<span class="st">              </span><span class="kw">summarise</span>(<span class="dt">adj=</span>(score -<span class="st"> </span>pred)[<span class="dv">1</span>], <span class="dt">n=</span><span class="kw">n</span>()),
+            <span class="dt">by=</span><span class="st">&quot;student_id&quot;</span>) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">predictedScore=</span>pred +<span class="st"> </span>adj, <span class="dt">score=</span><span class="ot">NA</span>) %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(student_id) %&gt;%
+<span class="st">    </span><span class="kw">select</span>(-pred, -adj, -n) %&gt;%
+<span class="st">    </span><span class="kw">filter</span>(<span class="kw">row_number</span>() !=<span class="st"> </span><span class="dv">1</span>)
+}</code></pre></div>
+<p>Finally, we can use the pre-defined function lmeForecast() to predict on a subset of observations in specific corhort and review the forecasting results.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Select observations in specific corhort.</span>
+
+testcohort &lt;-<span class="st"> </span><span class="kw">subset</span>(ds, school_code ==<span class="st"> &quot;301&quot;</span>)
+
+<span class="co"># Forecast for the data in the corhort.</span>
+
+testcohort.fcast &lt;-<span class="st"> </span><span class="kw">lmeForecast</span>(model, testcohort)
+
+<span class="co"># Review forecasting result.</span>
+
+<span class="kw">head</span>(testcohort.fcast)</code></pre></div>
+<pre><code>## Source: local data frame [6 x 12]
+## Groups: student_id [4]
+## 
+##   student_id indigenous english_language father_occupation
+##        &lt;chr&gt;     &lt;fctr&gt;           &lt;fctr&gt;            &lt;fctr&gt;
+## 1     s00001      false            false             other
+## 2     s00001      false            false             other
+## 3     s00001      false            false             other
+## 4     s00009      false             true             other
+## 5     s00014      false             true          services
+## 6     s00016      false             true          services
+## # ... with 8 more variables: mother_occupation &lt;fctr&gt;,
+## #   attendance_rate &lt;dbl&gt;, guardian &lt;fctr&gt;, level &lt;fctr&gt;, score &lt;lgl&gt;,
+## #   test_year &lt;dbl&gt;, school_code &lt;fctr&gt;, predictedScore &lt;dbl&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tail</span>(testcohort.fcast)</code></pre></div>
+<pre><code>## Source: local data frame [6 x 12]
+## Groups: student_id [6]
+## 
+##   student_id indigenous english_language father_occupation
+##        &lt;chr&gt;     &lt;fctr&gt;           &lt;fctr&gt;            &lt;fctr&gt;
+## 1     s00320      false             true             other
+## 2     s00322      false             true             other
+## 3     s00331      false             true             other
+## 4     s00333      false             true             other
+## 5     s00339      false             true           at_home
+## 6     s00340      false             true           at_home
+## # ... with 8 more variables: mother_occupation &lt;fctr&gt;,
+## #   attendance_rate &lt;dbl&gt;, guardian &lt;fctr&gt;, level &lt;fctr&gt;, score &lt;lgl&gt;,
+## #   test_year &lt;dbl&gt;, school_code &lt;fctr&gt;, predictedScore &lt;dbl&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(testcohort.fcast)</code></pre></div>
+<pre><code>##   student_id        indigenous english_language father_occupation
+##  Length:94          false:93   false: 5         at_home : 2      
+##  Class :character   true : 1   true :89         health  : 5      
+##  Mode  :character                               other   :57      
+##                                                 services:24      
+##                                                 teacher : 6      
+##                                                                  
+##  mother_occupation attendance_rate    guardian  level   score        
+##  at_home :15       Min.   :0.7400   father:23   3: 0   Mode:logical  
+##  health  : 8       1st Qu.:0.9333   mixed : 0   5: 5   NA's:94       
+##  other   :36       Median :0.9600   mother:67   7:18                 
+##  services:21       Mean   :0.9472   other : 4   9:71                 
+##  teacher :14       3rd Qu.:0.9867                                    
+##                    Max.   :1.0000                                    
+##    test_year    school_code predictedScore 
+##  Min.   :2011   301:94      Min.   :359.5  
+##  1st Qu.:2015   302: 0      1st Qu.:492.2  
+##  Median :2015               Median :576.4  
+##  Mean   :2014               Mean   :573.7  
+##  3rd Qu.:2015               3rd Qu.:648.5  
+##  Max.   :2015               Max.   :822.9</code></pre>
+</div>
+<div id="step-8-finish-up---save-model" class="section level1">
+<h1>Step 8: Finish Up - Save Model</h1>
+<p>We save the model, together with the dataset and other variables, into a binary R file.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dname &lt;-<span class="st"> &quot;models&quot;</span>
+if (!<span class="st"> </span><span class="kw">file.exists</span>(dname)) <span class="kw">dir.create</span>(dname)
+time.stamp &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">Sys.time</span>(), <span class="st">&quot;%Y%m%d_%H%M%S&quot;</span>)
+fstem &lt;-<span class="st"> </span><span class="kw">paste</span>(dsname, mtype, time.stamp, <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>)
+(fname &lt;-<span class="st"> </span><span class="kw">file.path</span>(dname, <span class="kw">sprintf</span>(<span class="st">&quot;%s.RData&quot;</span>, fstem)))</code></pre></div>
+<pre><code>## [1] &quot;models/studentScoreAUS_lmer_20161219_161635.RData&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">save</span>(ds, dsname, vars, target, ignore,
+form, nobs, seed, model, mtype, 
+<span class="dt">file=</span>fname)</code></pre></div>
+<p>We can then load this later and replicate the process.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(<span class="kw">load</span>(fname))</code></pre></div>
+<pre><code>##  [1] &quot;ds&quot;     &quot;dsname&quot; &quot;vars&quot;   &quot;target&quot; &quot;ignore&quot; &quot;form&quot;   &quot;nobs&quot;  
+##  [8] &quot;seed&quot;   &quot;model&quot;  &quot;mtype&quot;</code></pre>
+<p>Note that by using generic variable names we can load different model files and perform common operations on them without changing the names within a script. However, do note that each time we load such a saved model file we overwrite any other variables of the same name.</p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
