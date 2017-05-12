@@ -1,3 +1,3 @@
 # Documents
 
-* **blog** blog post of the employee attrition prediction analysis introduced in this repo. 
+* **blog** blog post of the employee churn prediction analysis introduced in this repo. 
