@@ -15,20 +15,47 @@ knitr::opts_chunk$set(echo = TRUE,
 
 ## 1 Introduction
 
-Credit Risk Scoring is a classic but increasingly important operation in banking as banks are becoming far more risk careful when lending for mortgages or commercial purposes, in an industry known for fierce competition and the global financial crisis. With an accurate credit risk scoring model a bank is able to predict the likelihood of default on a transaction. This will in turn help evaluate the potential risk posed by lending money to consumers and to mitigate losses due to bad debt, as well as determine who qualifies for a loan, at what interest rate, and what credit limits, and even determine which customers are likely to bring in the most revenue through a variety of products.
+Credit Risk Scoring is a classic yet still increasingly important
+operation in banking as banks continue to be increasingly risk careful
+when lending for mortgages or commercial purposes, in an industry
+known for fierce competition and the global financial crisis. With an
+accurate credit risk scoring model a bank is able to predict the
+likelihood of default on a transaction. This will in turn help
+evaluate the potential risk posed by lending money to consumers and to
+mitigate losses due to bad debt, as well as determine who qualifies
+for a loan, at what interest rate, and what credit limits, and even
+determine which customers are likely to bring in the most revenue
+through a variety of products.
 
-Many banks nowadays are driving innovation to enhance risk management. For example, a largest bank in one of the Asian countries by market capitalization is exploring opportunities to segment a millions of active credit card
-customer population to improve risk scoring to then identify opportunities to offer increased limits. Using advanced analytics for credit risk scoring involves traditional scorecard building and modelling, and extends to machine learning and ensemble, but will also pursue an innovation on customer oriented aggregation of transactions, multi-dimensional customer segmentation and conceptual clustering to identify multiple segments across which to understand bank customers.
+Many banks nowadays are driving innovation to enhance risk
+management. For example, a largest bank in one of the Asian countries
+by market capitalization is exploring opportunities to segment a
+millions of active credit card customer population to improve risk
+scoring to then identify opportunities to offer increased
+limits. Using advanced analytics for credit risk scoring involves
+traditional scorecard building and modelling, and extends to machine
+learning and ensemble, but will also pursue an innovation on customer
+oriented aggregation of transactions, multi-dimensional customer
+segmentation and conceptual clustering to identify multiple segments
+across which to understand bank customers.
 
-In the data-driven credit risk predition model, normally two types of data are taken into consideration.
+In the data-driven credit risk predition model, normally two types of
+data are taken into consideration.
 
-1. **Transaction data** The transaction records covering account id, transaction date, transaction amount, merchant industry, ect. This transaction-level data could be dynamically aggregated and then provide transaction statistics and financial behavior information at account level.
+1. **Transaction data** The transaction records covering account id,
+transaction date, transaction amount, merchant industry, ect. This
+transaction-level data could be dynamically aggregated and then
+provide transaction statistics and financial behavior information at
+account level.
 
-2. **Demographic and bank account information** This type of data show the characteristics of individual customer or account credit bureau, such as age, sex, income, and credit limit. They are static and never change or solely increment deterministically over time.
+2. **Demographic and bank account information** This type of data show
+the characteristics of individual customer or account credit bureau,
+such as age, sex, income, and credit limit. They are static and never
+change or solely increment deterministically over time.
 
 ## 2 Data Driven Credit Risk Prediction
 
-### 2.1 Setup 
+### 2.1 Setup
 
 We load the required R packages.
 
@@ -37,7 +64,7 @@ We load the required R packages.
 
 # Load the required packages into the R session.
 
-library(rattle)       # The normVarNames().
+library(rattle)       # Use normVarNames().
 library(readr)        # Fast read csv file.
 library(plyr)         # Wrangling.
 library(dplyr)        # Wrangling: tbl_df(), group_by(), print(), glimpse().
@@ -55,11 +82,14 @@ library(xgboost)      # Build extreme gradiant boosting with xgboost().
 library(caret)        # Delete near zero variables with nearZeroVar() and train model with train().
 library(caretEnsemble)# Build model ensemble. 
 library(ROCR)         # Draw ROC Curve.
+library(scales)       # Include commas in numbers.
 ```
 
 ### 2.2 Data Ingestion
 
-We use the transaction and demographic datasets simulated from public data and real data from a financial institute to conduct this R accelerator.
+We use the transaction and demographic datasets simulated from public
+data and real data from a financial institute to conduct this R
+accelerator.
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 ## Data Ingestion
@@ -72,14 +102,14 @@ We use the transaction and demographic datasets simulated from public data and r
 
 wd <- getwd()
 
-dpath <- "Data"
-txn_fname <- file.path(wd, dpath, "transactionSimu_v3.csv")
+dpath <- "../Data"
+txn_fname   <- file.path(wd, dpath, "transactionSimu_v3.csv")
 demog_fname <- file.path(wd, dpath, "demographicSimu_v3.csv")
 
 # Ingest the dataset.
 
-txn <- read_csv(file=txn_fname)
-demog <- read_csv(file=demog_fname)
+txn   <- read_csv(file=txn_fname)   %T>% {dim(.) %>% comma() %>% cat("\n")}
+demog <- read_csv(file=demog_fname) %T>% {dim(.) %>% comma() %>% cat("\n")}
 ```
 
 ### 2.3 Data Preparation
@@ -89,24 +119,26 @@ Before analyzing, we normalize variable names and variables.
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 # Normalize variable names.
 
-names(txn) %<>% normVarNames() %>% print()
-names(demog) %<>% normVarNames() %>% print()
+names(txn)   %<>% normVarNames() %T>% print()
+names(demog) %<>% normVarNames() %T>% print()
 
-# Normalize variables.
+# Normalize categoric variables.
 
 txn %>% 
   sapply(is.character) %>%
   which() %>%
-  names() ->
+  names() %T>%
+  print() ->
 txnc
 
 demog %>% 
   sapply(is.character) %>%
   which() %>%
-  names() ->
+  names() %T>%
+  print() ->
 demc
 
-txn[txnc] %<>% sapply(normVarNames)
+txn[txnc]   %<>% sapply(normVarNames)
 demog[demc] %<>% sapply(normVarNames)
 ```
 
@@ -121,7 +153,7 @@ demog[demc] %<>% sapply(normVarNames)
 
 # Review datasets.
 
-dim(txn)
+dim(txn) %>% comma() %>% cat("\n")
 
 # A glimpse into the data.
 
@@ -132,11 +164,19 @@ glimpse(txn)
 head(txn) %>% print.data.frame()
 ```
 
-The transaction data set contains 198,576 records and 11 variables. The columns of "transaction_id" and "account_id" are identifiers at transaction level and account level, respectively. Each account has more than one transaction records occuring at different date or time. These transaction records show information about transaction amount, transaction type, location, merchant and so on. 
+The transaction data set contains 198,576 records and 11
+variables. The columns of "transaction_id" and "account_id" are
+identifiers at transaction level and account level, respectively. Each
+account has more than one transaction records occuring at different
+date or time. These transaction records show information about
+transaction amount, transaction type, location, merchant and so on.
 
-Initial exploratory analysis can be performed to get a general understanding of the dataset. For example,
+Initial exploratory analysis can be performed to get a general
+understanding of the dataset. For example,
 
-1. The transaction frequency of each account varies. The following plot shows the top 10 accounts with the highest transaction frequency, i.e., number of purchase in this case.
+1. The transaction frequency of each account varies. The following
+plot shows the top 10 accounts with the highest transaction frequency,
+i.e., number of purchase in this case.
 
 ```{r, message=FALSE}
 # Visualize the top 10 accounts with the highest transaction frequency.
@@ -150,14 +190,17 @@ txn %>%
   head(n=10) %>%
   ggplot(aes(x=account_id, y=n)) +
   geom_bar(stat="identity", position="dodge", fill="lightblue") +
-  labs(x="Account ID",
-       y="Transaction Frequency (Purchase)",
-       title="Top 10 Accounts with the Higest Transaction Frequency",
-       caption="Source: " %s+% "Transaction") +
+  labs(x       = "Account ID",
+       y       = "Transaction Frequency (Purchase)",
+       title   = "Top 10 Accounts with the Higest Transaction Frequency",
+       caption = "Source: " %s+% "Transaction") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-2. The total transaction amount made by different types of credit cards vary across merchant industry, and this can be plotted as shown below. The total transaction amount in bank industry is much higher than that in any other.
+2. The total transaction amount made by different types of credit
+cards vary across merchant industry, and this can be plotted as shown
+below. The total transaction amount in bank industry is much higher
+than that in any other.
 
 ```{r, message=FALSE}
 # Visualize the distribution of total purchase across merchant industry. 
@@ -169,12 +212,13 @@ txn %>%
   mutate(amount_per_industry=log(sum(transaction_amount_usd))) %>%
   ggplot(aes(x=merchant_industry, y=amount_per_industry, fill=card_type)) +
   geom_bar(stat="identity") +
-  labs(x="Merchant Industry",
-       y="Log of Transaction Amount (USD)",
-       fill="Card Type",
-       title="Total Transaction Amount Across Merchant Industry\n by Card Type",
-       caption="Source: " %s+% "Transaction") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  labs(x       = "Merchant Industry",
+       y       = "Log of Transaction Amount (USD)",
+       fill    = "Card Type",
+       title   = "Total Transaction Amount Across Merchant Industry\n by Card Type",
+       caption = "Source: " %s+% "Transaction") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels=comma)
 ```
 
 ##### 2.4.1.2 Demographic Data
@@ -184,7 +228,7 @@ txn %>%
 
 # Review datasets.
 
-dim(demog)
+dim(demog) %>% comma() %>% cat("\n")
 
 # A glimpse into the data.
 
@@ -195,11 +239,20 @@ glimpse(demog)
 head(demog) %>% print.data.frame() 
 ```
 
-The demographic data set contains 184,254 records and 9 variables. It has a common key, "account_id", with the transaction data. The column of "bad_flag" is the label of customers or accounts (assuming one customer one account), representing their default status. The other variables show information about the characteristic of customers (e.g., age, education, income) and bank account information (e.g., credit limit). 
+The demographic data set contains `r nrow(demog) %>% comma()` records
+and `r ncol(demog)` variables. It has a common key, "account_id", with
+the transaction data. The column of "bad_flag" is the label of
+customers or accounts (assuming one customer one account),
+representing their default status. The other variables show
+information about the characteristic of customers (e.g., age,
+education, income) and bank account information (e.g., credit limit).
 
 Visual understanding of the dataset can be achieved by the following plots.
 
-1. The proportion of customers for status of "default" and "non-default" within different education levels (or any other possible factor) may vary. People hold degrees of "middle school" and "high school", are among the top 2 groups that exhibit highest default rate.
+1. The proportion of customers for status of "default" and
+"non-default" within different education levels (or any other possible
+factor) may vary. People hold degrees of "middle school" and "high
+school", are among the top 2 groups that exhibit highest default rate.
 
 ```{r, message=FALSE}
 # Visualize the impact of education on default status.
@@ -246,10 +299,14 @@ Since the analytical target is to predict credit risk at account level, then our
 
 # Calculate maximum interval of a time series.
 
-maxInterval <- function(ts) {
-  if (length(na.omit(ts)) <= 1) {
+maxInterval <- function(ts)
+{
+  if (length(na.omit(ts)) <= 1)
+  {
     interval <- 0
-  } else {
+  }
+  else
+  {
     interval <- as.numeric(max(difftime(c(ts[-1], NA), ts, units="day"), na.rm=TRUE))
   }
   return(interval)
@@ -257,10 +314,14 @@ maxInterval <- function(ts) {
 
 # Calculate minimum interval of a time series.
 
-minInterval <- function(ts) {
-  if (length(na.omit(ts)) <= 1) {
+minInterval <- function(ts)
+{
+  if (length(na.omit(ts)) <= 1)
+  {
     interval <- 0
-  } else {
+  }
+  else
+  {
     interval <- as.numeric(min(difftime(c(ts[-1], NA), ts, units="day"), na.rm=TRUE))
   }
   return(interval)
@@ -268,10 +329,13 @@ minInterval <- function(ts) {
 
 # Calculate average interval of a time series.
 
-avgInterval <- function(ts) {
-  if (length(na.omit(ts)) <= 1) {
+avgInterval <- function(ts)
+{
+  if (length(na.omit(ts)) <= 1)
+  {
     interval <- 0
-  } else {
+  } else
+  {
     interval <- as.numeric(mean(difftime(c(ts[-1], NA), ts, units="day"), na.rm=TRUE))
   }
   return(interval)
@@ -279,10 +343,14 @@ avgInterval <- function(ts) {
 
 # Calculate interval of time between enddate and the most recent transaction date.
 
-recentInterval <- function(startdate, enddate, ts) {
-  if (length(na.omit(ts)) == 0) {
+recentInterval <- function(startdate, enddate, ts)
+{
+  if (length(na.omit(ts)) == 0)
+  {
    interval <- as.numeric(difftime(enddate, startdate, units="day"))
-  } else {
+  }
+  else
+  {
     interval <- as.numeric(difftime(enddate, max(ts, na.rm=TRUE), units="day"))
   }
   return(interval)
@@ -313,7 +381,9 @@ txn %>%
               avg_interval_pur_6 = avgInterval(transaction_date),
               max_interval_pur_6 = maxInterval(transaction_date),
               min_interval_pur_6 = minInterval(transaction_date),
-              last_pur_time_6    = recentInterval(min(transaction_date), max(transaction_date), transaction_date)
+              last_pur_time_6    = recentInterval(min(transaction_date),
+                                                  max(transaction_date),
+                                                  transaction_date)
               ) ->
 rollup
 
@@ -332,7 +402,8 @@ unlist(lapply(rollup, function(x) sum(is.na(x))))
 
 #### 2.4.3 Data Merging
 
-Let's merge the aggregated transaction data with demographic data by their common key, account id.
+Let's merge the aggregated transaction data with demographic data by
+their common key, account id.
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 ## Merge aggregated transaction data with demographic data.
