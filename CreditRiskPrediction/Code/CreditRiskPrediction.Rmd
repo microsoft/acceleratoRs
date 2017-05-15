@@ -415,7 +415,9 @@ glimpse(merged)
 
 #### 2.4.4 Data Cleansing
 
-Before getting into feature engineering, data cleansing work, including variable cleansing and missing value cleansing, are essential and will finally help improve the prediction performance.
+Before getting into feature engineering, data cleansing work,
+including variable cleansing and missing value cleansing, are
+essential and will finally help improve the prediction performance.
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 ## Variable roles.
@@ -531,14 +533,16 @@ some.numc.mean
 
 # Define a function to replace missing values with mean or mode. 
 
-meanModeReplace <- function(data, numc, numc.mean, catc, catc.mode) {
+meanModeReplace <- function(data, numc, numc.mean, catc, catc.mode)
+{
   
   data <- data.frame(data)
     
  # Replace numeric variables with the mean. 
  
  if(length(numc) > 0) 
-   for(i in 1:length(numc)) {
+   for(i in 1:length(numc))
+  {
     row.na <- which(is.na(data[, numc[i]]) == TRUE) 
     data[row.na, numc[i]] <- numc.mean[i]
   }
@@ -546,7 +550,8 @@ meanModeReplace <- function(data, numc, numc.mean, catc, catc.mode) {
  # Replace character variables with the mode. 
  
  if(length(catc) > 0)
-   for(i in 1:length(catc)) {
+   for(i in 1:length(catc))
+  {
     row.na <- which(is.na(data[, catc[i]]) == TRUE) 
     data[row.na, catc[i]] <- catc.mode[i]
   }
@@ -650,13 +655,39 @@ write.csv(processed, file=file.path(wd, dpath, "processedSimu.csv"), row.names=F
 
 ### 2.5 Scorecard Method
 
-The classic and still widely used (and useful) approach for evaluating credit worthiness and risk is based on the building of "scorecards". There are several aspects of the particular modeling workflow for producing a scorecard, and for using it effectively.
+The classic and still widely used (and useful) approach for evaluating
+credit worthiness and risk is based on the building of
+"scorecards". There are several aspects of the particular modeling
+workflow for producing a scorecard, and for using it effectively.
 
-1. **Discretizing Predictors** A scorecard needs to make it easy for it's user to determine the individual components contributing to the overall score and credit decision, and to achieve that, it is useful to divide the values of each continuous or categorical predictor variable into a relatively small number of categories so that an applicant can be quickly scored. There are a number of methods to re-code variable values into a small number of classes, for example, **binning analytics** by using quantiles or smbinning.
+1. **Discretizing Predictors** A scorecard needs to make it easy for
+it's user to determine the individual components contributing to the
+overall score and credit decision, and to achieve that, it is useful
+to divide the values of each continuous or categorical predictor
+variable into a relatively small number of categories so that an
+applicant can be quickly scored. There are a number of methods to
+re-code variable values into a small number of classes, for example,
+**binning analytics** by using quantiles or smbinning.
 
-2. **Logistic Regression Modeling** Given a binary variable indicating good or bad account, Logistic Regression models are well suited for subsequent predictive modeling. It provides a logit-transformed linear relationship between the prediction probability and the predictors. When the number of predictors are relatively large or there exists multi-collinearity, **Lasso Logistic Regression**, provided by the function glmnet(), outperforms all the other. This algorithm is extremely fast, and can exploit sparsity in the model input matrix. 
+2. **Logistic Regression Modeling** Given a binary variable indicating
+good or bad account, Logistic Regression models are well suited for
+subsequent predictive modeling. It provides a logit-transformed linear
+relationship between the prediction probability and the
+predictors. When the number of predictors are relatively large or
+there exists multi-collinearity, **Lasso Logistic Regression**,
+provided by the function glmnet(), outperforms all the other. This
+algorithm is extremely fast, and can exploit sparsity in the model
+input matrix.
 
-3. **Machine Learning Algorithms** If the accuracy of the prediction of risk is the most important consideration of a scorecard building project, then machine learning models, such as **Gradient Boosting** and **Random Forest**, or their **ensembles**, provide better performance than simple logistic regression models. Since most algorithms are general approximators capable of representing any relationship between predictors and outcomes, and are also relatively robust to outliers, it is not necessary to perform many of the feature engineering steps such as binning, etc. 
+3. **Machine Learning Algorithms** If the accuracy of the prediction
+of risk is the most important consideration of a scorecard building
+project, then machine learning models, such as **Gradient Boosting**
+and **Random Forest**, or their **ensembles**, provide better
+performance than simple logistic regression models. Since most
+algorithms are general approximators capable of representing any
+relationship between predictors and outcomes, and are also relatively
+robust to outliers, it is not necessary to perform many of the feature
+engineering steps such as binning, etc.
 
 #### 2.5.1 Feature Engineering
 
@@ -681,7 +712,8 @@ vars_fe
 quantiles_names <- setdiff(vars_fe, c("income"))
 
 q <- lapply(1:length(quantiles_names), 
-            function(i, data) {
+            function(i, data)
+            {
               quantile(x=processed[[quantiles_names[i]]], 
                        data=processed, 
                        probs=seq(0, 1, 1/10), 
@@ -698,30 +730,35 @@ b <- list(income = c(0, 100000, 2000000, 400000))
 
 # Define function to bucketize numeric variables.
 
-bucketize <- function(data, q, quantiles_names, b, uneven_bins_names) {
+bucketize <- function(data, q, quantiles_names, b, uneven_bins_names)
+{
     
   data <- data.frame(data)
     
   # Bucketize based on quantiles.
   
-  for(name in  quantiles_names) {
-      name2 <- paste(name, "_bucket", sep = "")
-      data[, name2] <- as.character(length(q[[name]]))
-      for(i in seq(1, (length(q[[name]]) - 1))) {
-        rows <- which(data[, name] < q[[name]][[i + 1]] & data[, name] >= q[[name]][[i]])
-        data[rows, name2] <- as.character(i)
-      }
+  for(name in  quantiles_names)
+  {
+    name2 <- paste(name, "_bucket", sep = "")
+    data[, name2] <- as.character(length(q[[name]]))
+    for(i in seq(1, (length(q[[name]]) - 1)))
+    {
+      rows <- which(data[, name] < q[[name]][[i + 1]] & data[, name] >= q[[name]][[i]])
+      data[rows, name2] <- as.character(i)
+    }
   }
   
   # Bucketize based on manually defined bins. 
   
-  for(name in  uneven_bins_names) {
-      name2 <- paste(name, "_bucket", sep = "")
-      data[, name2] <- as.character(length(b[[name]]))
-      for(i in seq(1, (length(b[[name]]) - 1))) {
-        rows <- which(data[, name] < b[[name]][i + 1] & data[, name] >= b[[name]][i])
-        data[rows, name2] <- as.character(i)
-      }
+  for(name in  uneven_bins_names)
+  {
+    name2 <- paste(name, "_bucket", sep = "")
+    data[, name2] <- as.character(length(b[[name]]))
+    for(i in seq(1, (length(b[[name]]) - 1)))
+    {
+      rows <- which(data[, name] < b[[name]][i + 1] & data[, name] >= b[[name]][i])
+      data[rows, name2] <- as.character(i)
+    }
   }
   
   return(data) 
@@ -740,9 +777,10 @@ binned <- bucketize(data=processed,
   
 bucketized_old <- c(quantiles_names, uneven_bins_names)
   
-for(i in 1:length(bucketized_old)) {
-    nameB <- paste(bucketized_old[i], "_bucket", sep ="")
-    vars[[length(vars) + 1]] <- nameB
+for(i in 1:length(bucketized_old))
+{
+  nameB <- paste(bucketized_old[i], "_bucket", sep ="")
+  vars[[length(vars) + 1]] <- nameB
 }
 
 # Drop variables used for feature engineering.
@@ -770,17 +808,31 @@ write.csv(binned, file=file.path(wd, dpath, "binnedSimu.csv"), row.names=FALSE)
 
 #### 2.5.2 Model Building and Evaluation
 
-In this section, we get started to build and evaluate the model. This section will introduce how a model is constructed for credit risk prediction. Normally credit risk prediction is categorized as a classification problem. Depending on the variety of labels, the problem can be either binary-classification or multi-classification.
+In this section, we get started to build and evaluate the model. This
+section will introduce how a model is constructed for credit risk
+prediction. Normally credit risk prediction is categorized as a
+classification problem. Depending on the variety of labels, the
+problem can be either binary-classification or multi-classification.
 
-The case in this example is a binary-classification problem. The label for prediction is default status, i.e., "bad_flag", which has two levels, 'yes' and 'no'. 
+The case in this example is a binary-classification problem. The label
+for prediction is default status, i.e., "bad_flag", which has two
+levels, 'yes' and 'no'.
 
-It is possible that not all the variables are correlated with the label, therefore, feature selection is usually performed to eliminate the less relevant ones.
+It is possible that not all the variables are correlated with the
+label, therefore, feature selection is usually performed to eliminate
+the less relevant ones.
 
-As the data set is a blend of numeric and discrete variables (or discrete variables only), correlation analysis is not applicable. One alternative is to train a model, which can do automatic feature selection in the process of model building. Such model includes lasso logistic regression, extreme gradiant boosting, random forest, and so on. 
+As the data set is a blend of numeric and discrete variables (or
+discrete variables only), correlation analysis is not applicable. One
+alternative is to train a model, which can do automatic feature
+selection in the process of model building. Such model includes lasso
+logistic regression, extreme gradiant boosting, random forest, and so
+on.
 
 ##### 2.5.2.1. Lasso Logistic Regression Model
 
-First of all, the lasso logistic regression model, is applied on data after binning, considering it is very sensitive to outliers. 
+First of all, the lasso logistic regression model, is applied on data
+after binning, considering it is very sensitive to outliers.
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 # Introduce a generic variables.
@@ -841,7 +893,9 @@ best_lambda <- model_glmnet_cv$lambda.min %T>% print()
 coef(model_glmnet_cv, s=best_lambda)
 ```
 
-Once a (lasso logistic regression) model has been built based on a training data set, next the validity of the model needs to be assessed in a testing data set.
+Once a (lasso logistic regression) model has been built based on a
+training data set, next the validity of the model needs to be assessed
+in a testing data set.
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 # Evaluate model performance on the validation dataset. 
@@ -856,7 +910,9 @@ pred <- ROCR::prediction(predictions=probs,
                          labels=data[test, ]$bad_flag)
 ```
 
-The predictive power of the model can be assessed via various ways, for example, useful graphs (e.g., Kolmogorov Smirnov chart, roc curve, lift chart) and confusion matrix. The results are as shown below.
+The predictive power of the model can be assessed via various ways,
+for example, useful graphs (e.g., Kolmogorov Smirnov chart, roc curve,
+lift chart) and confusion matrix. The results are as shown below.
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 # Draw Kolmogorov Smirnov chart. 
@@ -1270,4 +1326,12 @@ df_comp <-
 
 ## 3 Conclusion
 
-This document introduces a data-driven advanced analytics for credit risk prediction. Techniques of exploratory analytics, data aggregation and cleansing, feature engineering, but more importantly, model building and evaluation are demonstrated on the simulated datasets. This walk-through may help banks to enhance risk managment and then identify opportunities to adjust credit limits and eventually reduce losses and increase revenue in lending. The later version of this document will pursue an innovative hotspot method on credit risk in future. 
+This document introduces a data-driven advanced analytics for credit
+risk prediction. Techniques of exploratory analytics, data aggregation
+and cleansing, feature engineering, but more importantly, model
+building and evaluation are demonstrated on the simulated
+datasets. This walk-through may help banks to enhance risk managment
+and then identify opportunities to adjust credit limits and eventually
+reduce losses and increase revenue in lending. The later version of
+this document will pursue an innovative hotspot method on credit risk
+in future.
