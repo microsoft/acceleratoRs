@@ -10,6 +10,7 @@ Some other critical R packages for the analysis:
 * xgboost >= 0.6-4 Extreme gradiant boost model.
 * randomForest >= 4.6-12 Random Forest model.
 * caretEnsemble >= 2.0.0 Ensemble of caret based models.
+* dplyrXdf Out-of-Memory Data wrangling.
 * MicrosoftML >= 9.1 Microsoft machine learning models.
 * mrsdeploy >= 9.1 R Server Operationalization.
 
