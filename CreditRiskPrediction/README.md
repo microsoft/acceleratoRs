@@ -38,6 +38,10 @@ In the data-driven credit risk prediction model, normally two types of data are 
 2. Machine learning models, such as gradiant boosting and random forest, or their ensembles, are fine tuned to compare the performance at various aspects. 
 3. Innovative convolutionary hotspot method will be pursued in the near future.
 
+## Scalability
+
+Faster and scalable credit risk models are built using the state-of-the-art machine learning algorithms provided by the `MicrosoftML` package.
+
 ## Operationalization
 
 An **R model based web service for credit risk prediction** is published and consumed by using the `mrsdeploy` package that ships with Microsoft R Client and R Server 9.1.
