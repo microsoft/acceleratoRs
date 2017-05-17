@@ -37,3 +37,8 @@ In the data-driven credit risk prediction model, normally two types of data are 
 1. Traditional logistic regression model with L1 regularization are built as a baseline.
 2. Machine learning models, such as gradiant boosting and random forest, or their ensembles, are fine tuned to compare the performance at various aspects. 
 3. Innovative convolutionary hotspot method will be pursued in the near future.
+
+## Operationalization
+
+An **R model based web service for credit risk prediction** is published and consumed by using the `mrsdeploy` package that ships with Microsoft R Client and R Server 9.1.
+ 
