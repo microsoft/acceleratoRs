@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# Remote to spark demo.
+# Get data processed in Spark.
 # -----------------------------------------------------------------------------
 
 library(AzureSMR)
@@ -30,7 +30,7 @@ df_processed <-
          {head(.) %>% print()}
 
 # -----------------------------------------------------------------------------
-# Modeling training with Microsoft Neural Network algorithm with GPU acceleration
+# Modeling training with Microsoft Neural Network algorithm with and without GPU acceleration
 # -----------------------------------------------------------------------------
 
 library(mrsdeploy)
@@ -89,8 +89,6 @@ roc <- rxRoc(actualVarName="ArrDel15",
                                names(scores), 
                                value=TRUE),
              data=scores)
-
-plot(roc)
 
 auc <- rxAuc(roc)
 
