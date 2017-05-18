@@ -77,7 +77,9 @@ rxGetVarInfo(data)
 
 Now, let's get started to build credit risk models by leveraging different machine learning algorithms from the `MicrosoftML` package. 
 
-First of all, we create individual machine learning models on the dataset processedSimu by using the functions `rxLogisticRegression()`, `rxFastTrees()`, and `rxFastForest()`. 
+First of all, we create individual machine learning models on the dataset processedSimu.xdf by using the functions `rxLogisticRegression()`, `rxFastForest()`, `rxFastTrees()`. 
+
+From the credit risk prediction template, we know that gradient boosting is the most suitable algorithm for this example, considering the overall performance. Therefore, the models implemented by the function `rxFastTrees()` with different sets of parameters are trained respectively. 
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 ## Variable roles.
@@ -99,9 +101,6 @@ vars <- setdiff(names(data), c(target, id))
 # Split Data
 
 set.seed(42)
-
-train <- sample(nrow(data), 0.70 * nrow(data))
-test <- setdiff(seq_len(nrow(data)), train)
 
 # Add training/testing flag to each observation.
 
@@ -138,21 +137,9 @@ time_rxlogit <- system.time(
     formula=form,
     data=data_split[[1]],
     type="binary",
-    l1Weight=1)
-)
-
-# Train model: rxFastTrees
-
-time_rxtrees <- system.time(
-  
-  model_rxtrees <- rxFastTrees(
-    formula=form,
-    data=data_split[[1]],
-    type="binary",
-    numTrees=100,
-    numLeaves=20,
-    learningRate=0.2,
-    minSplit=10)
+    l1Weight=1,
+    verbose=0
+  )
 )
 
 # Train model: rxFastForest
@@ -165,11 +152,75 @@ time_rxforest <- system.time(
     type="binary",
     numTrees=100,
     numLeaves=20,
-    minSplit=10)
+    minSplit=10,
+    verbose=0
+  )
+)
+
+# Train model: rxFastTrees
+
+time_rxtrees1 <- system.time(
+  
+  model_rxtrees1 <- rxFastTrees(
+    formula=form,
+    data=data_split[[1]],
+    type="binary",
+    numTrees=100,
+    numLeaves=20,
+    learningRate=0.2,
+    minSplit=10,
+    unbalancedSets=FALSE,
+    verbose=0
+  )
+)
+
+time_rxtrees2 <- system.time(
+  
+  model_rxtrees2 <- rxFastTrees(
+    formula=form,
+    data=data_split[[1]],
+    type="binary",
+    numTrees=500,
+    numLeaves=20,
+    learningRate=0.2,
+    minSplit=10,
+    unbalancedSets=FALSE,
+    verbose=0
+  )
+)
+
+time_rxtrees3 <- system.time(
+  
+  model_rxtrees3 <- rxFastTrees(
+    formula=form,
+    data=data_split[[1]],
+    type="binary",
+    numTrees=500,
+    numLeaves=20,
+    learningRate=0.3,
+    minSplit=10,
+    unbalancedSets=FALSE,
+    verbose=0
+  )
+)
+
+time_rxtrees4 <- system.time(
+  
+  model_rxtrees4 <- rxFastTrees(
+    formula=form,
+    data=data_split[[1]],
+    type="binary",
+    numTrees=500,
+    numLeaves=20,
+    learningRate=0.3,
+    minSplit=10,
+    unbalancedSets=TRUE,
+    verbose=0
+  )
 )
 ```
 
-Next, we build an ensemble of models by using the function `rxEnsemble()`.
+Next, we build an ensemble of fast tree models by using the function `rxEnsemble()`.
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 # Train an ensemble model.
@@ -180,20 +231,27 @@ time_ensemble <- system.time(
     formula=form,
     data=data_split[[1]],
     type="binary",
-    trainers=list(logisticRegression(), fastTrees(), fastForest()),
-    replace=TRUE
+    trainers=list(fastTrees(), 
+                  fastTrees(numTrees=500), 
+                  fastTrees(numTrees=500, learningRate=0.3),
+                  fastTrees(numTrees=500, learningRate=0.3, unbalancedSets=TRUE)),
+    combineMethod="vote",
+    replace=TRUE,
+    verbose=0
   )
 )
 ```
 
 ### 2.3 Model Evaluation 
 
-Finally, we evaluate and compare the above built models.
+Finally, we evaluate and compare the above built models at various aspects. 
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 # Predict
 
-models <- list(model_rxlogit, model_rxtrees, model_rxforest, model_ensemble)
+models <- list(model_rxlogit, model_rxforest, 
+               model_rxtrees1, model_rxtrees2, model_rxtrees3, model_rxtrees4, 
+               model_ensemble)
 
 # Predict class
 
@@ -202,7 +260,7 @@ predictions <- lapply(models,
                       data=data_split[[2]]) %>%
                 lapply('[[', 1)
 
-levels(predictions[[4]]) <- c("no", "yes")
+levels(predictions[[7]]) <- c("no", "yes")
 
 # Confusion matrix evaluation results.
 
@@ -237,7 +295,7 @@ pre_metrics <-
 
 # Predict class probability
 
-probs <- lapply(models[c(1, 2, 3)],
+probs <- lapply(models[c(1, 2, 3, 4, 5, 6)],
                 rxPredict,
                 data=data_split[[2]]) %>%
                 lapply('[[', 3)
@@ -259,8 +317,18 @@ auc_metrics <- lapply(preds,
 
 auc_metrics <- c(auc_metrics, NaN)
 
-algo_list <- c("rxLogisticRegression", "rxFastTrees", "rxFastForest", "rxEnsemble")
-time_consumption <- c(time_rxlogit[3], time_rxtrees[3], time_rxforest[[3]], time_ensemble[3])
+algo_list <- c("rxLogisticRegression", 
+               "rxFastForest", 
+               "rxFastTrees", 
+               "rxFastTrees(500)", 
+               "rxFastTrees(500, 0.3)", 
+               "rxFastTrees(500, 0.3, ub)",
+               "rxEnsemble")
+
+time_consumption <- c(time_rxlogit[3], time_rxforest[[3]], 
+                      time_rxtrees1[3], time_rxtrees2[[3]], 
+                      time_rxtrees3[[3]], time_rxtrees4[[3]],
+                      time_ensemble[3])
 
 df_comp <- 
   data.frame(Models=algo_list, 
@@ -269,6 +337,18 @@ df_comp <-
              Precision=pre_metrics,
              AUC=auc_metrics,
              Time=time_consumption) %T>%
-             {head(.) %>% print()}
+             print()
+```
+
+### 2.4 Save Models for Deployment
+
+Last but not least, we need to save the model objects in various formats, (e.g., `.RData`, `SQLServerData`, ect) for the later usage of deployment. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Save model for deployment usage.
+
+model_rxtrees <- model_rxtrees3
+
+save(model_rxtrees, file="model_rxtrees.RData")
 ```
 

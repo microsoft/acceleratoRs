@@ -11,7 +11,7 @@
 
 <meta name="author" content="Fang Zhou, Data Scientist, Microsoft" />
 
-<meta name="date" content="2017-05-17" />
+<meta name="date" content="2017-05-18" />
 
 <title>Faster and Scalable Credit Risk Prediction</title>
 
@@ -119,7 +119,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Faster and Scalable Credit Risk Prediction</h1>
 <h4 class="author"><em>Fang Zhou, Data Scientist, Microsoft</em></h4>
-<h4 class="date"><em>2017-05-17</em></h4>
+<h4 class="date"><em>2017-05-18</em></h4>
 
 </div>
 
@@ -210,7 +210,8 @@ rxGetVarInfo(data)</code></pre>
 <div id="model-building" class="section level3">
 <h3>2.2 Model Building</h3>
 <p>Now, let’s get started to build credit risk models by leveraging different machine learning algorithms from the <code>MicrosoftML</code> package.</p>
-<p>First of all, we create individual machine learning models on the dataset processedSimu by using the functions <code>rxLogisticRegression()</code>, <code>rxFastTrees()</code>, and <code>rxFastForest()</code>.</p>
+<p>First of all, we create individual machine learning models on the dataset processedSimu.xdf by using the functions <code>rxLogisticRegression()</code>, <code>rxFastForest()</code>, <code>rxFastTrees()</code>.</p>
+<p>From the credit risk prediction template, we know that gradient boosting is the most suitable algorithm for this example, considering the overall performance. Therefore, the models implemented by the function <code>rxFastTrees()</code> with different sets of parameters are trained respectively.</p>
 <pre class="r"><code>## Variable roles.
 
 # Target variable
@@ -227,9 +228,6 @@ vars &lt;- setdiff(names(data), c(target, id))</code></pre>
 <pre class="r"><code># Split Data
 
 set.seed(42)
-
-train &lt;- sample(nrow(data), 0.70 * nrow(data))
-test &lt;- setdiff(seq_len(nrow(data)), train)
 
 # Add training/testing flag to each observation.
 
@@ -262,7 +260,9 @@ time_rxlogit &lt;- system.time(
     formula=form,
     data=data_split[[1]],
     type=&quot;binary&quot;,
-    l1Weight=1)
+    l1Weight=1,
+    verbose=0
+  )
 )</code></pre>
 <pre><code>## Automatically adding a MinMax normalization transform, use 'norm=Warn' or 'norm=No' to turn this behavior off.
 ## LBFGS multi-threading will attempt to load dataset into memory. In case of out-of-memory issues, turn off multi-threading by setting trainThreads to 1.
@@ -271,30 +271,8 @@ time_rxlogit &lt;- system.time(
 ## improvement criterion: Mean Improvement
 ## L1 regularization selected 13 of 17 weights.
 ## Not training a calibrator because it is not needed.
-## Elapsed time: 00:00:01.9451805
-## Elapsed time: 00:00:00.2341484</code></pre>
-<pre class="r"><code># Train model: rxFastTrees
-
-time_rxtrees &lt;- system.time(
-  
-  model_rxtrees &lt;- rxFastTrees(
-    formula=form,
-    data=data_split[[1]],
-    type=&quot;binary&quot;,
-    numTrees=100,
-    numLeaves=20,
-    learningRate=0.2,
-    minSplit=10)
-)</code></pre>
-<pre><code>## Not adding a normalizer.
-## Making per-feature arrays
-## Changing data from row-wise to column-wise
-## Processed 129155 instances
-## Binning and forming Feature objects
-## Reserved memory for tree learner: 219024 bytes
-## Starting to train ...
-## Not training a calibrator because it is not needed.
-## Elapsed time: 00:00:01.4975066</code></pre>
+## Elapsed time: 00:00:01.8597467
+## Elapsed time: 00:00:00.2332643</code></pre>
 <pre class="r"><code># Train model: rxFastForest
 
 time_rxforest &lt;- system.time(
@@ -305,18 +283,73 @@ time_rxforest &lt;- system.time(
     type=&quot;binary&quot;,
     numTrees=100,
     numLeaves=20,
-    minSplit=10)
+    minSplit=10,
+    verbose=0
+  )
+)
+
+# Train model: rxFastTrees
+
+time_rxtrees1 &lt;- system.time(
+  
+  model_rxtrees1 &lt;- rxFastTrees(
+    formula=form,
+    data=data_split[[1]],
+    type=&quot;binary&quot;,
+    numTrees=100,
+    numLeaves=20,
+    learningRate=0.2,
+    minSplit=10,
+    unbalancedSets=FALSE,
+    verbose=0
+  )
+)
+
+time_rxtrees2 &lt;- system.time(
+  
+  model_rxtrees2 &lt;- rxFastTrees(
+    formula=form,
+    data=data_split[[1]],
+    type=&quot;binary&quot;,
+    numTrees=500,
+    numLeaves=20,
+    learningRate=0.2,
+    minSplit=10,
+    unbalancedSets=FALSE,
+    verbose=0
+  )
+)
+
+time_rxtrees3 &lt;- system.time(
+  
+  model_rxtrees3 &lt;- rxFastTrees(
+    formula=form,
+    data=data_split[[1]],
+    type=&quot;binary&quot;,
+    numTrees=500,
+    numLeaves=20,
+    learningRate=0.3,
+    minSplit=10,
+    unbalancedSets=FALSE,
+    verbose=0
+  )
+)
+
+time_rxtrees4 &lt;- system.time(
+  
+  model_rxtrees4 &lt;- rxFastTrees(
+    formula=form,
+    data=data_split[[1]],
+    type=&quot;binary&quot;,
+    numTrees=500,
+    numLeaves=20,
+    learningRate=0.3,
+    minSplit=10,
+    unbalancedSets=TRUE,
+    verbose=0
+  )
 )</code></pre>
-<pre><code>## Not adding a normalizer.
-## Making per-feature arrays
-## Changing data from row-wise to column-wise
-## Processed 129155 instances
-## Binning and forming Feature objects
-## Reserved memory for tree learner: 219024 bytes
-## Starting to train ...
-## Training calibrator.
-## Elapsed time: 00:00:02.2617353</code></pre>
-<p>Next, we build an ensemble of models by using the function <code>rxEnsemble()</code>.</p>
+<p>Next, we build an ensemble of fast tree models by using the function <code>rxEnsemble()</code>.</p>
 <pre class="r"><code># Train an ensemble model.
 
 time_ensemble &lt;- system.time(
@@ -325,18 +358,25 @@ time_ensemble &lt;- system.time(
     formula=form,
     data=data_split[[1]],
     type=&quot;binary&quot;,
-    trainers=list(logisticRegression(), fastTrees(), fastForest()),
-    replace=TRUE
+    trainers=list(fastTrees(), 
+                  fastTrees(numTrees=500), 
+                  fastTrees(numTrees=500, learningRate=0.3),
+                  fastTrees(numTrees=500, learningRate=0.3, unbalancedSets=TRUE)),
+    combineMethod=&quot;vote&quot;,
+    replace=TRUE,
+    verbose=0
   )
 )</code></pre>
-<pre><code>## Elapsed time: 00:00:00.4024905</code></pre>
+<pre><code>## Elapsed time: 00:00:00.6069022</code></pre>
 </div>
 <div id="model-evaluation" class="section level3">
 <h3>2.3 Model Evaluation</h3>
-<p>Finally, we evaluate and compare the above built models.</p>
+<p>Finally, we evaluate and compare the above built models at various aspects.</p>
 <pre class="r"><code># Predict
 
-models &lt;- list(model_rxlogit, model_rxtrees, model_rxforest, model_ensemble)
+models &lt;- list(model_rxlogit, model_rxforest, 
+               model_rxtrees1, model_rxtrees2, model_rxtrees3, model_rxtrees4, 
+               model_ensemble)
 
 # Predict class
 
@@ -344,11 +384,14 @@ predictions &lt;- lapply(models,
                       rxPredict, 
                       data=data_split[[2]]) %&gt;%
                 lapply('[[', 1)</code></pre>
-<pre><code>## Elapsed time: 00:00:00.3329582
-## Elapsed time: 00:00:00.5682058
-## Elapsed time: 00:00:00.5726077
-## Elapsed time: 00:00:00.9745613</code></pre>
-<pre class="r"><code>levels(predictions[[4]]) &lt;- c(&quot;no&quot;, &quot;yes&quot;)
+<pre><code>## Elapsed time: 00:00:00.3323721
+## Elapsed time: 00:00:00.6021822
+## Elapsed time: 00:00:00.5783706
+## Elapsed time: 00:00:03.2957191
+## Elapsed time: 00:00:03.1592642
+## Elapsed time: 00:00:03.3192340
+## Elapsed time: 00:00:05.7721651</code></pre>
+<pre class="r"><code>levels(predictions[[7]]) &lt;- c(&quot;no&quot;, &quot;yes&quot;)
 
 # Confusion matrix evaluation results.
 
@@ -383,13 +426,16 @@ pre_metrics &lt;-
 
 # Predict class probability
 
-probs &lt;- lapply(models[c(1, 2, 3)],
+probs &lt;- lapply(models[c(1, 2, 3, 4, 5, 6)],
                 rxPredict,
                 data=data_split[[2]]) %&gt;%
                 lapply('[[', 3)</code></pre>
-<pre><code>## Elapsed time: 00:00:00.2420659
-## Elapsed time: 00:00:00.5683409
-## Elapsed time: 00:00:00.5884139</code></pre>
+<pre><code>## Elapsed time: 00:00:00.2500800
+## Elapsed time: 00:00:00.6540367
+## Elapsed time: 00:00:00.5695867
+## Elapsed time: 00:00:03.3178125
+## Elapsed time: 00:00:03.1851176
+## Elapsed time: 00:00:03.2898501</code></pre>
 <pre class="r"><code># Create prediction object
 
 preds &lt;- lapply(probs, 
@@ -407,8 +453,18 @@ auc_metrics &lt;- lapply(preds,
 
 auc_metrics &lt;- c(auc_metrics, NaN)
 
-algo_list &lt;- c(&quot;rxLogisticRegression&quot;, &quot;rxFastTrees&quot;, &quot;rxFastForest&quot;, &quot;rxEnsemble&quot;)
-time_consumption &lt;- c(time_rxlogit[3], time_rxtrees[3], time_rxforest[[3]], time_ensemble[3])
+algo_list &lt;- c(&quot;rxLogisticRegression&quot;, 
+               &quot;rxFastForest&quot;, 
+               &quot;rxFastTrees&quot;, 
+               &quot;rxFastTrees(500)&quot;, 
+               &quot;rxFastTrees(500, 0.3)&quot;, 
+               &quot;rxFastTrees(500, 0.3, ub)&quot;,
+               &quot;rxEnsemble&quot;)
+
+time_consumption &lt;- c(time_rxlogit[3], time_rxforest[[3]], 
+                      time_rxtrees1[3], time_rxtrees2[[3]], 
+                      time_rxtrees3[[3]], time_rxtrees4[[3]],
+                      time_ensemble[3])
 
 df_comp &lt;- 
   data.frame(Models=algo_list, 
@@ -417,12 +473,24 @@ df_comp &lt;-
              Precision=pre_metrics,
              AUC=auc_metrics,
              Time=time_consumption) %T&gt;%
-             {head(.) %&gt;% print()}</code></pre>
-<pre><code>##                 Models  Accuracy    Recall Precision       AUC Time
-## 1 rxLogisticRegression 0.9712880 0.0000000       NaN 0.5700583 2.36
-## 2          rxFastTrees 0.9807982 0.4589128 0.7823276 0.9383639 1.61
-## 3         rxFastForest 0.9712880 0.0000000       NaN 0.6735370 2.36
-## 4           rxEnsemble 0.9712880 0.0000000       NaN       NaN 6.28</code></pre>
+             print()</code></pre>
+<pre><code>##                      Models  Accuracy    Recall Precision       AUC  Time
+## 1      rxLogisticRegression 0.9710578 0.0000000       NaN 0.5808235  2.27
+## 2              rxFastForest 0.9710578 0.0000000       NaN 0.6917648  2.57
+## 3               rxFastTrees 0.9805252 0.4527363 0.7827957 0.9392378  1.47
+## 4          rxFastTrees(500) 0.9877968 0.6915423 0.8593509 0.9833151  4.57
+## 5     rxFastTrees(500, 0.3) 0.9873108 0.7226368 0.8177340 0.9675594  4.42
+## 6 rxFastTrees(500, 0.3, ub) 0.9848989 0.9689055 0.6638262 0.9948528  4.23
+## 7                rxEnsemble 0.9833510 0.4471393 0.9523179       NaN 11.40</code></pre>
+</div>
+<div id="save-models-for-deployment" class="section level3">
+<h3>2.4 Save Models for Deployment</h3>
+<p>Last but not least, we need to save the model objects in various formats, (e.g., <code>.RData</code>, <code>SQLServerData</code>, ect) for the later usage of deployment.</p>
+<pre class="r"><code># Save model for deployment usage.
+
+model_rxtrees &lt;- model_rxtrees3
+
+save(model_rxtrees, file=&quot;model_rxtrees.RData&quot;)</code></pre>
 </div>
 </div>
 

@@ -15,11 +15,17 @@ knitr::opts_chunk$set(echo = TRUE,
 
 ## 1 Introduction
 
-This document will walk through you how to deploy a credit risk model as a web service,
-using the `mrsdeploy` package that ships with Microsoft R Client and R Server. 
+The `mrsdeploy` package, delivered with Microsoft R Client and R Server, provides functions for:
 
-It will start by creating the model locally, then publish it as a web service, and then share it 
-with other authenticated users for consumption.  
+**1** Establishing a remote session in a R console application for the purposes of executing code on that server
+
+**2** Publishing and managing an R web service that is backed by the R code block or script you provided. 
+
+Each feature can be used independently, but the greatest value is achieved when you can leverage both.
+
+This document will walk through you how to deploy a credit risk model as a web service, using the `mrsdeploy` package.
+
+It will start by modelling locally, then publish it as a web service, and then share it with other authenticated users for consumption, and finally manage and update the web service. 
 
 ## 2 Automated Credit Risk Model Deployment
 
@@ -116,9 +122,11 @@ model_rxtrees <- rxFastTrees(formula=form,
                              numTrees=100,
                              numLeaves=20,
                              learningRate=0.2,
-                             minSplit=10)
+                             minSplit=10,
+                             unbalancedSets=FALSE,
+                             verbose=0)
 
-summary(model_rxtrees)
+model_rxtrees
 ```
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
@@ -126,21 +134,8 @@ summary(model_rxtrees)
 
 creditRiskPrediction <- function(account_id, amount_6, pur_6, avg_pur_amt_6, avg_interval_pur_6, 
                                  credit_limit, marital_status, sex, education, income, age)
-{
-  staticdata <- data.frame(account_id=c("a_1055521381828530", "a_1055521125532160",                                                                     "a_914800337488587", "a_844428146542225", "a_844428047550192"),
-                           amount_6=c(106.99, 212.49, 118.00, 151.19, 148.39),
-                           pur_6=c(1, 1, 1, 1, 1),
-                           avg_pur_amt_6=c(106.99, 212.49, 118.00, 151.19, 148.39),
-                           avg_interval_pur_6=c(0, 0, 0, 0, 0),
-                           credit_limit=c(2.21, -0.96, 3.82, -0.39, -0.45),
-                           marital_status=c("single", "married", "single", "married", "single"),
-                           sex=c("female", "male", "male", "female", "female"),
-                           education=c("master", "high_school", "middle_school", 
-                                       "polytechnics", "undergraduate"),
-                           income=c(0, 6.27, 17.15, 9.94, 19.93),
-                           age=c(33, 47, 30, 51, 32))
-  
-  inputdata <- data.frame(account_id=account_id,
+{ 
+  newdata <- data.frame(account_id=account_id,
                           amount_6=amount_6, 
                           pur_6=pur_6, 
                           avg_pur_amt_6=avg_pur_amt_6, 
@@ -152,13 +147,10 @@ creditRiskPrediction <- function(account_id, amount_6, pur_6, avg_pur_amt_6, avg
                           income=income, 
                           age=age)
   
-  newdata <- rbind(inputdata, staticdata)
-  
-  pred <- rxPredict(model_rxtrees, data=newdata)[, c(1, 3)]
+  pred <- rxPredict(modelObject=model_rxtrees, data=newdata)[, c(1, 3)]
   pred <- cbind(newdata$account_id, pred)
   names(pred) <- c("account_id", "scored_label", "scored_prob")
-  pred <- pred[1, ]
-  pred
+  pred 
 }
 
 # Test function locally by printing results
@@ -229,7 +221,7 @@ api <- publishService(
 
 ### 2.3 Test the service by consuming it in R
 
-Finally, we can consume the service in R directly after publishing it to verify that the results are as expected.
+After publishing it , we can consume the service in R directly to verify that the results are as expected.
 
 ```{r, message=FALSE, warning=FALSE, error=TRUE}
 # Get service and assign service to the variable `api`.
@@ -253,7 +245,48 @@ result <- api$creditRiskPrediction(account_id="a_1055521029582310",
 # Print response output named `answer`
 
 print(result$output("pred")) 
+```
 
+### 2.4 Update the web service
+
+In the process of production, we could manage and update the web service timely.
+
+```{r, message=FALSE, warning=FALSE, error=TRUE}
+# Load the pre-trained optimal model obtained from the template of CreditRiskScale.
+
+load(file="model_rxtrees.RData")
+
+model_rxtrees
+
+api <- updateService(name="crpService", 
+                     v="v1.0.0",
+                     model=model_rxtrees,
+                     descr="Update the model hyper-parameters")
+
+# Re-test the updated service by consuming it
+
+result <- api$creditRiskPrediction(account_id="a_1055521029582310",
+                                   amount_6=173.22, 
+                                   pur_6=1, 
+                                   avg_pur_amt_6=173.22, 
+                                   avg_interval_pur_6=0, 
+                                   credit_limit=5.26, 
+                                   marital_status="married", 
+                                   sex="male", 
+                                   education="undergraduate", 
+                                   income=12.36, 
+                                   age=38)
+
+# Print response output named `answer`
+
+print(result$output("pred")) 
+```
+
+### 2.5 Application Integration
+
+Last but not least, we can get the json file that is needed for application integration.
+
+```{r, message=FALSE, warning=FALSE, error=TRUE}
 # Get this service's `swagger.json` file that is needed for web application integration
 
 swagger <- api$swagger(json = FALSE)
