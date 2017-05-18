@@ -11,7 +11,7 @@
 
 <meta name="author" content="Fang Zhou, Data Scientist, Microsoft" />
 
-<meta name="date" content="2017-05-17" />
+<meta name="date" content="2017-05-18" />
 
 <title>Deploy a Credit Risk Model as a Web Service</title>
 
@@ -119,15 +119,19 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Deploy a Credit Risk Model as a Web Service</h1>
 <h4 class="author"><em>Fang Zhou, Data Scientist, Microsoft</em></h4>
-<h4 class="date"><em>2017-05-17</em></h4>
+<h4 class="date"><em>2017-05-18</em></h4>
 
 </div>
 
 
 <div id="introduction" class="section level2">
 <h2>1 Introduction</h2>
-<p>This document will walk through you how to deploy a credit risk model as a web service, using the <code>mrsdeploy</code> package that ships with Microsoft R Client and R Server.</p>
-<p>It will start by creating the model locally, then publish it as a web service, and then share it with other authenticated users for consumption.</p>
+<p>The <code>mrsdeploy</code> package, delivered with Microsoft R Client and R Server, provides functions for:</p>
+<p><strong>1</strong> Establishing a remote session in a R console application for the purposes of executing code on that server</p>
+<p><strong>2</strong> Publishing and managing an R web service that is backed by the R code block or script you provided.</p>
+<p>Each feature can be used independently, but the greatest value is achieved when you can leverage both.</p>
+<p>This document will walk through you how to deploy a credit risk model as a web service, using the <code>mrsdeploy</code> package.</p>
+<p>It will start by modelling locally, then publish it as a web service, and then share it with other authenticated users for consumption, and finally manage and update the web service.</p>
 </div>
 <div id="automated-credit-risk-model-deployment" class="section level2">
 <h2>2 Automated Credit Risk Model Deployment</h2>
@@ -236,64 +240,26 @@ model_rxtrees &lt;- rxFastTrees(formula=form,
                              numTrees=100,
                              numLeaves=20,
                              learningRate=0.2,
-                             minSplit=10)</code></pre>
-<pre><code>## Not adding a normalizer.
-## Making per-feature arrays
-## Changing data from row-wise to column-wise
-## Beginning processing data.
+                             minSplit=10,
+                             unbalancedSets=FALSE,
+                             verbose=0)</code></pre>
+<pre><code>## Beginning processing data.
 ## Rows Read: 128977, Read Time: 0, Transform Time: 0
-## Beginning processing data.
-## Processed 128977 instances
-## Binning and forming Feature objects
-## Reserved memory for tree learner: 219024 bytes
-## Starting to train ...
-## Not training a calibrator because it is not needed.
-## Elapsed time: 00:00:02.1784776</code></pre>
-<pre class="r"><code>summary(model_rxtrees)</code></pre>
-<pre><code>## Elapsed time: 00:00:00.2568312</code></pre>
+## Beginning processing data.</code></pre>
+<pre class="r"><code>model_rxtrees</code></pre>
 <pre><code>## Call:
 ## rxFastTrees(formula = form, data = data[train, c(target, vars)], 
 ##     type = &quot;binary&quot;, numTrees = 100, numLeaves = 20, learningRate = 0.2, 
-##     minSplit = 10)
+##     minSplit = 10, unbalancedSets = FALSE, verbose = 0)
 ## 
-## Predictor for: bad_flag~amount_6+pur_6+avg_pur_amt_6+avg_interval_pur_6+credit_limit+age+income+sex+education+marital_status
-## Data: data[train, c(target, vars)] 
-## 
-## Per-feature gain:
-## credit_limit: 1
-## age: 0.8760216
-## education.undergraduate: 0.3149455
-## education.polytechnics: 0.3069959
-## education.master: 0.2611516
-## income: 0.2581172
-## sex.female: 0.2488511
-## marital_status.single: 0.2456198
-## marital_status.married: 0.2349416
-## education.high_school: 0.2142461
-## sex.male: 0.1726051
-## amount_6: 0.1578717
-## education.middle_school: 0.1311938
-## avg_pur_amt_6: 0.08475202
-## avg_interval_pur_6: 0.02046135</code></pre>
+## FastTreeBinaryClassification (BinaryClassifierTrainer) for: bad_flag~amount_6+pur_6+avg_pur_amt_6+avg_interval_pur_6+credit_limit+age+income+sex+education+marital_status
+## Data: data[train, c(target, vars)]</code></pre>
 <pre class="r"><code># Produce a prediction function that can use the model
 
 creditRiskPrediction &lt;- function(account_id, amount_6, pur_6, avg_pur_amt_6, avg_interval_pur_6, 
                                  credit_limit, marital_status, sex, education, income, age)
-{
-  staticdata &lt;- data.frame(account_id=c(&quot;a_1055521381828530&quot;, &quot;a_1055521125532160&quot;,                                                                     &quot;a_914800337488587&quot;, &quot;a_844428146542225&quot;, &quot;a_844428047550192&quot;),
-                           amount_6=c(106.99, 212.49, 118.00, 151.19, 148.39),
-                           pur_6=c(1, 1, 1, 1, 1),
-                           avg_pur_amt_6=c(106.99, 212.49, 118.00, 151.19, 148.39),
-                           avg_interval_pur_6=c(0, 0, 0, 0, 0),
-                           credit_limit=c(2.21, -0.96, 3.82, -0.39, -0.45),
-                           marital_status=c(&quot;single&quot;, &quot;married&quot;, &quot;single&quot;, &quot;married&quot;, &quot;single&quot;),
-                           sex=c(&quot;female&quot;, &quot;male&quot;, &quot;male&quot;, &quot;female&quot;, &quot;female&quot;),
-                           education=c(&quot;master&quot;, &quot;high_school&quot;, &quot;middle_school&quot;, 
-                                       &quot;polytechnics&quot;, &quot;undergraduate&quot;),
-                           income=c(0, 6.27, 17.15, 9.94, 19.93),
-                           age=c(33, 47, 30, 51, 32))
-  
-  inputdata &lt;- data.frame(account_id=account_id,
+{ 
+  newdata &lt;- data.frame(account_id=account_id,
                           amount_6=amount_6, 
                           pur_6=pur_6, 
                           avg_pur_amt_6=avg_pur_amt_6, 
@@ -305,13 +271,10 @@ creditRiskPrediction &lt;- function(account_id, amount_6, pur_6, avg_pur_amt_6, 
                           income=income, 
                           age=age)
   
-  newdata &lt;- rbind(inputdata, staticdata)
-  
-  pred &lt;- rxPredict(model_rxtrees, data=newdata)[, c(1, 3)]
+  pred &lt;- rxPredict(modelObject=model_rxtrees, data=newdata)[, c(1, 3)]
   pred &lt;- cbind(newdata$account_id, pred)
   names(pred) &lt;- c(&quot;account_id&quot;, &quot;scored_label&quot;, &quot;scored_prob&quot;)
-  pred &lt;- pred[1, ]
-  pred
+  pred 
 }
 
 # Test function locally by printing results
@@ -328,10 +291,10 @@ pred &lt;- creditRiskPrediction(account_id=&quot;a_1055521029582310&quot;,
                              income=12.36, 
                              age=38)</code></pre>
 <pre><code>## Beginning processing data.
-## Rows Read: 6, Read Time: 0, Transform Time: 0
+## Rows Read: 1, Read Time: 0.001, Transform Time: 0
 ## Beginning processing data.
-## Elapsed time: 00:00:00.1521922
-## Finished writing 6 rows.
+## Elapsed time: 00:00:00.3347313
+## Finished writing 1 rows.
 ## Writing completed.</code></pre>
 <pre class="r"><code>print(pred)</code></pre>
 <pre><code>##           account_id scored_label scored_prob
@@ -376,7 +339,7 @@ api &lt;- publishService(
 </div>
 <div id="test-the-service-by-consuming-it-in-r" class="section level3">
 <h3>2.3 Test the service by consuming it in R</h3>
-<p>Finally, we can consume the service in R directly after publishing it to verify that the results are as expected.</p>
+<p>After publishing it , we can consume the service in R directly to verify that the results are as expected.</p>
 <pre class="r"><code># Get service and assign service to the variable `api`.
 
 api &lt;- getService(&quot;crpService&quot;, &quot;v1.0.0&quot;)
@@ -400,6 +363,52 @@ result &lt;- api$creditRiskPrediction(account_id=&quot;a_1055521029582310&quot;,
 print(result$output(&quot;pred&quot;)) </code></pre>
 <pre><code>##           account_id scored_label        scored_prob
 ## 1 a_1055521029582310           no 0.0250131245702505</code></pre>
+</div>
+<div id="update-the-web-service" class="section level3">
+<h3>2.4 Update the web service</h3>
+<p>In the process of production, we could manage and update the web service timely.</p>
+<pre class="r"><code># Load the pre-trained optimal model obtained from the template of CreditRiskScale.
+
+load(file=&quot;model_rxtrees.RData&quot;)
+
+model_rxtrees</code></pre>
+<pre><code>## Call:
+## rxFastTrees(formula = form, data = data_split[[1]], type = &quot;binary&quot;, 
+##     numTrees = 500, numLeaves = 20, learningRate = 0.3, minSplit = 10, 
+##     unbalancedSets = FALSE, verbose = 0)
+## 
+## FastTreeBinaryClassification (BinaryClassifierTrainer) for: bad_flag~amount_6+pur_6+avg_pur_amt_6+avg_interval_pur_6+credit_limit+age+income+sex+education+marital_status
+## Data: data_split[[1]] (RxXdfData Data Source)
+## File name:
+##     C:\Demo\acceleratoRs-master\CreditRiskPrediction\Code\file4b9418067c23..train.1.xdf</code></pre>
+<pre class="r"><code>api &lt;- updateService(name=&quot;crpService&quot;, 
+                     v=&quot;v1.0.0&quot;,
+                     model=model_rxtrees,
+                     descr=&quot;Update the model hyper-parameters&quot;)
+
+# Re-test the updated service by consuming it
+
+result &lt;- api$creditRiskPrediction(account_id=&quot;a_1055521029582310&quot;,
+                                   amount_6=173.22, 
+                                   pur_6=1, 
+                                   avg_pur_amt_6=173.22, 
+                                   avg_interval_pur_6=0, 
+                                   credit_limit=5.26, 
+                                   marital_status=&quot;married&quot;, 
+                                   sex=&quot;male&quot;, 
+                                   education=&quot;undergraduate&quot;, 
+                                   income=12.36, 
+                                   age=38)
+
+# Print response output named `answer`
+
+print(result$output(&quot;pred&quot;)) </code></pre>
+<pre><code>##           account_id scored_label        scored_prob
+## 1 a_1055521029582310           no 0.0156644005328417</code></pre>
+</div>
+<div id="application-integration" class="section level3">
+<h3>2.5 Application Integration</h3>
+<p>Last but not least, we can get the json file that is needed for application integration.</p>
 <pre class="r"><code># Get this service's `swagger.json` file that is needed for web application integration
 
 swagger &lt;- api$swagger(json = FALSE)

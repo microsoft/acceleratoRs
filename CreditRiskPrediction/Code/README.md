@@ -9,9 +9,13 @@ Some other critical R packages for the analysis:
 * glmnet >= 2.0-5 Logistic regression model with L1 and L2 regularization.
 * xgboost >= 0.6-4 Extreme gradiant boost model.
 * randomForest >= 4.6-12 Random Forest model.
+* caret >= 6.0-73 Classification and regression training.
 * caretEnsemble >= 2.0.0 Ensemble of caret based models.
-* dplyrXdf Out-of-Memory Data wrangling.
+
+* RevoScaleR >= 9.1 Parallel and chunked data processing and modeling. 
+* dplyrXdf >= 0.9.2 Out-of-Memory Data wrangling.
 * MicrosoftML >= 9.1 Microsoft machine learning models.
+
 * mrsdeploy >= 9.1 R Server Operationalization.
 
 # Use of template
