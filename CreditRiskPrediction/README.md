@@ -9,7 +9,14 @@ Many banks nowadays are driving innovation to enhance risk management. For examp
 The repository contains three parts
 
 - **Data** This contains the provided sample data. 
-- **Code** This contains the R development code. They are displayed in R markdown files which can yield files of various formats. 
+- **Code** This contains the R development code. They are displayed in R markdown files which can yield files of various formats, like html, ipynb, ect. 
+
+|  Template Name | Link to the HTML file | Description | 
+| ---:| ---: | ---: | 
+| CreditRiskPrediction | [link](https://github.com/Microsoft/acceleratoRs/blob/master/CreditRiskPrediction/Code/CreditRiskPrediction.html) | Development: Data Driven Credit Risk Prediction with R |
+| CreditRiskScale | [link](https://github.com/Microsoft/acceleratoRs/blob/master/CreditRiskPrediction/Code/CreditRiskScale.html) | Scalability: Faster and Scalable Credit Risk Models with Microsoft R Server | 
+| CreditRiskDeploy | [link](https://github.com/Microsoft/acceleratoRs/blob/master/CreditRiskPrediction/Code/CreditRiskDeploy.html) | Operationalization: Deploy a Credit Risk Model as Web Service |
+
 - **Docs** This contains the documents, like blog, installation instructions, etc. 
 
 ## Business domain
