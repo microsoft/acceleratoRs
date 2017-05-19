@@ -1,8 +1,9 @@
 # List of data sets
 |  Data Set Name | Link to the Full Data Set   | Full Data Set Size (KB)  | Link to Report |
 | ---:| ---: | ---: | ---: |
-| TransactionSimu.csv | [link](https://github.com/Microsoft/acceleratoRs/tree/master/CreditRiskPrediction/Data/TransactionSimu.csv) | 22,565 | N/A|
-| DemographicSimu.csv | [link](https://github.com/Microsoft/acceleratoRs/tree/master/CreditRiskPrediction/Data/DemographicSimu.csv) | 17,445 | N/A|
+| transactionSimu.csv | [link](https://github.com/Microsoft/acceleratoRs/tree/master/CreditRiskPrediction/Data/transactionSimu_v3.csv) | 22,565 | N/A|
+| demographicSimu.csv | [link](https://github.com/Microsoft/acceleratoRs/tree/master/CreditRiskPrediction/Data/demographicSimu_v3.csv) | 17,445 | N/A|
+| processedSimu.csv | [link](https://github.com/Microsoft/acceleratoRs/tree/master/CreditRiskPrediction/Data/processedSimu.csv) | 27,883 | N/A|
 
 # Description of data sets
 
