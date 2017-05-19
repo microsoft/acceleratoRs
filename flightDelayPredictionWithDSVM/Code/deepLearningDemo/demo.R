@@ -24,9 +24,11 @@ js_processed <- AzureSMR::azureGetBlob(context,
 df_processed <- 
   fromJSON(js_processed) %>%
   mutate(DayOfWeek=as.factor(DayOfWeek),
+         DayofMonth=as.integer(DayofMonth),
          Origin=as.factor(Origin),
          Dest=as.factor(Dest),
-         ArrDel15=ifelse(ArrDel15 == TRUE, 1, 0)) %T>%
+         DepTime=as.numeric(DepTime),
+         ArrDel15=ifelse(ArrDel15 == "TRUE", 1, 0)) %T>%
          {head(.) %>% print()}
 
 # -----------------------------------------------------------------------------
@@ -65,7 +67,7 @@ model_nn1 <- rxNeuralNet(formu,
 model_nn2 <- rxNeuralNet(formu,
                          data=df_train,
                          type="binary", 
-                         acceleration="gpu", 
+                         acceleration="gpu",
                          optimizer=adaDeltaSgd(),
                          numIterations=30, 
                          miniBatchSize=256)
@@ -97,5 +99,3 @@ auc <- rxAuc(roc)
 models <- list(model_nn2, model_nn1)
 
 model_optimal <- models[[which(auc == max(auc))]]
-
-save(model_optimal, file="model.RData")
