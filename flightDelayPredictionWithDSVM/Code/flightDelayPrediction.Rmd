@@ -5,7 +5,7 @@ output: html_notebook
 
 ## Intro
 
-It is common that a cloud-based data science project is partitioned into segments in which there is specific data science job to be finished. This segmentation of the whole work flow requires a optimal resource allocation and management that maximize working efficiency while minimizing potential cost.
+It is common that a cloud-based data science project is partitioned into segments in each of which there is specific data science job to be finished. This segmentation of the whole work flow requires a optimal resource allocation and management that maximize working efficiency while minimizing potential cost.
 
 ## Data Science Virtual Machine
 
@@ -19,7 +19,7 @@ With the pre-installed tools, many things can be done on a single DSVM or multip
 
 #### Local mode Spark for big data analytics
 
-Standalone mode Spark is useful to test programs for Spark on a single machine before they are scaled out onto a cluster. DSVM provides PySpark kernel as well as pre-installed R packages such as `RevoScaleR`, `SparkR`, and `sparkdplyr`.
+Standalone mode Spark is useful to test programs for Spark on a single machine before they are scaled out onto a cluster. DSVM provides PySpark kernel as well as pre-installed R packages such as `RevoScaleR`, `SparkR`, and `sparklyr`.
 
 More details can be found [here](http://aka.ms/linuxdsvmdoc).
 
@@ -35,7 +35,7 @@ More details can be found [here](http://aka.ms/linuxdsvmdoc).
 
 The tutorial in this notebook will demonstrate how to make use of a heterogeneous set of DSVMs for different sorts of tasks in a data science project - experimentation with a standalone-mode Spark, GPU-accelerated deep neural network training, and model deployment via web services. The benefits of doing this is that each provisioned DSVM will suit the specific task of each project sub-task, and stay alive only when it is needed. 
 
-The demonstration is completely implemented in R, with the help of R packages like
+The demonstration is completely implemented in R, with the help of R packages such as
 
 * Microsoft R Server including `RevoScaleR`, `deployR`, and `MicrosoftML`.
 * `AzureSMR` and `AzureDSVM`.
@@ -45,11 +45,11 @@ A simple binary classification problem on how to create a predictive model to pr
 
 To achieve the heterogeneity, three DSVMs with different configurations are fired up.
 
-|DSVM name|DSVM Size|OS|Description|
-|---------------|--------------------|-------------|-----------------------|
-|spark|Standard D4 v2 - 8 cores and 28 GB memory|Linux|Standalone mode Spark for data preprocessing and feature engineering.|
-|deeplearning|Standard NC6 - 6 cores, 56 GB memory, and Tesla K80 GPU|Windows|Train deep neural network model with GPU acceleration.|
-|webserver|Standard D4 v2 - 8 cores and 28 GB memory|Windows|Deployed as a server where MRS service is published and run on.|
+|DSVM name|DSVM Size|OS|Description|Price|
+|---------|--------------------|--------|-----------------------|--------|
+|spark|Standard F16 - 16 cores and 32 GB memory|Linux|Standalone mode Spark for data preprocessing and feature engineering.|$0.796/hr|
+|deeplearning|Standard NC6 - 6 cores, 56 GB memory, and Tesla K80 GPU|Windows|Train deep neural network model with GPU acceleration.|$0.9/hr|
+|webserver|Standard D4 v2 - 8 cores and 28 GB memory|Linux|Deployed as a server where MRS service is published and run on.|$0.585/hr|
 
 ### Deployment
 
@@ -140,13 +140,13 @@ cat("Resource group", RG, "at", LOC,
 
 ```
 
-Fire up the three DSVMs.
+Fire up the three DSVMs. It took approximately 2 minutes, 37 minutes, and 8 minutes, respectively, for each deployment.
 ```{r}
 # Linux based DSVM for standalone mode Spark.
 
 deployDSVM(context, 
            resource.group=RG, 
-           size="Standard_D4_v2",
+           size="Standard_F16",
            location=LOC,
            hostname=HOST1,
            username=USER,
@@ -166,7 +166,7 @@ deployDSVM(context,
            password=PWD,
            mode="Async")
 
-# Linux based DSVM for MRS web server.
+# Windows based DSVM for MRS web server.
 
 deployDSVM(context, 
            resource.group=RG, 
@@ -174,7 +174,7 @@ deployDSVM(context,
            location=LOC,
            hostname=HOST3,
            username=USER,
-           authen="Password", 
+           authen="Password",
            password=PWD)
 ```
 
@@ -182,17 +182,15 @@ Check status of the machines.
 ```{r}
 azureListVM(context, RG)
 
-operateDSVM(context, RG, HOST1, operation="Check")
-operateDSVM(context, RG, HOST2, operation="Check")
-operateDSVM(context, RG, HOST3, operation="Check")
+operateDSVM(context, RG, c(HOST1, HOST2, HOST3), operation="Check")
 ```
 
 ### Setup
 
 After the deployment, there are several setups needed for the three provisioned DSVMs before experiments can be conducted. 
 
-2. **GPU toolkit configuration** - A Windows based DSVM does not come with an installed CUDA Toolkit and cuDNN library. Therefore one needs to manually install and configure both of the two. Guidelines for doing this can be found in the [introduction of `rxNeuralNet` function, the `acceleration` argument](https://msdn.microsoft.com/en-us/microsoft-r/microsoftml/packagehelp/neuralnet. 
-3. **One-box configuration** - [One-box configuration](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial) is to enable remote execution and web service API calls of a DSVM which is used an R server. 
+1. **GPU toolkit configuration** - A Windows based DSVM does not come with an installed CUDA Toolkit and cuDNN library. Therefore one needs to manually install and configure both of the two. Guidelines for doing this can be found in the [introduction of `rxNeuralNet` function, the `acceleration` argument](https://msdn.microsoft.com/en-us/microsoft-r/microsoftml/packagehelp/neuralnet. 
+2. **One-box configuration** - [One-box configuration](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial) is to enable remote execution and web service API calls of a DSVM which is used an R server. 
 
 ### Experiment.
 
@@ -206,13 +204,8 @@ end_point_3 <- paste(HOST3, LOC, "cloudapp.azure.com", sep=".")
 ```
 
 Assuming all the three DSVMs were previously deallocated, start the one for data pre-processing on Spark and do the analytics on that.
-```{r}
-# check the available DSVMs in the resource group.
 
-azureListVM(context, RG, LOC)
-```
-
-Data used in this demo is small so it is preserved in Azure storage account as a blob. At least a container is needed for a storage account. This can be achieved in Azure portal or by using `AzureSMR`.
+Data used in this demo is small so it is preserved in Azure storage account as a blob. This can be achieved in Azure portal or by using `AzureSMR`.
 ```{r}
 SA_ACCOUNT   <- paste0(HOST3, "sa")
 SA_CONTAINER <- "demodata"
@@ -268,13 +261,11 @@ On the remote session load the image where needed objects are contained.
 
 Switch back to local R session and execute the demo script.
 ```{r}
-# RMEOTE> pause()
+# REMOTE> pause()
 
 # remote execution of scripts located at local.
 
-results <- remoteScript("../codes/sparkDemo/demo.R")
-
-results
+results <- remoteScript("../codes/dsvm_codes/sparkDemo/demo.R") 
 
 remoteLogout()
 ```
@@ -293,7 +284,7 @@ operateDSVM(context, RG, HOST2, operation="Start")
 # authenticate with the remote DSVM.
 
 remoteLogin(paste0("http://", end_point_2, ":12800"), 
-            session=TRUE, 
+            session=TRUE,
             diff=FALSE,
             username="admin",
             password=PWD)
@@ -311,14 +302,14 @@ resume()
 
 # remote execution of scripts located at local.
 
-results <- remoteScript("../codes/deepLearningDemo/demo.R", 
-                        displayPlots=TRUE, 
-                        writePlots=TRUE)
+remoteScript("../codes/dsvm_codes/deepLearningDemo/demo.R") 
 ```
+
+Elapsed time may vary from run to run but generally this is an obvious improvement of computation performance by using GPU as an accelerator.
 
 Get result from remote.
 ```{r}
-model_optimal <- getRemoteObject("model_optimal", name="model_optimal")
+getRemoteObject(obj="model_optimal")
 ```
 
 Log out and stop the machine.
@@ -362,7 +353,7 @@ resume()
 
 Wrap the model into a function which is then published as a service. 
 ```{r}
-delayPrediction <- function(DayOfMonth, 
+delayPrediction <- function(DayofMonth, 
                             DayOfWeek,
                             Origin,
                             Dest,
@@ -370,14 +361,16 @@ delayPrediction <- function(DayOfMonth,
   
   # NOTE column of ArrDel15 is provided due to the requirement of MML model.
   
-  newdata <- data.frame(DayofMOnth=DayOfMonth,
+  newdata <- data.frame(DayofMonth=DayofMonth,
                         DayOfWeek=as.factor(DayOfWeek),
                         Origin=as.factor(Origin),
                         Dest=as.factor(Dest),
-                        DepTime=DepTime,
-                        ArrDel15=as.integer(0))
+                        DepTime=as.numeric(DepTime),
+                        ArrDel15=as.numeric(0))
   
-  rxPredict(model_optimal, newdata)$PredictedLabel
+  pred <- RevoScaleR::rxPredict(modelObject=model_optimal, data=newdata)
+
+  ifelse(pred$PredictedLabel == 1, "Delayed", "Not delayed")
 }
 ```
 
@@ -386,12 +379,12 @@ Publish the model as a real time web service.
 publishService(name="DelayPrediction",
                model=model_optimal,
                code=delayPrediction,
-               inputs=list(DayOfMonth="integer",
+               inputs=list(DayofMonth="integer",
                            DayOfWeek="character",
                            Origin="character",
                            Dest="character",
                            DepTime="numeric"),
-               outputs=list(ArrDel15="integer"),
+               outputs=list(ArrDel15="character"),
                v="0.0.1",
                alias="DPModel") 
 
@@ -423,7 +416,7 @@ delay_pred_api <- getService(name="DelayPrediction", v="0.0.1")
 # test with a random generated data.
 
 df_test <- data.frame(
-  DayOfMonth=14L,
+  DayofMonth=14L,
   DayOfWeek="Wed",
   Origin="COS",
   Dest="SLC",
@@ -433,7 +426,7 @@ df_test <- data.frame(
 
 # use the web service for prediction.
 
-air_delay_prediction <- delay_pred_api$DPModel(df_test$DayOfMonth,
+air_delay_prediction <- delay_pred_api$DPModel(df_test$DayofMonth,
                                                df_test$DayOfWeek,
                                                df_test$Origin,
                                                df_test$Dest,
@@ -448,7 +441,7 @@ Log out and stop the DSVM.
 ```{r}
 remoteLogout()
 
-operateDSVM(context, RG, HOST2, operation="Stop")
+operateDSVM(context, RG, HOST3, operation="Stop")
 ```
 
 The call to service API will return the prediction results by using the pre-trained model.
@@ -477,7 +470,7 @@ cost_dsvms <- sapply(dsvms,
                      granularity="Daily",
                      currency="USD",
                      locale="en-US",
-                     offerId="<offer_id_of_the_subscription",
+                     offerId="<offer_id_of_the_subscription>",
                      region=LOC)
 ```
 
