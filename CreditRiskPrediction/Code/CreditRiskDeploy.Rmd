@@ -1,0 +1,297 @@
+---
+title: "Deploy a Credit Risk Model as a Web Service"
+author: "Fang Zhou, Data Scientist, Microsoft"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.width = 8,
+                      fig.height = 5,
+                      fig.align='center',
+                      dev = "png")
+```
+
+## 1 Introduction
+
+The `mrsdeploy` package, delivered with Microsoft R Client and R Server, provides functions for:
+
+**1** Establishing a remote session in a R console application for the purposes of executing code on that server
+
+**2** Publishing and managing an R web service that is backed by the R code block or script you provided. 
+
+Each feature can be used independently, but the greatest value is achieved when you can leverage both.
+
+This document will walk through you how to deploy a credit risk model as a web service, using the `mrsdeploy` package.
+
+It will start by modelling locally, then publish it as a web service, and then share it with other authenticated users for consumption, and finally manage and update the web service. 
+
+## 2 Automated Credit Risk Model Deployment
+
+### 2.1 Setup
+
+We load the required R packages.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Setup
+
+# Load the required packages into the R session.
+
+library(rattle)       # Use normVarNames().
+library(dplyr)        # Wrangling: tbl_df(), group_by(), print(), glimpse().
+library(magrittr)     # Pipe operator %>% %<>% %T>% equals().
+library(scales)       # Include commas in numbers.
+library(MicrosoftML)  # Build models using Microsoft ML algortihms.
+library(mrsdeploy)    # Publish an R model as a web service.
+```
+
+Then, the dataset processedSimu is ingested for demonstration. This dataset was created by the data preprocessing steps in the data science accelerator for credit risk prediction.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Data Ingestion
+
+# Identify the source location of the dataset.
+
+#DATA <- "../../Data/"
+#txn_fname <- file.path(DATA, "Raw/processedSimu.csv")
+
+wd <- getwd()
+
+dpath <- "../Data"
+data_fname <- file.path(wd, dpath, "processedSimu.csv")
+
+# Ingest the dataset.
+
+data <- read.csv(file=data_fname) %T>% 
+  {dim(.) %>% comma() %>% cat("\n")}
+
+# A glimpse into the data.
+
+glimpse(data)
+```
+
+### 2.2 Model Locally
+
+Now, let's get started to build an R model based web service. 
+
+First of all, we create a machine learning fast tree model on the dataset processedSimu by using the function `rxFastTrees()` from the `MicrosoftML` package. This model could be used to predict whether an account will default or to predict its probability of default, given some transaction statistics and demographic & bank account information as inputs.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Variable roles.
+
+# Target variable
+
+target <- "bad_flag"
+
+# Note any identifier.
+
+id <- c("account_id") %T>% print() 
+
+# Note the available variables as model inputs.
+
+vars <- setdiff(names(data), c(target, id))
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Split Data
+
+set.seed(42)
+
+data <- data[order(runif(nrow(data))), ]
+
+train <- sample(nrow(data), 0.70 * nrow(data))
+test <- setdiff(seq_len(nrow(data)), train)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Prepare the formula
+
+top_vars <- c("amount_6", "pur_6", "avg_pur_amt_6", "avg_interval_pur_6", "credit_limit", "age", "income", "sex", "education", "marital_status")
+
+form <- as.formula(paste(target, paste(top_vars, collapse="+"), sep="~"))
+form
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Train model: rxFastTrees
+
+model_rxtrees <- rxFastTrees(formula=form,
+                             data=data[train, c(target, vars)],
+                             type="binary",
+                             numTrees=100,
+                             numLeaves=20,
+                             learningRate=0.2,
+                             minSplit=10,
+                             unbalancedSets=FALSE,
+                             verbose=0)
+
+model_rxtrees
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Produce a prediction function that can use the model
+
+creditRiskPrediction <- function(account_id, amount_6, pur_6, avg_pur_amt_6, avg_interval_pur_6, 
+                                 credit_limit, marital_status, sex, education, income, age)
+{ 
+  newdata <- data.frame(account_id=account_id,
+                          amount_6=amount_6, 
+                          pur_6=pur_6, 
+                          avg_pur_amt_6=avg_pur_amt_6, 
+                          avg_interval_pur_6=avg_interval_pur_6, 
+                          credit_limit=credit_limit, 
+                          marital_status=marital_status, 
+                          sex=sex, 
+                          education=education, 
+                          income=income, 
+                          age=age)
+  
+  pred <- rxPredict(modelObject=model_rxtrees, data=newdata)[, c(1, 3)]
+  pred <- cbind(newdata$account_id, pred)
+  names(pred) <- c("account_id", "scored_label", "scored_prob")
+  pred 
+}
+
+# Test function locally by printing results
+
+pred <- creditRiskPrediction(account_id="a_1055521029582310",
+                             amount_6=173.22, 
+                             pur_6=1, 
+                             avg_pur_amt_6=173.22, 
+                             avg_interval_pur_6=0, 
+                             credit_limit=5.26, 
+                             marital_status="married", 
+                             sex="male", 
+                             education="undergraduate", 
+                             income=12.36, 
+                             age=38)
+
+print(pred)
+```
+
+### 2.2 Publish model as a web service
+
+The second procedure is to publish the model as a web service by following the below steps.
+
+Step 1: From your local R IDE, log into Microsoft R Server with your credentials using the appropriate authentication function from the `mrsdeploy` package (remoteLogin or remoteLoginAAD). 
+
+For simplicity, the code below uses the basic local admin account for authentication with the remoteLogin function and `session = false` so that no remote R session is started. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Use `remoteLogin` to authenticate with R Server using 
+# the local admin account. Use session = false so no 
+# remote R session started
+
+remoteLogin("http://localhost:12800", 
+         username="admin", 
+         password="P@ssw0rd",
+         session=FALSE)
+```
+
+Now, you are successfully connected to the remote R Server.
+
+Step 2: Publish the model as a web service to R Server using the `publishService()` function from the `mrsdeploy` package. 
+
+In this example, you publish a web service called "crpService" using the model `model_rxtrees` and the function `creditRiskPrediction()`. As an input, the service takes a list of transaction statistics and demographic & bank account information represented as numerical or categorical. As an output, an R data frame including the account id, the predicted label of default, and the probability of default for the given individual account, has of being achieved with the pre-defined credit risk prediction function. 
+
+When publishing, you must specify, among other parameters, a service name and version, the R code, the inputs, as well as the outputs that application developers will need to integrate in their applications. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Publish a web service
+
+api <- publishService(
+       "crpService",
+        code=creditRiskPrediction,
+        model=model_rxtrees,
+        inputs=list(account_id="character",
+                    amount_6="numeric", 
+                    pur_6="numeric", 
+                    avg_pur_amt_6="numeric", 
+                    avg_interval_pur_6="numeric", 
+                    credit_limit="numeric", 
+                    marital_status="character", 
+                    sex="character", 
+                    education="character", 
+                    income="numeric", 
+                    age="numeric"),
+        outputs=list(pred="data.frame"),
+        v="v1.0.0")
+```
+
+### 2.3 Test the service by consuming it in R
+
+After publishing it , we can consume the service in R directly to verify that the results are as expected.
+
+```{r, message=FALSE, warning=FALSE, error=TRUE}
+# Get service and assign service to the variable `api`.
+
+api <- getService("crpService", "v1.0.0")
+
+# Consume service by calling function, `creditRiskPrediction` contained in this service
+
+result <- api$creditRiskPrediction(account_id="a_1055521029582310",
+                                   amount_6=173.22, 
+                                   pur_6=1, 
+                                   avg_pur_amt_6=173.22, 
+                                   avg_interval_pur_6=0, 
+                                   credit_limit=5.26, 
+                                   marital_status="married", 
+                                   sex="male", 
+                                   education="undergraduate", 
+                                   income=12.36, 
+                                   age=38)
+
+# Print response output named `answer`
+
+print(result$output("pred")) 
+```
+
+### 2.4 Update the web service
+
+In the process of production, we could manage and update the web service timely.
+
+```{r, message=FALSE, warning=FALSE, error=TRUE}
+# Load the pre-trained optimal model obtained from the template of CreditRiskScale.
+
+load(file="model_rxtrees.RData")
+
+model_rxtrees
+
+api <- updateService(name="crpService", 
+                     v="v1.0.0",
+                     model=model_rxtrees,
+                     descr="Update the model hyper-parameters")
+
+# Re-test the updated service by consuming it
+
+result <- api$creditRiskPrediction(account_id="a_1055521029582310",
+                                   amount_6=173.22, 
+                                   pur_6=1, 
+                                   avg_pur_amt_6=173.22, 
+                                   avg_interval_pur_6=0, 
+                                   credit_limit=5.26, 
+                                   marital_status="married", 
+                                   sex="male", 
+                                   education="undergraduate", 
+                                   income=12.36, 
+                                   age=38)
+
+# Print response output named `answer`
+
+print(result$output("pred")) 
+```
+
+### 2.5 Application Integration
+
+Last but not least, we can get the json file that is needed for application integration.
+
+```{r, message=FALSE, warning=FALSE, error=TRUE}
+# Get this service's `swagger.json` file that is needed for web application integration
+
+swagger <- api$swagger(json = FALSE)
+
+# Delete the service to make the script re-runable
+
+deleteService(name="crpService", v="v1.0.0")
+```

@@ -9,7 +9,7 @@ Many banks nowadays are driving innovation to enhance risk management. For examp
 The repository contains three parts
 
 - **Data** This contains the provided sample data. 
-- **Code** This contains the R development code. They are displayed in R markdown files which can yield files of various formats. 
+- **Code** This contains the R development code. They are displayed in R markdown files which can yield files of various formats, like html, ipynb, ect. 
 - **Docs** This contains the documents, like blog, installation instructions, etc. 
 
 ## Business domain
@@ -37,3 +37,12 @@ In the data-driven credit risk prediction model, normally two types of data are 
 1. Traditional logistic regression model with L1 regularization are built as a baseline.
 2. Machine learning models, such as gradiant boosting and random forest, or their ensembles, are fine tuned to compare the performance at various aspects. 
 3. Innovative convolutionary hotspot method will be pursued in the near future.
+
+## Scalability
+
+**Faster and scalable credit risk models** are built using the state-of-the-art machine learning algorithms provided by the `MicrosoftML` package.
+
+## Operationalization
+
+An **R model based web service for credit risk prediction** is published and consumed by using the `mrsdeploy` package that ships with Microsoft R Client and R Server 9.1.
+ 
