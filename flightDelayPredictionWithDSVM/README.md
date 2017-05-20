@@ -40,3 +40,5 @@ Detailed information for each of the machines is listed as follows.
 |spark|Standard F16 - 16 cores and 32 GB memory|Linux|Standalone mode Spark for data preprocessing and feature engineering.|$0.796/hr|
 |deeplearning|Standard NC6 - 6 cores, 56 GB memory, and Tesla K80 GPU|Windows|Train deep neural network model with GPU acceleration.|$0.9/hr|
 |webserver|Standard D4 v2 - 8 cores and 28 GB memory|Linux|Deployed as a server where MRS service is published and run on.|$0.585/hr|
+
+Data storage is used for temporarily preserving processed data, and it can also be seamlessly connected to DSVMs and administrated within R session by using AzureSMR package.  
