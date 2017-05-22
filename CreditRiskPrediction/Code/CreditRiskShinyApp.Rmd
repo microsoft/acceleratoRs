@@ -81,17 +81,17 @@ server <- function(input, output) {
     
     output$predResult <- renderPrint({
       
-      account_id <- as.character(input$account_id)
-      amount_6 <- as.numeric(input$amount_6)
-      pur_6 <- as.numeric(input$pur_6)
-      avg_pur_amt_6 <- as.numeric(input$avg_pur_amt_6)
+      account_id         <- as.character(input$account_id)
+      amount_6           <- as.numeric(input$amount_6)
+      pur_6              <- as.numeric(input$pur_6)
+      avg_pur_amt_6      <- as.numeric(input$avg_pur_amt_6)
       avg_interval_pur_6 <- as.numeric(input$avg_interval_pur_6)
-      credit_limit <- as.numeric(input$credit_limit)
-      marital_status <- as.character(input$marital_status)
-      sex <- as.character(input$sex)
-      education <- as.character(input$education)
-      income <- as.numeric(input$income)
-      age <- as.numeric(input$age)
+      credit_limit       <- as.numeric(input$credit_limit)
+      marital_status     <- as.character(input$marital_status)
+      sex                <- as.character(input$sex)
+      education          <- as.character(input$education)
+      income             <- as.numeric(input$income)
+      age                <- as.numeric(input$age)
     
       result <- api$creditRiskPrediction(
                        account_id,
