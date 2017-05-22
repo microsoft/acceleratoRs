@@ -17,6 +17,7 @@ Some other critical R packages for the analysis:
 * MicrosoftML >= 9.1 Microsoft machine learning models.
 
 * mrsdeploy >= 9.1 R Server Operationalization.
+* shiny >= 1.0.0 Shiny Application.
 
 # Use of template
 

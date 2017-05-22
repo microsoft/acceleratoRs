@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Credit Risk Scoring is a classic but increasingly important operation in banking as banks are becoming far more risk careful when lending for mortgages or commercial purposes, in an industry known for fierce competition and the global financial crisis. With an accurate credit risk scoring model a bank is able to predict the likelihood of default on a transaction. This will in turn help evaluate the potential risk posed by lending money to consumers and to mitigate losses due to bad debt, as well as determine who qualifies for a loan, at what interest rate, and what credit limits, and even determine which customers are likely to bring in the most revenue through a variety of products.
+Credit Risk Scoring is a classic but increasingly important operation in banking as banks are becoming far more risk careful when lending for mortgages, credit card payment or commercial purposes, in an industry known for fierce competition and the global financial crisis. With an accurate credit risk scoring model a bank is able to predict the likelihood of default on a transaction. This will in turn help evaluate the potential risk posed by lending money to consumers and to mitigate losses due to bad debt, as well as determine who qualifies for a loan, at what interest rate, and what credit limits, and even determine which customers are likely to bring in the most revenue through a variety of products.
 
 Many banks nowadays are driving innovation to enhance risk management. For example, a largest bank in one of the Asian countries by market capitalization is exploring opportunities to segment a millions of active credit card customer population to improve risk scoring to then identify opportunities to offer increased limits. Using advanced analytics for credit risk scoring involves traditional scorecard building and modelling, and extends to machine learning and ensemble, but will also pursue an innovation on customer oriented aggregation of transactions, multi-dimensional customer segmentation and conceptual clustering to identify multiple segments across which to understand bank customers.
 
@@ -24,7 +24,7 @@ Normally credit risk prediction is categorized as a classification problem, that
 
 In the data-driven credit risk prediction model, normally two types of data are taken into consideration. 
 
-1. **Transaction data** The transaction records covering account id, transaction date, transaction amount, merchant industry, ect. This transaction-level data could be dynamically aggregated and then provide transaction statistics and financial behavior information at account level.
+1. **Transaction data** The transaction records cover transaction_id, account id, transaction date, transaction amount, merchant industry, ect. This transaction-level data could be dynamically aggregated and then provide transaction statistics and financial behavior information at account level.
 2. **Demographic and bank account information** This type of data show the characteristics of individual customer or account credit bureau, such as age, sex, income, and credit limit. They are static and never change or solely increment deterministically over time.
 
 ## Feature Engineering
@@ -35,7 +35,7 @@ In the data-driven credit risk prediction model, normally two types of data are 
 ## Modeling
 
 1. Traditional logistic regression model with L1 regularization are built as a baseline.
-2. Machine learning models, such as gradiant boosting and random forest, or their ensembles, are fine tuned to compare the performance at various aspects. 
+2. Machine learning models, such as gradient boosting and random forest, or their ensembles, are fine tuned to compare the performance at various aspects. 
 3. Innovative convolutionary hotspot method will be pursued in the near future.
 
 ## Scalability
@@ -45,4 +45,8 @@ In the data-driven credit risk prediction model, normally two types of data are 
 ## Operationalization
 
 An **R model based web service for credit risk prediction** is published and consumed by using the `mrsdeploy` package that ships with Microsoft R Client and R Server 9.1.
+
+## Application Development
+
+A **Credit Risk Application through REST API** is developed by integrating the published web service with a shiny framework.   
  
