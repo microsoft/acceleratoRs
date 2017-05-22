@@ -1,0 +1,124 @@
+---
+title: "Credit Risk Application"
+author: "Fang Zhou, Data Scientist, Microsoft"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.width = 8,
+                      fig.height = 5,
+                      fig.align='center',
+                      dev = "png")
+```
+
+## 1 Introduction
+
+This document will walk through how to develop a shiny application for credit risk prediction through REST API.
+
+## 2 Credit Risk Application through REST API
+
+### 2.1 Setup
+
+We load the required R packages.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Setup
+
+# Load the required packages into the R session.
+
+library(mrsdeploy)    # Get a web service by getService().
+library(shiny)        # Build a shiny application.
+```
+
+### 2.2 Shiny UI
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Define a shiny ui.
+
+ui <- fluidPage(
+  
+  titlePanel("Credit Risk Prediction"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      textInput("account_id", "Account ID", "a_1055521029582310"),
+      textInput("amount_6", "Amount 6", 173.22),
+      textInput("pur_6", "Pur 6", 1),
+      textInput("avg_pur_amt_6", "Avg Pur Amt 6", 173.22),
+      textInput("avg_interval_pur_6", "Avg Interval Pur 6", 0),
+      textInput("credit_limit", "Credit Limit", 5.26),
+      textInput("marital_status", "Marital Status", "married"),
+      textInput("sex", "Sex", "male"),
+      textInput("education", "Education", "undergraduate"),
+      textInput("income", "Income", 12.36),
+      textInput("age", "Age", 38),
+      actionButton("do", "Start Credit Prediction")
+    ),
+    mainPanel(
+      verbatimTextOutput("predResult")
+    )
+  )
+)
+```
+
+### 2.3 Shiny Server
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Define a shiny server which consumes the crpService.
+
+server <- function(input, output) {
+  
+  remoteLogin("http://localhost:12800", 
+              username="admin", 
+              password="P@ssw0rd",
+              session=FALSE)
+  
+  api <- getService("crpService", "v1.0.0")
+
+  observeEvent(input$do, {
+    
+    output$predResult <- renderPrint({
+      
+      account_id <- as.character(input$account_id)
+      amount_6 <- as.numeric(input$amount_6)
+      pur_6 <- as.numeric(input$pur_6)
+      avg_pur_amt_6 <- as.numeric(input$avg_pur_amt_6)
+      avg_interval_pur_6 <- as.numeric(input$avg_interval_pur_6)
+      credit_limit <- as.numeric(input$credit_limit)
+      marital_status <- as.character(input$marital_status)
+      sex <- as.character(input$sex)
+      education <- as.character(input$education)
+      income <- as.numeric(input$income)
+      age <- as.numeric(input$age)
+    
+      result <- api$creditRiskPrediction(
+                       account_id,
+                       amount_6,
+                       pur_6,
+                       avg_pur_amt_6,
+                       avg_interval_pur_6,
+                       credit_limit,
+                       marital_status,
+                       sex,
+                       education,
+                       income,
+                       age)
+      
+      pred <- result$output("pred")
+      
+      pred
+    })
+  })
+}
+```
+
+### 2.4 Shiny App
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Call the defined shiny app.
+
+shinyApp(ui, server)
+```
+
