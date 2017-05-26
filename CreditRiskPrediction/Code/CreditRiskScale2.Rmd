@@ -1,0 +1,354 @@
+---
+title: "Faster and Scalable Credit Risk Prediction"
+author: "Fang Zhou, Data Scientist, Microsoft"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.width = 8,
+                      fig.height = 5,
+                      fig.align='center',
+                      dev = "png")
+```
+
+## 1 Introduction
+
+Microsoft R is a collection of servers and tools that extend the capabilities of R, making it easier and faster to build and deploy R-based solutions. Microsoft R brings you the ability to do parallel and chunked data processing and modelling that relax the restrictions on dataset size imposed by in-memory open source R. 
+
+The `MicrosoftML` package brings new machine learning functionality with increased speed, performance and scalability, especially for handling a large corpus of text data or high-dimensional categorical data. The `MicrosoftML` package is installed with **Microsoft R Client**, **Microsoft R Server** and with the **SQL Server Machine Learning Services**.
+
+This document will walk through you how to build faster and scalable credit risk models, using the `MicrosoftML` package that adds state-of-the-art machine learning algorithms and data transforms to Microsoft R Server.
+
+## 2 Faster and Scalable Credit Risk Models
+
+### 2.1 Setup
+
+We load the required R packages.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Setup
+
+# Load the required packages into the R session.
+
+library(rattle)       # Use normVarNames().
+library(dplyr)        # Wrangling: tbl_df(), group_by(), print(), glimpse().
+library(magrittr)     # Pipe operator %>% %<>% %T>% equals().
+library(scales)       # Include commas in numbers.
+library(RevoScaleR)   # Enable out-of-memory computation in R.
+library(dplyrXdf)     # Wrangling on xdf data format.
+library(MicrosoftML)  # Build models using Microsoft ML algortihms.
+library(caret)        # Calculate confusion matrix by using confusionMatrix().
+library(ROCR)         # Provide functions for model performance evaluation.
+```
+
+Then, the dataset processedSimu is ingested and transformed into a `.xdf` data format. This dataset was created by the data preprocessing steps in the data science accelerator for credit risk prediction.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Data Ingestion
+
+# Identify the source location of the dataset.
+
+#DATA <- "../../Data/"
+#data_fname <- file.path(DATA, "Raw/processedSimu.csv")
+
+wd <- getwd()
+
+dpath <- "../Data"
+data_fname <- file.path(wd, dpath, "processedSimu.csv")
+output_fname <- file.path(wd, dpath, "processedSimu.xdf")
+output <- RxXdfData(file=output_fname)
+
+# Ingest the dataset.
+
+data <- rxImport(inData=data_fname, 
+                 outFile=output,
+                 stringsAsFactors=TRUE,
+                 overwrite=TRUE)
+
+
+# View data information.
+
+rxGetVarInfo(data)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Variable roles.
+
+# Target variable
+
+target <- "bad_flag"
+
+# Note any identifier.
+
+id <- c("account_id") %T>% print() 
+
+# Note the available variables as model inputs.
+
+vars <- setdiff(names(data), c(target, id)) %T>% print()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Summarize data
+
+rxSummary(formula=as.formula(paste('~', paste(c(target, vars), collapse="+"))), data)
+```
+
+### 2.2 Model Building
+
+Now, let's get started to build credit risk models by leveraging different machine learning algorithms from the `MicrosoftML` package. 
+
+First of all, we create individual machine learning models on the dataset processedSimu.xdf by using the functions `rxLogisticRegression()`, `rxFastForest()`, `rxFastTrees()` with different sets of hyper-parameters. The function `rxExec()` is used to train those models in parallel.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Split Data
+
+set.seed(42)
+
+# Add training/testing flag to each observation.
+
+data %<>%
+  mutate(.train=factor(sample(1:2, .rxNumRows,
+                              replace=TRUE,
+                              prob=c(0.70, 0.30)),
+                       levels=1:2))
+
+# Split dataset into training/test.
+
+data_split <- rxSplit(data, splitByFactor=".train")
+
+data_train <- data_split[[1]]
+data_test <- data_split[[2]]
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Prepare the formula
+
+top_vars <- c("amount_6", "pur_6", "avg_pur_amt_6", "avg_interval_pur_6", "credit_limit", "age", "income", "sex", "education", "marital_status")
+
+form <- as.formula(paste(target, paste(top_vars, collapse="+"), sep="~"))
+form
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Train Model
+
+models <- list(name=c("rxLogisticRegression", "rxFastForest", "rxFastTrees"),
+               para=list(list(list(l1Weight=0, 
+                                   l2Weight=0),
+                              list(l1Weight=0.5,
+                                   l2Weight=0.5),
+                              list(l1Weight=1,
+                                   l2Weight=1)),
+                         list(list(numTrees=50,
+                                   numLeaves=15,
+                                   minSplit=10),
+                              list(numTrees=100,
+                                   numLeaves=20,
+                                   minSplit=10),
+                              list(numTrees=500,
+                                   numLeaves=25,
+                                   minSplit=10)),
+                         list(list(numTrees=50,
+                                   learningRate=0.1,
+                                   unbalancedSet=FALSE),
+                              list(numTrees=100,
+                                   learningRate=0.2,
+                                   unbalancedSet=FALSE),
+                              list(numTrees=500,
+                                   learningRate=0.3,
+                                   unbalancedSet=FALSE))
+                         ))
+
+# Define a function to train multiple models with different sets of hyper-parameters.
+
+trainModel <- function(formula, data, modelName, modelPara, algoIndex) {
+  
+  tunePara <- function(formula, data, modelName, modelPara) {
+    model <- do.call(modelName, c(list(formula=formula,
+                                       data=data),
+                                  modelPara))
+    return(list(model=model))
+  }
+  
+  output <- rxExec(tunePara,
+                   formula=formula,
+                   data=data,
+                   modelName=modelName[algoIndex],
+                   modelPara=rxElemArg(modelPara[[which(modelName == modelName[algoIndex])]]))
+  
+  return(list(output=output))
+}
+
+# Specify the local parallel compute context.
+
+rxSetComputeContext("localpar")
+
+# Train multiple models with different sets of hyper-parameters in parallel using rxExec.
+
+time_train <- system.time(
+  
+result <- rxExec(trainModel, 
+                 formula=form,
+                 data=data_train,
+                 modelName=models$name,
+                 modelPara=models$para,
+                 algoIndex=rxElemArg(c(1:3)))
+)
+
+time_train
+```
+
+### 2.3 Model Evaluation 
+
+Finally, we evaluate and compare the above built models at various aspects. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Evaluate Model
+
+model_list <- list(result[[1]]$output$rxElem1$model, 
+                   result[[1]]$output$rxElem2$model,
+                   result[[1]]$output$rxElem3$model,
+                   result[[2]]$output$rxElem1$model,
+                   result[[2]]$output$rxElem2$model,
+                   result[[2]]$output$rxElem3$model,
+                   result[[3]]$output$rxElem1$model,
+                   result[[3]]$output$rxElem2$model,
+                   result[[3]]$output$rxElem3$model)
+
+# Define a function to score the models
+
+scoreModel <- function(model, newdata) {
+  
+  # Predict
+  predResult <- rxPredict(modelObject=model, data=newdata) 
+  
+  # Predicted class
+  prediction <- predResult[[1]]
+  
+  # Predicted probability
+  prob <- predResult[[3]]
+  
+  return(list(prediction=prediction, prob=prob))
+  
+}
+
+# Score multiple models in parallel with rxExec
+
+time_score <- system.time(
+  
+result <- rxExec(scoreModel,
+                 newdata=data_test,
+                 model=rxElemArg(model_list))
+)
+
+time_score
+
+# Evaluate model
+
+# Extract the list of scored label and scored probability
+
+out <- split(unlist(result, recursive=FALSE), 1:2)
+
+predictions <- out[[1]]
+probs <- out[[2]]
+
+# Confusion matrix evaluation results.
+
+cm_metrics <-lapply(predictions,
+                    confusionMatrix, 
+                    reference=data_test[[target]],
+                    positive="yes")
+
+# Accuracy
+
+acc_metrics <- 
+  lapply(cm_metrics, `[[`, "overall") %>%
+  lapply(`[`, 1) %>%
+  unlist() %>%
+  as.vector()
+
+# Recall
+
+rec_metrics <- 
+  lapply(cm_metrics, `[[`, "byClass") %>%
+  lapply(`[`, 1) %>%
+  unlist() %>%
+  as.vector()
+  
+# Precision
+
+pre_metrics <- 
+  lapply(cm_metrics, `[[`, "byClass") %>%
+  lapply(`[`, 3) %>%
+  unlist() %>%
+  as.vector()
+
+# Create prediction object
+
+preds <- lapply(probs, 
+                ROCR::prediction,
+                labels=data_test[[target]])
+
+# Auc
+
+auc_metrics <- lapply(preds, 
+                      ROCR::performance,
+                      "auc") %>%
+               lapply(slot, "y.values") %>%
+               lapply('[[', 1) %>%
+               unlist()
+
+algo_list <- c("rxLogisticRegression1",
+             "rxLogisticRegression2",
+             "rxLogisticRegression3",
+             "rxFastForest1", 
+             "rxFastForest2",
+             "rxFastForest3",
+             "rxFastTrees1",
+             "rxFastTrees2",
+             "rxFastTrees3")
+
+df_comp <- 
+data.frame(Models=algo_list, 
+           Accuracy=acc_metrics, 
+           Recall=rec_metrics, 
+           Precision=pre_metrics,
+           AUC=auc_metrics) %T>%
+           print()
+```
+
+In addition, we can also build an ensemble of fast tree models by using the function `rxEnsemble()`.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Train an ensemble model.
+
+time_ensemble <- system.time(
+  
+  model_ensemble <- rxEnsemble(
+    formula=form,
+    data=data_split[[1]],
+    type="binary",
+    trainers=list(fastTrees(numTrees=50, learningRate=0.1), 
+                  fastTrees(numTrees=100, learningRate=0.2), 
+                  fastTrees(numTrees=500, learningRate=0.3)),
+    combineMethod="vote",
+    replace=TRUE,
+    verbose=0
+  )
+)
+```
+
+### 2.4 Save Models for Deployment
+
+Last but not least, we need to save the model objects in various formats, (e.g., `.RData`, `SQLServerData`, ect) for the later usage of deployment. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Save model for deployment usage.
+
+model_rxtrees <- result[[3]]$output$rxElem3$model
+
+save(model_rxtrees, file="model_rxtrees.RData")
+```
+
