@@ -1,0 +1,440 @@
+---
+title: "Deploy a Credit Risk Model as a Web Service"
+author: "Fang Zhou, Data Scientist, Microsoft"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.width = 8,
+                      fig.height = 5,
+                      fig.align='center',
+                      dev = "png")
+```
+
+## 1 Introduction
+
+The `mrsdeploy` package, delivered with Microsoft R Client and R Server, provides functions for:
+
+**1** Establishing a remote session in a R console application for the purposes of executing code on that server
+
+**2** Publishing and managing an R web service that is backed by the R code block or script you provided. 
+
+Each feature can be used independently, but the greatest value is achieved when you can leverage both.
+
+This document will walk through you how to deploy a credit risk model as a web service, using the `mrsdeploy` package.
+
+It will start by modelling locally, then publish it as a web service, and then share it with other authenticated users for consumption, and finally manage and update the web service. 
+
+## 2 Automated Credit Risk Model Deployment
+
+### 2.1 Setup
+
+We load the required R packages.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Setup
+
+# Load the required packages into the R session.
+
+library(rattle)       # Use normVarNames().
+library(dplyr)        # Wrangling: tbl_df(), group_by(), print(), glimpse().
+library(magrittr)     # Pipe operator %>% %<>% %T>% equals().
+library(scales)       # Include commas in numbers.
+library(MicrosoftML)  # Build models using Microsoft ML algortihms.
+library(mrsdeploy)    # Publish an R model as a web service.
+```
+
+Then, the dataset transactionSimu, demographicSimu and processedSimu are ingested for demonstration. The processedSimu dataset was created by the data preprocessing steps in the data science accelerator for credit risk prediction.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Data Ingestion
+
+# Identify the source location of the dataset.
+
+#DATA <- "../../Data/"
+#txn_fname <- file.path(DATA, "Raw/processedSimu.csv")
+
+wd <- getwd()
+
+dpath <- "../Data"
+txn_fname   <- file.path(wd, dpath, "transactionSimu_v3.csv")
+demog_fname <- file.path(wd, dpath, "demographicSimu_v3.csv")
+data_fname <- file.path(wd, dpath, "processedSimu.csv")
+
+# Ingest the dataset.
+
+txn   <- read.csv(file=txn_fname)   %T>% 
+   {dim(.) %>% comma() %>% cat("\n")}
+
+demog <- read.csv(file=demog_fname) %T>% 
+   {dim(.) %>% comma() %>% cat("\n")}
+
+data <- read.csv(file=data_fname) %T>%
+   {dim(.) %>% comma() %>% cat("\n")}
+
+# A glimpse into the data.
+
+glimpse(txn)
+glimpse(demog)
+glimpse(data)
+```
+
+
+### 2.2 Model Locally
+
+Now, let's get started to build an R model based web service. 
+
+First of all, we create a machine learning fast tree model on the dataset processedSimu by using the function `rxFastTrees()` from the `MicrosoftML` package. This model could be used to predict whether an account will default or to predict its probability of default, given some transaction statistics and demographic & bank account information as inputs.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Variable roles.
+
+# Target variable
+
+target <- "bad_flag"
+
+# Note any identifier.
+
+id <- c("account_id") %T>% print() 
+
+# Note the available variables as model inputs.
+
+vars <- setdiff(names(data), c(target, id))
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Split Data
+
+set.seed(42)
+
+data <- data[order(runif(nrow(data))), ]
+
+train <- sample(nrow(data), 0.70 * nrow(data))
+test <- setdiff(seq_len(nrow(data)), train)
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Prepare the formula
+
+top_vars <- c("amount_6", "pur_6", "avg_pur_amt_6", "avg_interval_pur_6", "credit_limit", "age", "income", "sex", "education", "marital_status")
+
+form <- as.formula(paste(target, paste(top_vars, collapse="+"), sep="~"))
+form
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Train model: rxFastTrees
+
+model_rxtrees <- rxFastTrees(formula=form,
+                             data=data[train, c(target, vars)],
+                             type="binary",
+                             numTrees=100,
+                             numLeaves=20,
+                             learningRate=0.2,
+                             minSplit=10,
+                             unbalancedSets=FALSE,
+                             verbose=0)
+
+model_rxtrees
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Produce a function that can process the new input datasets.
+
+creditRiskProcess <- function(txn, demog)
+{ 
+  require(rattle)
+  require(dplyr)        
+  require(magrittr) 
+  
+  # Import the datasets.
+  
+  txn <- rxImport(inData=txn, stringsAsFactors=TRUE)
+  demog <- rxImport(inData=demog, stringsAsFactors=TRUE)
+  
+  # Normalize variable names.
+  
+  names(txn)   %<>% normVarNames() 
+  names(demog) %<>% normVarNames() 
+  
+  # Transform date variable from factor to date
+  
+  txn$transaction_date <- as.Date(txn$transaction_date)
+  
+  # Normalize categoric variables.
+  
+  txn %>% 
+    sapply(is.factor) %>%
+    which() %>%
+    names() ->
+    txnc
+  
+  demog %>% 
+    sapply(is.factor) %>%
+    which() %>%
+    names() ->
+    demc
+  
+  txn[txnc]   %<>% sapply(normVarNames)
+  demog[demc] %<>% sapply(normVarNames)
+  
+  # Define some functions to simply the calculation.
+
+  # Calculate maximum interval of a time series.
+  
+  maxInterval <- function(ts)
+  {
+    if (length(na.omit(ts)) <= 1)
+    {
+      interval <- 0
+    }
+    else
+    {
+      interval <- as.numeric(max(difftime(c(ts[-1], NA), ts, units="day"), na.rm=TRUE))
+    }
+    return(interval)
+  }
+  
+  # Calculate minimum interval of a time series.
+  
+  minInterval <- function(ts)
+  {
+    if (length(na.omit(ts)) <= 1)
+    {
+      interval <- 0
+    }
+    else
+    {
+      interval <- as.numeric(min(difftime(c(ts[-1], NA), ts, units="day"), na.rm=TRUE))
+    }
+    return(interval)
+  }
+  
+  # Calculate average interval of a time series.
+  
+  avgInterval <- function(ts)
+  {
+    if (length(na.omit(ts)) <= 1)
+    {
+      interval <- 0
+    } else
+    {
+      interval <- as.numeric(mean(difftime(c(ts[-1], NA), ts, units="day"), na.rm=TRUE))
+    }
+    return(interval)
+  }
+  
+  # Calculate interval of time between enddate and the most recent transaction date.
+  
+  recentInterval <- function(startdate, enddate, ts)
+  {
+    if (length(na.omit(ts)) == 0)
+    {
+      interval <- as.numeric(difftime(enddate, startdate, units="day"))
+    }
+    else
+    {
+      interval <- as.numeric(difftime(enddate, max(ts, na.rm=TRUE), units="day"))
+    }
+    return(interval)
+  }
+  
+  # Aggregate transaction data per account level.
+  
+  txn %>%
+    filter(transaction_type == "p") %>%
+    group_by(account_id) %>%
+    arrange(account_id, transaction_date) %>%
+    summarise(amount_6      = sum(transaction_amount_usd),
+              pur_6         = n(),
+              bank_6        = ifelse(pur_6 == 0, 0, sum(merchant_industry == "bank")/pur_6),
+              entmnt_6      = ifelse(pur_6 == 0, 0, sum(merchant_industry == "entmnt")/pur_6),
+              jewellery_6   = ifelse(pur_6 == 0, 0, sum(merchant_industry == "jewellery")/pur_6),
+              medical_6     = ifelse(pur_6 == 0, 0, sum(merchant_industry == "medical")/pur_6),
+              others_6      = ifelse(pur_6 == 0, 0, sum(merchant_industry == "others")/pur_6),
+              petrol_6      = ifelse(pur_6 == 0, 0, sum(merchant_industry == "petrol")/pur_6),
+              restaurant_6  = ifelse(pur_6 == 0, 0, sum(merchant_industry == "restaurant")/pur_6),
+              supermarket_6 = ifelse(pur_6 == 0, 0, sum(merchant_industry == "supermkt")/pur_6),
+              telecom_6     = ifelse(pur_6 == 0, 0, sum(merchant_industry == "telecom")/pur_6),
+              travel_6      = ifelse(pur_6 == 0, 0, sum(merchant_industry == "travel")/pur_6),
+              utility_6     = ifelse(pur_6 == 0, 0, sum(merchant_industry == "utility")/pur_6),
+              avg_pur_amt_6 = ifelse(pur_6 == 0, 0, sum(transaction_amount_usd)/pur_6),
+              max_pur_amt_6 = max(transaction_amount_usd),
+              min_pur_amt_6 = min(transaction_amount_usd),
+              avg_interval_pur_6 = avgInterval(transaction_date),
+              max_interval_pur_6 = maxInterval(transaction_date),
+              min_interval_pur_6 = minInterval(transaction_date),
+              last_pur_time_6    = recentInterval(min(transaction_date),
+                                                  max(transaction_date),
+                                                  transaction_date)
+    ) ->
+  rollup
+  
+  ## Merge aggregated transaction data with demographic data.
+  
+  merged <- merge(rollup, demog, by=c("account_id")) %>% data.frame()
+  
+  merged
+}
+
+# Produce a prediction function that can use the model
+
+creditRiskPrediction <- function(newdata)
+{ 
+  newdata <- rxImport(inData=newdata, stringsAsFactors=TRUE)
+  pred <- rxPredict(modelObject=model_rxtrees, data=newdata)[, c(1, 3)]
+  pred <- cbind(newdata$account_id, pred)
+  names(pred) <- c("account_id", "predicted_default", "predicted_prob")
+  pred 
+}
+
+# Test function locally by printing results
+
+testtxn <- txn %>% 
+  filter(accountID == "A1899946977632390") %>%
+  data.frame() %T>%
+  {head(.) %>% print()}
+
+testdemog <- demog %>% 
+  filter(accountID == "A1899946977632390") %>%
+  data.frame() %T>%
+  {head(.) %>% print()}
+
+testdata <- creditRiskProcess(txn=testtxn, demog=testdemog)
+
+print(testdata)
+
+pred <- creditRiskPrediction(newdata=testdata)
+
+print(pred)
+```
+
+### 2.2 Publish as web services
+
+The second procedure is to publish the model as a web service by following the below steps.
+
+Step 1: From your local R IDE, log into Microsoft R Server with your credentials using the appropriate authentication function from the `mrsdeploy` package (remoteLogin or remoteLoginAAD). 
+
+For simplicity, the code below uses the basic local admin account for authentication with the remoteLogin function and `session = false` so that no remote R session is started. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Use `remoteLogin` to authenticate with R Server using 
+# the local admin account. Use session = false so no 
+# remote R session started
+
+remoteLogin("http://localhost:12800", 
+         username="admin", 
+         password="P@ssw0rd",
+         session=FALSE)
+```
+
+Now, you are successfully connected to the remote R Server.
+
+Step 2: Publish the model as a web service to R Server using the `publishService()` function from the `mrsdeploy` package. 
+
+In this example, you publish two web services. One web service is called "crprocService" using the function `creditRiskProcess()`. As inputs, the service takes transaction records and demographic $ bank account information. As output, an R data frame having been aggregated, merged and cleansed is generated. Another web service is called "crpredService" using the model `model_rxtrees` and the function `creditRiskPrediction()`. As an input, the service takes an R data frame containing account-level transaction statistics and demographic & bank account information represented as numerical or categorical. As an output, an R data frame including the account id, the predicted label of default, and the probability of default for the given individual account, has of being achieved with the pre-defined credit risk prediction function. 
+
+When publishing, you must specify, among other parameters, a service name and version, the R code, the inputs, as well as the outputs that application developers will need to integrate in their applications. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+# Publish web services
+
+apiCreditRiskProcess <- publishService(
+                        "crprocService",
+                        code=creditRiskProcess,
+                        inputs=list(txn="data.frame", 
+                                    demog="data.frame"),
+                        outputs=list(merged="data.frame"),
+                        v="v1.0.0")
+
+apiCreditRiskPrediction <- publishService(
+                           "crpredService",
+                            code=creditRiskPrediction,
+                            model=model_rxtrees,
+                            inputs=list(newdata="data.frame"),
+                            outputs=list(pred="data.frame"),
+                            v="v1.0.0")
+```
+
+### 2.3 Test the services by consuming it in R
+
+After publishing it , we can consume the service in R directly to verify that the results are as expected.
+
+```{r, message=FALSE, warning=FALSE, error=TRUE}
+# Consume service by calling function, `creditRiskProcess` contained in this service
+
+resultProc <- apiCreditRiskProcess$creditRiskProcess(txn=testtxn, demog=testdemog)
+
+# Print response output named 'merged'
+
+print(resultProc$output("merged")) 
+
+# Consume service by calling function, `creditRiskPrediction` contained in this service
+
+testdata <- resultProc$output("merged")
+
+testdata[! colnames(testdata) %in% c("account_id", "marital_status", "sex", "education", "account_setup_status", "bad_flag")] %<>%
+  lapply(as.character) %>%
+  lapply(as.numeric) %>%
+  unlist()
+
+resultPred <- apiCreditRiskPrediction$creditRiskPrediction(newdata=testdata)
+
+# Print response output named `pred`
+
+print(resultPred$output("pred")) 
+```
+
+### 2.4 Update the web service
+
+In the process of production, we could manage and update the web service timely.
+
+```{r, message=FALSE, warning=FALSE, error=TRUE}
+# Load the pre-trained optimal model obtained from the template of CreditRiskScale.
+
+load(file="model_rxtrees.RData")
+
+model_rxtrees
+
+# Update the web service api
+
+apiCreditRiskPrediction <- updateService(name="crpredService", 
+                                         v="v1.0.0",
+                                         model=model_rxtrees,
+                                         descr="Update the model hyper-parameters")
+
+# Get service and assign service to the variable `api`.
+
+apiCreditRiskPrediction <- getService("crpredService", "v1.0.0")
+
+# Re-test the updated service by consuming it
+
+resultPred <- apiCreditRiskPrediction$creditRiskPrediction(testdata)
+
+# Print response output named `answer`
+
+print(resultPred$output("pred")) 
+```
+
+### 2.5 Application Integration
+
+Last but not least, we can get the json file that is needed for application integration.
+
+```{r, message=FALSE, warning=FALSE, error=TRUE}
+# Get this service's `swagger.json` file that is needed for web application integration
+
+swagger1 <- apiCreditRiskProcess$swagger(json = TRUE)
+
+cat(swagger1, file="swagger1.json", append=FALSE) 
+
+swagger2 <- apiCreditRiskPrediction$swagger(json = TRUE)
+
+cat(swagger2, file="swagger2.json", append=FALSE) 
+
+# Delete the service to make the script re-runable
+
+deleteService(name="crprocService", v="v1.0.0")
+deleteService(name="crpredService", v="v1.0.0")
+```
