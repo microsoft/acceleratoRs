@@ -21,11 +21,15 @@ Some other critical R packages for the analysis:
 
 # Use of template
 
-The codes for analytics, embedded with step-by-step instructions, are written in R markdown, and can be run interactively within the code chunks of the markdown file.
+The code for the analysis, embedded with step-by-step instructions,
+are written in R markdown, and can be run interactively within the
+code chunks of the markdown file.
 
-Makefile in the folder can be used to produce report in various formats based upon the R markdown script. Suported output formats include
+Makefile in the folder can be used to produce report in various
+formats based upon the R markdown script. Supported output formats
+include
 
-* R - pure R codes,
+* R - pure R code,
 * md - markdown, 
 * html - html,
 * pdf - pdf,
@@ -39,4 +43,7 @@ To generate an output of the above format, simply run
 make <filename>.<supported format>
 ```
 
-The geneated files can be removed by `make clean` or `make realclean`
+The generated files can be removed by `make clean` or `make realclean`.
+
+We include some of the generated files here for ready access through a
+browser from github.
