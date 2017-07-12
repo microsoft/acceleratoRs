@@ -47,3 +47,10 @@ The generated files can be removed by `make clean` or `make realclean`.
 
 We include some of the generated files here for ready access through a
 browser from github.
+
+# Manual code execution
+
+The individual .Rmd files can be loaded into RStudio and we can run
+through the process step by step in the following order:
+
+* CreditRiskPrediciton.Rmd
