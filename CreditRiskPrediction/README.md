@@ -1,13 +1,13 @@
 # Data Science Accelerator - Credit Risk Prediction
 
-The intention of this AcceleratoR is to provide a script for a data
-scientist to initiate a project in credit risk prediction. The
-provided random data is used to illustrate the process rather than to
-provide actual financial insights from this random data. A data
-scientist can replace the datasets here with their own actual datasets
-and replicate the processing, tuning it to suit their own needs, as
-the starting point for the advanced developement of machine learning
-models for credit risk prediction.
+The intention of this AcceleratoR is to provide material as a
+kickstart for a data scientist initiating a project in credit risk
+prediction. The supplied random data is used to illustrate the
+process. It can not be used to provide actual financial insights as it
+is randomly generated. A data scientist can replace the datasets here
+with their own actual datasets and replicate the processing, tuning it
+to suit their own needs, as the starting point for the advanced
+developement of machine learning models for credit risk prediction.
 
 ## Introduction
 
