@@ -15,13 +15,6 @@ knitr::opts_chunk$set(echo = TRUE,
 
 ## 1 Introduction
 
-<<<<<<< HEAD
-Microsoft R is a collection of servers and tools that extend the capabilities of R, making it easier and faster to build and deploy R-based solutions. Microsoft R brings you the ability to do parallel and chunked data processing and modelling that relax the restrictions on dataset size imposed by in-memory open source R. 
-
-The `MicrosoftML` package brings new machine learning functionality with increased speed, performance and scalability, especially for handling a large corpus of text data or high-dimensional categorical data. The `MicrosoftML` package is installed with **Microsoft R Client**, **Microsoft R Server** and with the **SQL Server Machine Learning Services**.
-
-This document will walk through you how to build faster and scalable credit risk models, using the `MicrosoftML` package that adds state-of-the-art machine learning algorithms and data transforms to Microsoft R Server.
-=======
 Microsoft R is a collection of servers and tools that extend the
 capabilities of R, making it easier and faster to build and deploy
 R-based solutions. Microsoft R brings you the ability to do parallel
@@ -39,7 +32,6 @@ This document will walk through you how to build faster and scalable
 credit risk models, using the `MicrosoftML` package that adds
 state-of-the-art machine learning algorithms and data transforms to
 Microsoft R Server.
->>>>>>> 6b42c4a8251d52fc9505de1b11a7083f8f3bdc93
 
 ## 2 Faster and Scalable Credit Risk Models
 
@@ -63,25 +55,15 @@ library(caret)        # Calculate confusion matrix by using confusionMatrix().
 library(ROCR)         # Provide functions for model performance evaluation.
 ```
 
-<<<<<<< HEAD
-Then, the dataset processedSimu is ingested and transformed into a `.xdf` data format. This dataset was created by the data preprocessing steps in the data science accelerator for credit risk prediction.
-=======
 Then, the dataset processedSimu is ingested and transformed into a
 `.xdf` data format. This random dataset was created to simulate real
 world banking transaction data.
->>>>>>> 6b42c4a8251d52fc9505de1b11a7083f8f3bdc93
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 ## Data Ingestion
 
 # Identify the source location of the dataset.
 
-<<<<<<< HEAD
-#DATA <- "../../Data/"
-#data_fname <- file.path(DATA, "Raw/processedSimu.csv")
-
-=======
->>>>>>> 6b42c4a8251d52fc9505de1b11a7083f8f3bdc93
 wd <- getwd()
 
 dpath <- "../Data"
@@ -104,13 +86,6 @@ rxGetVarInfo(data)
 
 ### 2.2 Model Building
 
-<<<<<<< HEAD
-Now, let's get started to build credit risk models by leveraging different machine learning algorithms from the `MicrosoftML` package. 
-
-First of all, we create individual machine learning models on the dataset processedSimu.xdf by using the functions `rxLogisticRegression()`, `rxFastForest()`, `rxFastTrees()`. 
-
-From the credit risk prediction template, we know that gradient boosting is the most suitable algorithm for this example, considering the overall performance. Therefore, the models implemented by the function `rxFastTrees()` with different sets of parameters are trained respectively. 
-=======
 Now, let's get started to build credit risk models by leveraging
 different machine learning algorithms from the `MicrosoftML` package.
 
@@ -123,7 +98,6 @@ boosting is the most suitable algorithm for this example, considering
 the overall performance. Therefore, the models implemented by the
 function `rxFastTrees()` with different sets of parameters are trained
 respectively.
->>>>>>> 6b42c4a8251d52fc9505de1b11a7083f8f3bdc93
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 ## Variable roles.
