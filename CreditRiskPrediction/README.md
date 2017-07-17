@@ -2,12 +2,15 @@
 
 The intention of this AcceleratoR is to provide material as a
 kickstart for a data scientist initiating a project in credit risk
-prediction. The supplied random data is used to illustrate the
-process. It can not be used to provide actual financial insights as it
-is randomly generated. A data scientist can replace the datasets here
-with their own actual datasets and replicate the processing, tuning it
-to suit their own needs, as the starting point for the advanced
-developement of machine learning models for credit risk prediction.
+prediction, first using R and then extending this with using Microsoft
+R for any size datasets. The supplied smalle example random dataset is
+used to illustrate the process. It can *not* be used to provide actual
+financial insights as it is a randomly generated dataset. A data
+scientist can first replicate the process using the dataset supplied
+here and then replace the datasets with their own actual datasets and
+replicate the processing, tuning it to suit their own needs, as the
+starting point for the advanced developement of machine learning
+models for credit risk prediction.
 
 ## Introduction
 
