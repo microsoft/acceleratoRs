@@ -102,7 +102,7 @@ customer from which we can reason about the customer's behaviours.
 
 ## Scalability
 
-** Faster and scalable credit risk models** are built using the
+**Faster and scalable credit risk models** are built using the
 state-of-the-art machine learning algorithms provided by the
 `MicrosoftML` package.
 
