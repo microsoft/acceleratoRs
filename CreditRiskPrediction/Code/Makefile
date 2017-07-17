@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+all:
+	@echo 
+
+>>>>>>> 6b42c4a8251d52fc9505de1b11a7083f8f3bdc93
 RMD=$(wildcard *_*.Rmd)
 
 RCD=$(RMD:.Rmd=.R)
@@ -35,7 +41,11 @@ IPY=$(RMD:.Rmd=.ipynb)
 	Rscript -e 'rmarkdown::render("$*.Rmd", "rmarkdown::odt_document")'
 
 clean:
+<<<<<<< HEAD
 	rm -f *.docx *.R *.odt *.pdf *.html *.md *.ipynb
+=======
+	rm -f *.docx *.R *.odt *.pdf *.html *.ipynb
+>>>>>>> 6b42c4a8251d52fc9505de1b11a7083f8f3bdc93
 
 realclean: clean
 	rm -f *~

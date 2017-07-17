@@ -21,11 +21,23 @@ Some other critical R packages for the analysis:
 
 # Use of template
 
+<<<<<<< HEAD
 The codes for analytics, embedded with step-by-step instructions, are written in R markdown, and can be run interactively within the code chunks of the markdown file.
 
 Makefile in the folder can be used to produce report in various formats based upon the R markdown script. Suported output formats include
 
 * R - pure R codes,
+=======
+The code for the analysis, embedded with step-by-step instructions,
+are written in R markdown, and can be run interactively within the
+code chunks of the markdown file.
+
+Makefile in the folder can be used to produce report in various
+formats based upon the R markdown script. Supported output formats
+include
+
+* R - pure R code,
+>>>>>>> 6b42c4a8251d52fc9505de1b11a7083f8f3bdc93
 * md - markdown, 
 * html - html,
 * pdf - pdf,
@@ -39,4 +51,18 @@ To generate an output of the above format, simply run
 make <filename>.<supported format>
 ```
 
+<<<<<<< HEAD
 The geneated files can be removed by `make clean` or `make realclean`
+=======
+The generated files can be removed by `make clean` or `make realclean`.
+
+We include some of the generated files here for ready access through a
+browser from github.
+
+# Manual code execution
+
+The individual .Rmd files can be loaded into RStudio and we can run
+through the process step by step in the following order:
+
+* CreditRiskPrediciton.Rmd
+>>>>>>> 6b42c4a8251d52fc9505de1b11a7083f8f3bdc93
