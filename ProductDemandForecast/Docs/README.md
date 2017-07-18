@@ -1,3 +1,3 @@
 # Documents
 
-* **blog** blog post of the credit risk prediction analysis introduced in this repo. 
+* **blog** blog post of the product demand forecast introduced in this repo. 
