@@ -10,7 +10,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<meta name="author" content="Microsoft" />
+<meta name="author" content="Fang Zhou, Data Scientist, Microsoft" />
 
 
 <title>Product Demand Forecast (hts)</title>
@@ -68,7 +68,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Product Demand Forecast (hts)</h1>
-<h4 class="author"><em>Microsoft</em></h4>
+<h4 class="author"><em>Fang Zhou, Data Scientist, Microsoft</em></h4>
 
 
 <div id="TOC">
@@ -93,6 +93,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <span class="kw">library</span>(dplyr)        <span class="co"># Missing value treatment with Filter.</span>
 <span class="kw">library</span>(zoo)          <span class="co"># Missing value treatment with locf method.</span>
+<span class="kw">library</span>(forecast)     <span class="co"># Time series forecasting.</span>
 <span class="kw">library</span>(hts)          <span class="co"># Hierarchical time series forecasting.</span>
 <span class="kw">library</span>(fpp)          <span class="co"># Time Series cross validation.</span>
 <span class="kw">library</span>(foreach)      <span class="co"># Run for loop in parallel.</span>
@@ -598,7 +599,7 @@ tscv_time &lt;-<span class="st"> </span><span class="kw">system.time</span>({
 
 <span class="kw">print</span>(tscv_time)</code></pre></div>
 <pre><code>##    user  system elapsed 
-##    0.75    0.22  126.60</code></pre>
+##    0.72    0.26  125.08</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Forecast the product demand of 2012 using the optimal parameters</span>
 
 opt_fcast &lt;-<span class="st"> </span><span class="kw">forecast</span>(<span class="dt">object  =</span> demandgts, 

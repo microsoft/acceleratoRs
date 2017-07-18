@@ -1,6 +1,6 @@
 ---
 title: "Product Demand Forecast (hts)"
-author: "Microsoft"
+author: "Fang Zhou, Data Scientist, Microsoft"
 output: 
     rmarkdown::html_vignette:
         toc: true
@@ -32,6 +32,7 @@ In this documentation, we are trying to build a quartly by category demand forec
 
 library(dplyr)        # Missing value treatment with Filter.
 library(zoo)          # Missing value treatment with locf method.
+library(forecast)     # Time series forecasting.
 library(hts)          # Hierarchical time series forecasting.
 library(fpp)          # Time Series cross validation.
 library(foreach)      # Run for loop in parallel.
