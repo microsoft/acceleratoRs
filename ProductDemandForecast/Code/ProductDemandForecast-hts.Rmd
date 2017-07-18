@@ -103,9 +103,9 @@ We aim to build a time series model to fit the whole product booking quantity da
 
 Hierarchical time series forecasting methods can be implemented in the hts package (Hyndman et al. 2014) for R (R Core Team 2013).
 
-We can use hts function to create a hierarchical time series. The required inputs are the bottom-level time series, and information about the hierarchical structure. Here, we try two hierarchical structure: first, each bottom series belong to a group; second, the series for product 1 and 2 belong to category A, series for product 3-8 belong to the category B.
+We can use hts function to create a hierarchical time series. The required inputs are the bottom-level time series, and information about the hierarchical structure. Knowing from the product category dataset, we can try this hierarchical structure: the series for product 1 and 2 belong to category A, series for product 3-8 belong to the category B.
 
-Let's have a look at this 2-level hierarchical time series. 
+Let's have a look at this 3-level hierarchical time series. 
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 ## Hierarchical time series modeling 
@@ -214,6 +214,8 @@ colnames(param_space) <- c("hts_method", "ts_method")
 # Define empty matric matrix
 
 mape11 <- mape12 <- mape13 <- mape21 <- mape22 <- mape23 <- mape31 <- mape32 <- mape33 <- matrix(NA,n-k,4)
+
+# Conduct time series cross validation for hts forecasting in parallel
 
 rxSetComputeContext(RxLocalParallel())
 

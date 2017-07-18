@@ -189,8 +189,8 @@ data[,<span class="dv">3</span>:<span class="dv">10</span>] &lt;-<span class="st
 <div id="hierachical-time-series-model" class="section level3">
 <h3>Hierachical time series model</h3>
 <p>Hierarchical time series forecasting methods can be implemented in the hts package (Hyndman et al. 2014) for R (R Core Team 2013).</p>
-<p>We can use hts function to create a hierarchical time series. The required inputs are the bottom-level time series, and information about the hierarchical structure. Here, we try two hierarchical structure: first, each bottom series belong to a group; second, the series for product 1 and 2 belong to category A, series for product 3-8 belong to the category B.</p>
-<p>Let’s have a look at this 2-level hierarchical time series.</p>
+<p>We can use hts function to create a hierarchical time series. The required inputs are the bottom-level time series, and information about the hierarchical structure. Knowing from the product category dataset, we can try this hierarchical structure: the series for product 1 and 2 belong to category A, series for product 3-8 belong to the category B.</p>
+<p>Let’s have a look at this 3-level hierarchical time series.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Hierarchical time series modeling 
 
 <span class="co"># Construct time series matrix</span>
@@ -540,6 +540,8 @@ param_space &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(ht
 
 mape11 &lt;-<span class="st"> </span>mape12 &lt;-<span class="st"> </span>mape13 &lt;-<span class="st"> </span>mape21 &lt;-<span class="st"> </span>mape22 &lt;-<span class="st"> </span>mape23 &lt;-<span class="st"> </span>mape31 &lt;-<span class="st"> </span>mape32 &lt;-<span class="st"> </span>mape33 &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="ot">NA</span>,n-k,<span class="dv">4</span>)
 
+<span class="co"># Conduct time series cross validation for hts forecasting in parallel</span>
+
 <span class="kw">rxSetComputeContext</span>(<span class="kw">RxLocalParallel</span>())
 
 tscv_time &lt;-<span class="st"> </span><span class="kw">system.time</span>({
@@ -596,7 +598,7 @@ tscv_time &lt;-<span class="st"> </span><span class="kw">system.time</span>({
 
 <span class="kw">print</span>(tscv_time)</code></pre></div>
 <pre><code>##    user  system elapsed 
-##    0.67    0.18  118.06</code></pre>
+##    0.75    0.22  126.60</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Forecast the product demand of 2012 using the optimal parameters</span>
 
 opt_fcast &lt;-<span class="st"> </span><span class="kw">forecast</span>(<span class="dt">object  =</span> demandgts, 
