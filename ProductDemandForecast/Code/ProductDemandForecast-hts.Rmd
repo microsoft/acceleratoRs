@@ -1,0 +1,290 @@
+---
+title: "Product Demand Forecast (hts)"
+author: "Microsoft"
+output: 
+    rmarkdown::html_vignette:
+        toc: true
+
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, echo=FALSE}
+
+knitr::opts_chunk$set(fig.width = 6,
+                      fig.height = 4,
+                      fig.align ='center',
+                      dev = "png")
+
+```
+
+# Introduction
+
+In this documentation, we are trying to build a quartly by category demand forecast model on product booking quantity data using the package 'hts'. We implement the advanced analytics process with R in the principle of step-by-step. 
+
+## Product booking quantity data
+
+```{r, message=FALSE}
+## Load the required packages into the R session.
+
+library(dplyr)        # Missing value treatment with Filter.
+library(zoo)          # Missing value treatment with locf method.
+library(hts)          # Hierarchical time series forecasting.
+library(fpp)          # Time Series cross validation.
+library(foreach)      # Run for loop in parallel.
+library(RevoScaleR)   # Enable out-of-memory computation using rxExec in R.
+```
+
+Let's load the data and take a brief glimpse of it. 
+
+```{r, message=FALSE}
+## Set directory
+
+setwd("C:/Users/zhouf/Documents/GitHub/acceleratoRs/ProductDemandForecast")
+
+wd <- getwd()
+```
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Read data
+
+dspath <- file.path(wd, "Data", "productQuantity.csv")
+
+data <- read.table(dspath, header=TRUE, sep=",")
+
+dim(data) # 56 11
+
+str(data)
+
+head(data)
+```
+
+## Handling missing value
+
+To clean the data, we remove some of columns with too many NAs (>10%) and replace other missing values with last-observation-carried-forward method. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Clean missing value
+
+# Remove columns with only NA
+
+data <- Filter(function(x)!all(is.na(x)), data)
+dim(data) # 56 10
+
+# Remove columns with too many NAs 
+
+data <- Filter(function(x)!(sum(is.na(x))/length(x)) > 0.1, data)
+dim(data) # 56 10
+
+# Remove rows with only missing values
+
+missingRows <- apply(data, 1, function(x) all(is.na(x)))
+data <- data[!missingRows, ]
+dim(data)
+
+# Replace NA values with last-observation-carried-forward method
+
+data[,3:10] <- lapply(data[,3:10], function(x) { 
+  x <- na.locf(x)
+  x
+})
+
+head(data)
+```
+
+## Model building
+
+We aim to build a time series model to fit the whole product booking quantity data. 
+
+### Hierachical time series model
+
+Hierarchical time series forecasting methods can be implemented in the hts package (Hyndman et al. 2014) for R (R Core Team 2013).
+
+We can use hts function to create a hierarchical time series. The required inputs are the bottom-level time series, and information about the hierarchical structure. Here, we try two hierarchical structure: first, each bottom series belong to a group; second, the series for product 1 and 2 belong to category A, series for product 3-8 belong to the category B.
+
+Let's have a look at this 2-level hierarchical time series. 
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Hierarchical time series modeling 
+
+# Construct time series matrix
+
+bts <- ts(data[, 3:10], frequency=4, start=c(1998, 1))
+
+head(bts)
+
+# Create 2-level hierarchical time series
+
+demandgts <- hts(bts, nodes=list(2, c(2, 6)))
+
+# Rename the nodes of the hierarchy
+
+demandgts$labels$`Level 1` <- c("Category.A", "Category.B")
+demandgts$labels$`Level 2` <- c("Product.1", "Product.2", "Product.3", "Product.4", 
+                                "Product.5", "Product.6", "Product.7", "Product.8")
+names(demandgts$labels) <- c("Total", "Category", "Product")
+
+head(demandgts)
+print(demandgts)
+
+# Aggregate the hierarchy time series
+
+alldemand <- aggts(demandgts) 
+
+head(alldemand)
+
+plot(demandgts, levels=c(0, 1, 2))
+
+# Set up the training sample and testing sample
+
+traingts <- window(demandgts, start=c(1998, 1), end=c(2009, 4))
+testgts <- window(demandgts, start=c(2010, 1), end=c(2011, 4))
+
+demandfcast <- forecast(object  = traingts, 
+                        h       = 8, 
+                        method  = "bu", 
+                        fmethod = "arima",
+                        keep.fitted = TRUE)
+
+# Explore and visualize the forecasted hts
+
+aggts(demandfcast)
+
+summary(demandfcast)
+
+plot(demandfcast)
+
+# Calculate perforemance metrics
+
+accuracy.gts(demandfcast, testgts, levels=c(0, 1, 2))
+```
+
+### Cross-validation for hierarchical time series
+
+Next, we use cross validation to compare performance of different forecast methods for hierarchical time series model.
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+## Time series cross validation
+
+# Define function that runs hierarchical forecast on training data set
+# and returns forecast on test data set
+
+forecast_hts <- function (traindata, testdata, htsmethod, tsmethod) {
+  
+  # Forecasting horizon
+  
+  horiz =  dim(aggts(testdata))[1]
+
+  # Run hierarchical forecast
+  
+  hts_fcast <- forecast(object  = traindata, 
+                        h       = horiz,
+                        method  = htsmethod,
+                        fmethod = tsmethod,
+                        keep.fitted = TRUE)
+  
+  # Return forecasted ts
+  
+  hts_fcast
+  
+  # Return evaluation metrics at the top level
+  #fcast_acc <- accuracy.gts(hts_fcast, test = testdata, levels = 0)
+}
+
+# Set parameters for cross validation
+
+k <- 48 
+n <- dim(demandgts$bts)[1]
+st <- tsp(demandgts$bts)[1]+(k-2)/4
+
+# Define parameter space for hts
+
+hts_method <- c("bu", "comb", "tdgsa")
+ts_method <- c("arima", "ets", "rw")
+
+param_space <- expand.grid(hts_method, 
+                           ts_method, 
+                           stringsAsFactors = FALSE)
+
+colnames(param_space) <- c("hts_method", "ts_method")
+
+# Define empty matric matrix
+
+mape11 <- mape12 <- mape13 <- mape21 <- mape22 <- mape23 <- mape31 <- mape32 <- mape33 <- matrix(NA,n-k,4)
+
+rxSetComputeContext(RxLocalParallel())
+
+tscv_time <- system.time({
+  
+foreach(i=1:(n-k)) %dopar%
+{
+  datashort <- window(demandgts, end=st + i/4)
+  datanext <- window(demandgts, start=st + (i+1)/4, end=st + (i+4)/4)
+  
+  # Run many distributed jobs
+
+  rxResult <- rxExec(FUN=forecast_hts,  
+                     traindata=datashort, 
+                     testdata=datanext, 
+                     htsmethod=rxElemArg(param_space$hts_method),  
+                     tsmethod=rxElemArg(param_space$ts_method),
+                     consoleOutput=TRUE,
+                     packagesToLoad=c('hts'))
+  
+  horiz <- dim(datanext$bts)[1]
+  
+  mape11[i, 1:horiz] <- accuracy(aggts(rxResult[[1]]), aggts(datanext))[1, "MAPE"]
+  mape12[i, 1:horiz] <- accuracy(aggts(rxResult[[2]]), aggts(datanext))[1, "MAPE"]
+  mape13[i, 1:horiz] <- accuracy(aggts(rxResult[[3]]), aggts(datanext))[1, "MAPE"]
+  mape21[i, 1:horiz] <- accuracy(aggts(rxResult[[4]]), aggts(datanext))[1, "MAPE"]
+  mape22[i, 1:horiz] <- accuracy(aggts(rxResult[[5]]), aggts(datanext))[1, "MAPE"]
+  mape23[i, 1:horiz] <- accuracy(aggts(rxResult[[6]]), aggts(datanext))[1, "MAPE"]
+  mape31[i, 1:horiz] <- accuracy(aggts(rxResult[[7]]), aggts(datanext))[1, "MAPE"]
+  mape32[i, 1:horiz] <- accuracy(aggts(rxResult[[8]]), aggts(datanext))[1, "MAPE"]
+  mape33[i, 1:horiz] <- accuracy(aggts(rxResult[[9]]), aggts(datanext))[1, "MAPE"]
+}
+  
+})
+
+# Visualize overall mape vs horiz
+
+plot(1:4, colMeans(mape11,na.rm=TRUE), type="o", col=2, 
+     xlab="horizon", ylab="Overall MAPE", ylim=c(0, 25))
+lines(1:4, colMeans(mape12,na.rm=TRUE), type="o",col=3)
+lines(1:4, colMeans(mape13,na.rm=TRUE), type="o",col=4)
+lines(1:4, colMeans(mape21,na.rm=TRUE), type="o",col=5)
+lines(1:4, colMeans(mape22,na.rm=TRUE), type="o",col=6)
+lines(1:4, colMeans(mape23,na.rm=TRUE), type="o",col=7)
+lines(1:4, colMeans(mape31,na.rm=TRUE), type="o",col=8)
+lines(1:4, colMeans(mape32,na.rm=TRUE), type="o",col=9)
+lines(1:4, colMeans(mape33,na.rm=TRUE), type="o",col=10)
+legend("topleft", 
+       legend=c("bu-ARIMA", "bu-ETS", "bu-RW",
+                "comb-ARIMA", "comb-ETS", "comb-RW",
+                "tdgsa-ARIMA", "tdgsa-ETS", "tdgsa-RW"), 
+       col=2:10, lty=1, cex=0.5)
+
+# Show the run time of time series cross validation
+
+print(tscv_time)
+
+# Forecast the product demand of 2012 using the optimal parameters
+
+opt_fcast <- forecast(object  = demandgts, 
+                      h       = 4,
+                      method  = "comb",
+                      fmethod = "arima",
+                      keep.fitted = TRUE)
+
+# Explore and visualize the forecasted hts
+
+aggts(opt_fcast)
+
+summary(opt_fcast)
+
+plot(opt_fcast)
+```
+
