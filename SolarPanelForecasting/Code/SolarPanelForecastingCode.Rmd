@@ -407,3 +407,6 @@ ggplot(df_plot, aes(x=date)) +
   xlab("Date") +
   ylab("Max of total solar power")
 ```
+
+The result comparing prediction and ground-truth power values is shown as follows.
+![](../Docs/figs/result.png)
