@@ -1,0 +1,322 @@
+---
+title: "Solar power forecasting with Long Short-Term Memory (LSTM)"
+author: "Le Zhang, Data Scientist, Cloud and AI, Microsoft"
+date: '`r Sys.Date()`'
+output:
+  html_notebook: default
+---
+
+This accelerator is a reproduction of CNTK tutorial 106 B - using LSTM
+for time series forecasting in R. The original tutorial can be found [here](https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_106B_LSTM_Timeseries_with_IOT_Data.ipynb).
+
+The accelerator here mainly demonstrates how one can use `keras` R interface 
+together with CNTK backend, to train a LSTM model for solar power forecasting,
+in a Azure Data Science Virtual Machine (DSVM).
+
+## 1 Introduction
+
+### 1.1 Context.
+
+[Solar power forecasting](https://en.wikipedia.org/wiki/Solar_power_forecasting)
+is a challenging and important problem. Analyzing historical time-series data of
+solar power generation may help predict the total amount of energy produced by 
+solar panels. 
+
+More discussion about solar power forecasting can be found in Wikipedia page. The
+problem in this accelerator, is a simplified model, which is to merely illustrate
+how an R based LSTM model can be trained in an Azure DSVM.
+
+### 1.2 LSTM
+
+LSTM is a type of Recurrent Neural Network, which is featued by its capability in
+modeling long-term dependencies. It's been pratically applied in many fields such
+as Natural Language Processing (NLP), action recognition, time series prediction,
+etc. 
+
+While a comprehensive discussion of LSTM is not the focus of this accelerator, 
+more information can be found in [Chris Olah's blog](http://colah.github.io/posts/2015-08-Understanding-LSTMs/).
+
+### 1.3 Cognitive Toolkit and keras
+
+#### 1.3.1 Cognitive Toolkit
+
+[Microsoft Cognitive Toolkit (previously known as CNTK)](https://www.microsoft.com/en-us/cognitive-toolkit/) is a free, easy-to-use,
+open-source, and commercial-grade toolkit that trains deep learning algorithms
+to learn like the human brains. 
+
+It is featured by 
+* Highly optimized and built-in components that handle multi-dimensional data 
+from different language environment, deal with various types of deep learning
+algorithms, add user-defined core components on the GPU, etc.
+* Efficience resource usage that avails parallelism with multiple GPU/machines.
+* Easy expression of neural network with full APIs of Python, C++, and BrainScript.
+* Training support on Azure.
+
+#### 1.3.2 Keras
+
+[Keras](https://keras.io/) is a high-level neural networks API, that is capable of running various 
+backends such as Cognitive Toolkit, Tensorflow, and Theano. It made experimenting
+deep learning neural networks from idea to result easier than ever before.
+
+#### 1.3.3 Cognitive Toolkit + Keras in R
+
+Since version 2.0, Cognitive Toolkit starts to support keras. 
+
+Cognitive Toolkit has not supported R yet. However, by using [Keras R interface](https://rstudio.github.io/keras/), one can try training neural network
+models by using keras API with Cognitive Toolkit backend.
+
+## 2 Cloud resource deployment
+
+Azure cloud platform offers varieties of resources for elastically running 
+scalable analytical jobs. Especially, VMs or VM clusters incorporated with 
+high-performance computing engines make it convenient for researchers and 
+developers to prototype and validate models easily.
+
+The following sections demonstrate how to train an LSTM model on a DSVM with 
+Cognitive Toolkit and Keras in R.
+
+NOTE: **the script for demonstrating Cognitive Toolkit + Keras can also be run
+in a local environment, but one needs to manually download and install
+Cognitive Toolkit and its dependencies, Keras, Keras R package and its
+dependencies, CUDA Toolkit (if GPU device is available and GPU acceleration 
+is wanted).**
+
+### 2.1 Data Science Virtual Machine (DSVM)
+
+[Azure DSVM](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-provision-vm) is a curated VM that is pre-installed with 
+rich set of commonly used data science and AI development tools such as R/Python
+environment, Cognitive Toolkit, SQL Server, etc.
+
+DSVM is a desirable workplace to experiment, prototype, and productize data 
+analytical and AI solutions. Elasticity of the offering also guarantee the cost
+effectiveness, which makes it more economically efficient compared to on-premise
+servers.
+
+### 2.2 Configuration and setup
+
+Both Cognitive Toolkit and keras are pre-installed on DSVM. However, so far the 
+keras R packages as well as its dependencies are not available. Preliminary 
+installation and configuration are therefore required.
+
+### 2.3 Resource deployment with `AzureDSVM`
+
+[`AzureDSVM`](https://github.com/Azure/AzureDSVM) is an R packages that allow R users to directly interact with Azure
+account to administrate DSVM instances.
+
+To fire up a DSVM, one just needs to specify information such as DSVM name, user
+name, operating system, VM size, etc. For example, the following script fires up
+a Ubuntu DSVM of size D1_V2, located at Southeast Asia.
+
+```{r}
+# load the packages
+
+library(AzureSMR)
+library(AzureDSVM)
+```
+
+```{r}
+# Credentials for authentication against Azure account are preserved in a json
+# formmated file, named "config.json", which is located at ~/.azuresmr
+
+# The credentials needed for authetication include Client ID, Tenant ID, 
+# authentication key, password, and public key.
+
+settingsfile <- getOption("AzureSMR.config")
+config <- read.AzureSMR.config()
+```
+
+```{r}
+# Authentication with the credential information. 
+
+asc <- createAzureContext()
+
+with(config,
+     setAzureContext(asc, tenantID=tenantID, clientID=clientID, authKey=authKey)
+)
+azureAuthenticate(asc)
+```
+
+```{r}
+# location and resource group name.
+
+dsvm_location <- "southeastasia"
+dsvm_rg       <- paste0("rg", paste(sample(letters, 3), collapse=""))
+
+# VM size, operating system, and VM name.
+
+dsvm_size     <- "Standard_D1_v2"
+dsvm_os       <- "Ubuntu"
+dsvm_name     <- paste0("dsvm", 
+                        paste(sample(letters, 3), collapse=""))
+
+# VM user name, authentication method (password in this case), and login password.
+
+dsvm_username <- "dsvmuser"
+dsvm_authen   <- "Password"
+dsvm_password <- config$PASSWORD
+```
+
+```{r eval=FALSE}
+# deploy the DSVM.
+
+deployDSVM(asc, 
+           resource.group=dsvm_rg,
+           location=dsvm_location,
+           hostname=dsvm_name,
+           username=dsvm_username,
+           size=dsvm_size,
+           os=dsvm_os,
+           authen=dsvm_authen,
+           password=dsvm_password,
+           mode="Sync")
+```
+
+Note since originally a DSVM does not have keras R interface installed and 
+configured. A post-deployment installation and configuration of the package can 
+be achieved by adding an extension to the deployed DSVM. Basically it runs a 
+shell script that is located on a remote place.
+
+```{r}
+# URL of the shell script and the command to run the script.
+
+dsvm_fileurl <- "https://raw.githubusercontent.com/yueguoguo/Azure-R-Interface/master/demos/demo-5/script.sh"
+dsvm_command <- "sudo sh script.sh"
+```
+
+```{r eval=FALSE}
+# Add extension to the DSVM.
+
+addExtensionDSVM(asc,
+                 location=dsvm_location,
+                 resource.group=dsvm_rg,
+                 hostname=dsvm_name,
+                 os=dsvm_os, 
+                 fileurl=dsvm_fileurl, 
+                 command=dsvm_command)
+```
+
+### 2.4 Remote access to the DSVM.
+
+After a successful deployment and extension, the DSVM can be remotely accessed 
+by 
+1. Rstudio Server - http://<dsvm_name>.<location>.cloudapp.azure.com:8787
+2. Jupyter Notebook - https://<dsvm_name>.<location>.cloudapp.azure.com:8000
+3. X2Go client.
+
+NOTE: **it was found that keras R interface does not work well in Rstudio server
+owing to SSL certificate issue.**
+
+Idealy in the R session of the remote DSVM, typing the following
+
+```{r eval=FALSE}
+library(keras)
+
+backend()
+```
+
+will show the message of "Using CNTK backend...", which means the interface can 
+detect and load Cognitive Toolkit backend.
+
+## 3 Model building
+
+After all the set up, the model can be created by using Keras R interface 
+functions. As the model building follows the original CNTK tutorial, text for 
+introduction and description will not be duplicated here.
+
+### 3.1 Neural network topology
+
+The overall structure of the LSTM neural network is shown as below.
+
+![](../Docs/Figs/lstm.png)
+
+There are 14 LSTM cells, each taking an input of solar power readings from a
+series. To minimize overfitting, a dropout layer is added. The final layer is
+densely connected, and the output is the predicted value of the network.
+
+### 3.2 Data format
+
+A univariate times series of 14 elements (14 readings of solar panel power) are
+formed as input data, in order to predict the maximum value of total power
+generate of that day.
+
+The original data set is in the form of 
+
+|Time | solar.current | solar.total|
+|------------------|----------|-----------|
+|2013-12-01 7:00|6.30|1.69|
+|2013-12-01 7:30|44.30|11.36|
+|2013-12-01 8:00|208.00|67.50|
+|...|...|...|
+|2016-12-01 12:00|1815.00|5330.00|
+
+The hypothesis is, by using a sequence of current solar power readings, the max
+value of total power reading on that day can be predicted. 
+
+The data is then re-formatted as
+
+|Time series | Predicted target|
+|-------------------|-----------|
+|1.7, 11.4|10300|
+|1.7, 11.4, 67.5|10300|
+|1.7, 11.4, 67.5, 250.5|10300|
+|1.7, 11.4, 67.5, 250.5, 573.5|10300|
+|...|...|
+
+to allow convenient modelling with Keras. The first column are panel readings 
+in sequence of a day. The new readings on that day are appended sequentially 
+until the last one. To make it consistent across all the records, there are 
+totally 14 readings in the sequence of maximum lenght in a day. The second 
+column is the total power generation on that day. More explanations for data
+pre-processing can be found in the original [CNTK tutorial](https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_106B_LSTM_Timeseries_with_IOT_Data.ipynb).
+
+NOTE: **CNTK allows inputs of varying lengths to LSTM, but Keras interface does
+not. To be compatible with Keras, the input time series data are padded with zero.**
+
+### 3.3 Model training.
+
+The whole data set is split into training, validating, and testing sets, and 
+the data sets are sampled in the following scenario:
+
+|Day1|Day2|...|DayN-1|DayN|DayN+1|DayN+2|...|Day2N-1|Day2N|
+|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
+|Train|Train|...|Val|Test|Train|Train|...|Val|Test|
+
+After model definition and data pre-processing, the model is trained with the 
+training set. In accordance to the original tutorial, squared error is used as
+the loss function. Epoch size and batch size can be tuned as variables for 
+different levels of model performance.
+
+### 3.4 Put it all together
+
+Script of the whole tutorial is available [here](../Code/lstm.R)
+
+### 3.5 Run on the DSVM
+
+The script can be tried on the deployed DSVM in various ways.
+
+1. Jupyter Notebook - access the Jupyter Hub hosted by the DSVM via https://<dsvm_name>.<location>.cloudapp.azure.com:8000. Create an R-kernel 
+notebook to run the script.
+2. X2Go client - create a new X2Go session for remote desktop of that machine.
+The script can be copied onto the DSVM via either SSH or any SSH-based file
+transfer software, and then be run in Rstudio desktop version.
+
+NOTE: **it was found that if the script is run with R console or Rscript in 
+command line, GPU device will not be activated for acceleration. So running
+the script in Rstudio IDE is recommended.**
+
+## 4 Closing
+
+After the experiment, it is recommended to either stop and deallocate, or 
+destroy the computing resource, if it is not needed.
+
+```{r eval=FALSE}
+# Stop and deallocate the DSVM.
+
+operateDSVM(asc, dsvm_rg, dsvm_name, "Stop")
+```
+
+```{r eval=FALSE}
+# Delete the resource group.
+
+azureDeleteResourceGroup(asc, dsvm_rg)
+```
