@@ -11,9 +11,9 @@ The repository contains three parts
 - **Data** Solar panel readings collected from Internet-of-Things (IoTs)
     devices are used.
 - **Code** Two R markdown files are available - the first one titled
-    [**SolarPanelForecastingTutorial**](https://github.com/Microsoft/acceleratoRs/blob/master/SolarPanelForecasting/Code/SolarPanelForecastingTutorial.Rmd) provides a general introduction of
+    [SolarPanelForecastingTutorial](https://github.com/Microsoft/acceleratoRs/blob/master/SolarPanelForecasting/Code/SolarPanelForecastingTutorial.Rmd) provides a general introduction of
     the accelerator and codes for setting up an experimental environment
-    on Azure DSVM; the second one titled [**SolarPanelForecastingCode**](https://github.com/Microsoft/acceleratoRs/blob/master/SolarPanelForecasting/Code/SolarPanelForecastingCode.Rmd)
+    on Azure DSVM; the second one titled [SolarPanelForecastingCode](https://github.com/Microsoft/acceleratoRs/blob/master/SolarPanelForecasting/Code/SolarPanelForecastingCode.Rmd)
     wraps codes and step-by-step tutorials on build a LSTM model for
     forecasting from end to end. 
 - **Docs** Blogs and decks will be added soon. 
