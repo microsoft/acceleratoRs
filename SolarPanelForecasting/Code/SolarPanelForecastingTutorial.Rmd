@@ -217,80 +217,15 @@ backend()
 will show the message of "Using CNTK backend...", which means the interface can 
 detect and load Cognitive Toolkit backend.
 
-## 3 Model building
+## 2.5 Model building
 
 After all the set up, the model can be created by using Keras R interface 
 functions. As the model building follows the original CNTK tutorial, text for 
 introduction and description will not be duplicated here.
 
-### 3.1 Neural network topology
+Script of the whole step-by-step tutorial is available [here](../Code/lstm.R)
 
-The overall structure of the LSTM neural network is shown as below.
-
-![](../Docs/Figs/lstm.png)
-
-There are 14 LSTM cells, each taking an input of solar power readings from a
-series. To minimize overfitting, a dropout layer is added. The final layer is
-densely connected, and the output is the predicted value of the network.
-
-### 3.2 Data format
-
-A univariate times series of 14 elements (14 readings of solar panel power) are
-formed as input data, in order to predict the maximum value of total power
-generate of that day.
-
-The original data set is in the form of 
-
-|Time | solar.current | solar.total|
-|------------------|----------|-----------|
-|2013-12-01 7:00|6.30|1.69|
-|2013-12-01 7:30|44.30|11.36|
-|2013-12-01 8:00|208.00|67.50|
-|...|...|...|
-|2016-12-01 12:00|1815.00|5330.00|
-
-The hypothesis is, by using a sequence of current solar power readings, the max
-value of total power reading on that day can be predicted. 
-
-The data is then re-formatted as
-
-|Time series | Predicted target|
-|-------------------|-----------|
-|1.7, 11.4|10300|
-|1.7, 11.4, 67.5|10300|
-|1.7, 11.4, 67.5, 250.5|10300|
-|1.7, 11.4, 67.5, 250.5, 573.5|10300|
-|...|...|
-
-to allow convenient modelling with Keras. The first column are panel readings 
-in sequence of a day. The new readings on that day are appended sequentially 
-until the last one. To make it consistent across all the records, there are 
-totally 14 readings in the sequence of maximum lenght in a day. The second 
-column is the total power generation on that day. More explanations for data
-pre-processing can be found in the original [CNTK tutorial](https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_106B_LSTM_Timeseries_with_IOT_Data.ipynb).
-
-NOTE: **CNTK allows inputs of varying lengths to LSTM, but Keras interface does
-not. To be compatible with Keras, the input time series data are padded with zero.**
-
-### 3.3 Model training.
-
-The whole data set is split into training, validating, and testing sets, and 
-the data sets are sampled in the following scenario:
-
-|Day1|Day2|...|DayN-1|DayN|DayN+1|DayN+2|...|Day2N-1|Day2N|
-|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-|Train|Train|...|Val|Test|Train|Train|...|Val|Test|
-
-After model definition and data pre-processing, the model is trained with the 
-training set. In accordance to the original tutorial, squared error is used as
-the loss function. Epoch size and batch size can be tuned as variables for 
-different levels of model performance.
-
-### 3.4 Put it all together
-
-Script of the whole tutorial is available [here](../Code/lstm.R)
-
-### 3.5 Run on the DSVM
+### 2.6 Run script on the DSVM
 
 The script can be tried on the deployed DSVM in various ways.
 
@@ -304,7 +239,7 @@ NOTE: **it was found that if the script is run with R console or Rscript in
 command line, GPU device will not be activated for acceleration. So running
 the script in Rstudio IDE is recommended.**
 
-## 4 Closing
+## 3 Closing
 
 After the experiment, it is recommended to either stop and deallocate, or 
 destroy the computing resource, if it is not needed.
