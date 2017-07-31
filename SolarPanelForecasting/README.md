@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repo reproduces CNTK tutorial 106 B - time series forecasting with
+This repo reproduces [CNTK tutorial 106 B](https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_106B_LSTM_Timeseries_with_IOT_Data.ipynb) - time series forecasting with
 Long Short-Term Memory (LSTM) in R, by using Keras R interface with
 Microsoft Cognitive Toolkit in Azure Data Science Virtual Machine (DSVM)
 
