@@ -409,4 +409,4 @@ ggplot(df_plot, aes(x=date)) +
 ```
 
 The result comparing prediction and ground-truth power values is shown as follows.
-![](../Docs/figs/result.png)
+![](../Docs/Figs/result.png)
