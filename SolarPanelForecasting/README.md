@@ -2,9 +2,18 @@
 
 ## Overview
 
-This repo reproduces [CNTK tutorial 106 B](https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_106B_LSTM_Timeseries_with_IOT_Data.ipynb) - time series forecasting with
-Long Short-Term Memory (LSTM) in R, by using Keras R interface with
-Microsoft Cognitive Toolkit in Azure Data Science Virtual Machine (DSVM)
+This repo reproduces [CNTK tutorial 106
+B](https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_106B_LSTM_Timeseries_with_IOT_Data.ipynb)
+- Deep Learning time series forecasting with Long Short-Term Memory
+(LSTM) in R, by using the Keras R interface with Microsoft Cognitive
+Toolkit in an Azure Data Science Virtual Machine (DSVM).
+
+An Azure account can be created for free by visiting [Microsoft
+Azure](https://azure.microsoft.com/free). This will then allow you to
+deploy a [Ubuntu Data Science Virtual
+Machine](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview)
+through the [Azure Portal](https://ms.portal.azure.com). You can then
+connect to the server's RStudio instance through a local web browser.
 
 The repository contains three parts
 
