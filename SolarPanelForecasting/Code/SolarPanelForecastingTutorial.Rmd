@@ -10,7 +10,7 @@ This accelerator is a reproduction of CNTK tutorial 106 B - using LSTM
 for time series forecasting in R. The original tutorial can be found [here](https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_106B_LSTM_Timeseries_with_IOT_Data.ipynb).
 
 The accelerator here mainly demonstrates how one can use `keras` R interface 
-together with CNTK backend, to train a LSTM model for solar power forecasting,
+together with Cognitive Toolkit backend, to train a LSTM model for solar power forecasting,
 in a Azure Data Science Virtual Machine (DSVM).
 
 ## 1 Introduction
@@ -22,9 +22,9 @@ is a challenging and important problem. Analyzing historical time-series data of
 solar power generation may help predict the total amount of energy produced by 
 solar panels. 
 
-More discussion about solar power forecasting can be found in Wikipedia page. The
-problem in this accelerator, is a simplified model, which is to merely illustrate
-how an R based LSTM model can be trained in an Azure DSVM.
+More discussion about solar power forecasting can be found in the Wikipedia page. The
+model illustrated in this accelerator, is a simplified one, which is to merely demonstrate
+how an R based LSTM model can be trained with Cognitive Toolkit backend in an Azure DSVM.
 
 ### 1.2 LSTM
 
@@ -36,7 +36,7 @@ etc.
 While a comprehensive discussion of LSTM is not the focus of this accelerator, 
 more information can be found in [Chris Olah's blog](http://colah.github.io/posts/2015-08-Understanding-LSTMs/).
 
-### 1.3 Cognitive Toolkit and keras
+### 1.3 Cognitive Toolkit and Keras
 
 #### 1.3.1 Cognitive Toolkit
 
@@ -48,7 +48,7 @@ It is featured by
 * Highly optimized and built-in components that handle multi-dimensional data 
 from different language environment, deal with various types of deep learning
 algorithms, add user-defined core components on the GPU, etc.
-* Efficience resource usage that avails parallelism with multiple GPU/machines.
+* Efficient resource usage that avails parallelism with multiple GPU/machines.
 * Easy expression of neural network with full APIs of Python, C++, and BrainScript.
 * Training support on Azure.
 
@@ -73,13 +73,12 @@ high-performance computing engines make it convenient for researchers and
 developers to prototype and validate models easily.
 
 The following sections demonstrate how to train an LSTM model on a DSVM with 
-Cognitive Toolkit and Keras in R.
+Cognitive Toolkit and Keras R interface.
 
 NOTE: **the script for demonstrating Cognitive Toolkit + Keras can also be run
 in a local environment, but one needs to manually download and install
-Cognitive Toolkit and its dependencies, Keras, Keras R package and its
-dependencies, CUDA Toolkit (if GPU device is available and GPU acceleration 
-is wanted).**
+Cognitive Toolkit, Keras, Keras R package, CUDA Toolkit (if GPU device is available and GPU acceleration 
+is wanted), and their dependencies.**
 
 ### 2.1 Data Science Virtual Machine (DSVM)
 
@@ -88,7 +87,7 @@ rich set of commonly used data science and AI development tools such as R/Python
 environment, Cognitive Toolkit, SQL Server, etc.
 
 DSVM is a desirable workplace to experiment, prototype, and productize data 
-analytical and AI solutions. Elasticity of the offering also guarantee the cost
+analytical and AI solutions. Elasticity of the offering also guarantees the cost
 effectiveness, which makes it more economically efficient compared to on-premise
 servers.
 
@@ -105,7 +104,13 @@ account to administrate DSVM instances.
 
 To fire up a DSVM, one just needs to specify information such as DSVM name, user
 name, operating system, VM size, etc. For example, the following script fires up
-a Ubuntu DSVM of size D1_V2, located at Southeast Asia.
+a Ubuntu DSVM of size D1_V2, located at Southeast Asia. NC-series VMs, which are
+incorporated with GPU devices, are available in certain regions such as East US,
+West Europe, etc. Compared to D-series VMs, NC-series have higher pricing rate, so 
+there are trade-offs for choosing an appropriate machine for training work.
+
+NOTE: **Keras and Keras R interface promise seamless utilization of GPU device 
+that is properly configured in the VM for accelerating deep learning model training.**
 
 ```{r}
 # load the packages
@@ -171,7 +176,7 @@ deployDSVM(asc,
            mode="Sync")
 ```
 
-Note since originally a DSVM does not have keras R interface installed and 
+As originally a DSVM does not have keras R interface installed and 
 configured. A post-deployment installation and configuration of the package can 
 be achieved by adding an extension to the deployed DSVM. Basically it runs a 
 shell script that is located on a remote place.
@@ -204,7 +209,8 @@ by
 3. X2Go client.
 
 NOTE: **it was found that keras R interface does not work well in Rstudio server
-owing to SSL certificate issue.**
+owing to SSL certificate issue. This may be related to "http" protocol. Jupyter
+Notebook which is based on "https" protocol works well.**
 
 Idealy in the R session of the remote DSVM, typing the following
 
@@ -215,19 +221,20 @@ backend()
 ```
 
 will show the message of "Using CNTK backend...", which means the interface can 
-detect and load Cognitive Toolkit backend.
+detect and load Cognitive Toolkit backend. If the DSVM is an NC-series one, GPU
+device will be detected and used.
 
 ## 2.5 Model building
 
 After all the set up, the model can be created by using Keras R interface 
-functions. As the model building follows the original CNTK tutorial, text for 
-introduction and description will not be duplicated here.
+functions. As the model building follows the original CNTK tutorial, text of 
+introduction and description will not be replicated here.
 
 Script of the whole step-by-step tutorial is available [here](../Code/lstm.R)
 
 ### 2.6 Run script on the DSVM
 
-The script can be tried on the deployed DSVM in various ways.
+The script can be run on the deployed DSVM in various ways.
 
 1. Jupyter Notebook - access the Jupyter Hub hosted by the DSVM via https://<dsvm_name>.<location>.cloudapp.azure.com:8000. Create an R-kernel 
 notebook to run the script.
@@ -236,8 +243,8 @@ The script can be copied onto the DSVM via either SSH or any SSH-based file
 transfer software, and then be run in Rstudio desktop version.
 
 NOTE: **it was found that if the script is run with R console or Rscript in 
-command line, GPU device will not be activated for acceleration. So running
-the script in Rstudio IDE is recommended.**
+command line, GPU device will not be activated for acceleration, while running
+the script in Rstudio IDE does not have such kind of problem.**
 
 ## 3 Closing
 
