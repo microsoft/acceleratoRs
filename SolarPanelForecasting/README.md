@@ -13,7 +13,9 @@ Azure](https://azure.microsoft.com/free). This will then allow you to
 deploy a [Ubuntu Data Science Virtual
 Machine](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview)
 through the [Azure Portal](https://ms.portal.azure.com). You can then
-connect to the server's RStudio instance through a local web browser.
+connect to the server's [RStudio
+Server](https://www.rstudio.com/products/rstudio/#Server) instance
+through a local web browser via http://<ip address>:8787.
 
 The repository contains three parts
 
