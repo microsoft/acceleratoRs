@@ -15,7 +15,7 @@ Machine](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learnin
 through the [Azure Portal](https://ms.portal.azure.com). You can then
 connect to the server's [RStudio
 Server](https://www.rstudio.com/products/rstudio/#Server) instance
-through a local web browser via http://<ip address>:8787.
+through a local web browser via ```http://<ip address>:8787```.
 
 The repository contains three parts
 
