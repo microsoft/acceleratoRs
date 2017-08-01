@@ -22,14 +22,14 @@ is a challenging and important problem. Analyzing historical time-series data of
 solar power generation may help predict the total amount of energy produced by 
 solar panels. 
 
-More discussion about solar power forecasting can be found in Wikipedia page. The
-problem in this accelerator, is a simplified model, which is to merely illustrate
+More discussion about solar power forecasting can be found in the Wikipedia page. The
+model illustrated in this accelerator, is a simplified one, which is to merely demonstrate
 how an R based LSTM model can be trained in an Azure DSVM.
 
 ### 1.2 Overall introduction
 
 Overall introduction of model techniques, training framework, and cloud 
-computing resources can be found in another markdown file.
+computing resources management can be found in another markdown file.
 
 ## 2 Step by step tutorial
 
@@ -49,9 +49,9 @@ library(ggplot2)
 
 #### 2.2.1 Data downloading.
 
-The original data set is preserved at [here](https://guschmueds.blob.core.windows.net/datasets/solar.csv).
+The original data set is preserved [here](https://guschmueds.blob.core.windows.net/datasets/solar.csv).
 
-For convenience of reproducition, the data is downloaded onto local system.
+For convenience of reproduction, the data is downloaded onto local system.
 
 ```{r}
 data_url <- "https://guschmueds.blob.core.windows.net/datasets/solar.csv"
@@ -83,11 +83,11 @@ The original data set is in the form of
 |...|...|...|
 |2016-12-01 12:00|1815.00|5330.00|
 
-The first column is the time stamp of when solar panel is read. The frequency of
+The first column is the time stamp of when solar panel is recorded. The frequency of
 reading is once per half an hour. The second and the third columns are current
-power at the time of reading and the total reading so far on the day.
+power at the time of reading and the total reading so far on that day.
 
-The data can be interactively explored visually by the following codes.
+The data can be interactively explored by the following codes.
 
 ```{r}
 # Take a glimpse of the data.
@@ -100,10 +100,10 @@ ggplot(df_panel, aes(x=solar.current)) +
 
 #### 2.2.3 Data re-formatting.
 
-The objective is, by using a sequence of current solar power readings, the max
-value of total power reading on that day can be predicted. 
+The objective is, to predict the max
+value of total power reading on a day, by using a sequence of historical solar power readings. 
 
-Since every day the solar panel power data points may be different - a unique
+Since every day the number of solar panel power readings may be different - a unique
 length, 14, is then used for each day. That is, in a daily basis, a univariate
 times series of 14 elements (14 readings of solar panel power) are
 formed as input data, in order to predict the maximum value of total power
@@ -190,7 +190,7 @@ df_panel_all <-
 4. Generate the time series sequences for each day.
 
 NOTE: **according to the original [CNTK tutorial](https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_106B_LSTM_Timeseries_with_IOT_Data.ipynb), those days with less than 8 readings are
-omitted from the data, and those with more than 14 readings are truncated. 
+omitted from the data, and those with more than 14 readings are truncated to be exactly 14. 
 ```{r}
 # Find the days that have more than 8 readings.
 
@@ -288,7 +288,7 @@ df_test  <- filter(df_panel_seq_sample, sample_index == 0)
 ```
 
 The data sets are then processed with `genSequence` function to generate the 
-time sequence data with acceptable format.
+time sequence data into the required format.
 
 ```{r}
 seq_train <- genSequence(df_train)
@@ -312,14 +312,15 @@ The overall structure of the LSTM neural network is shown as below.
 
 ![](../Docs/Figs/lstm.png)
 
-There are 14 LSTM cells, each taking an input of solar power readings from a
-series. To minimize overfitting, a dropout layer is added. The final layer is
-densely connected, and the output is the predicted value of the network.
+There are 14 LSTM cells, each taking an input of solar power reading from a
+series. To minimize overfitting, a dropout layer with 0.2 dropout rate is added. The final layer is
+a neuron that is densely connected with the dropout layer, and the output is the predicted solar power value.
 
 #### 2.3.1 Model definition.
 
-In Keras, one type of neural network model is to stack basic layers. According
-to the model description, the Keras code to declare the model is 
+In Keras, one type of neural network model is to stack basic layers, and this type of model
+starts with `keras_model_sequential()` function. According
+to the model description, the R code to define the model is 
 
 ```{r}
 # The neural network topology is the same as that in the original CNTK tutorial.
@@ -339,7 +340,7 @@ and optimization method (Adam method) are specified.
 model %>% compile(loss='mse', optimizer='adam') 
 ```
 
-Basic information of the model can be visualized by `summary`.
+After the compilation, basic information of the model can be visualized by `summary`.
 
 ```{r}
 summary(model)
@@ -408,5 +409,11 @@ ggplot(df_plot, aes(x=date)) +
   ylab("Max of total solar power")
 ```
 
-The result comparing prediction and ground-truth power values is shown as follows.
+The result comparing prediction and ground-truth power values is shown as follows. 
 ![](../Docs/Figs/result.png)
+
+It shows in the plot that the prediction results align well with the true values. 
+There are ways of improving the model such as
+* increasing the number of epochs.
+* further preprocessing the training data to smooth out missing values.
+* complicating the network topology. 
