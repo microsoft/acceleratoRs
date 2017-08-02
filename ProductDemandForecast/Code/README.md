@@ -5,13 +5,13 @@
 
 Some other critical R packages for the analysis:
 
-* dplyr                 Missing value treatment with Filter.
-* zoo                   Missing value treatment with locf method.
-* forecast              Time series forecasting.
-* hts                   Hierarchical time series forecasting.
-* fpp                   Time Series cross validation.
-* foreach               Run for loop in parallel.
-* RevoScaleR            Parallel computing with rxExec. 
+* dplyr                 - Missing value treatment with Filter.
+* zoo                   - Missing value treatment with locf method.
+* forecast              - Time series forecasting.
+* hts                   - Hierarchical time series forecasting.
+* fpp                   - Time Series cross validation.
+* foreach               - Run for loop in parallel.
+* RevoScaleR            - Parallel computing with rxExec. 
 
 # Use of template
 
