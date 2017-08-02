@@ -19,7 +19,7 @@ Each of accelerators shared in this repo is structured following the project tem
     * `Docs` - Normally related documentations, references, and perhaps
         yielded reports will be put in this directory.
 
-* An accelerator should be able to run interactively as an R notebooks in RStudio. 
+* An accelerator should be able to run interactively in an IDE that supports R markdown such as [R Tools for Visual Studio (RTVS)](https://docs.microsoft.com/en-us/visualstudio/rtvs/rmarkdown) or RStudio. 
 * Makefile is by default provided to generate documents of other formats, or alternatively rmarkdown::render can be used for the same purpose. 
 
 # Contributing

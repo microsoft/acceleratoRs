@@ -1,8 +1,7 @@
 # List of data sets
 |  Data Set Name | Link to the Full Data Set   | Full Data Set Size (MB)  | Link to Report |
 | ---:| ---: | ---: | ---: |
-| Data Set 1 |
-[link](https://guschmueds.blob.core.windows.net/datasets/solar.csv) | 1.1 | N/A|
+| Data Set 1 | [link](https://guschmueds.blob.core.windows.net/datasets/solar.csv) | 1.1 | N/A|
 
 # Description of data sets
 

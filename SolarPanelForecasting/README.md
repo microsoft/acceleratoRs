@@ -2,18 +2,29 @@
 
 ## Overview
 
-This repo reproduces CNTK tutorial 106 B - time series forecasting with
-Long Short-Term Memory (LSTM) in R, by using Keras R interface with
-Microsoft Cognitive Toolkit in Azure Data Science Virtual Machine (DSVM)
+This repo reproduces [CNTK tutorial 106
+B](https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_106B_LSTM_Timeseries_with_IOT_Data.ipynb)
+- Deep Learning time series forecasting with Long Short-Term Memory
+(LSTM) in R, by using the Keras R interface with Microsoft Cognitive
+Toolkit in an Azure Data Science Virtual Machine (DSVM).
+
+An Azure account can be created for free by visiting [Microsoft
+Azure](https://azure.microsoft.com/free). This will then allow you to
+deploy a [Ubuntu Data Science Virtual
+Machine](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview)
+through the [Azure Portal](https://ms.portal.azure.com). You can then
+connect to the server's [RStudio
+Server](https://www.rstudio.com/products/rstudio/#Server) instance
+through a local web browser via ```http://<ip address>:8787```.
 
 The repository contains three parts
 
 - **Data** Solar panel readings collected from Internet-of-Things (IoTs)
     devices are used.
 - **Code** Two R markdown files are available - the first one titled
-    **SolarPanelForecastingTutorial** provides a general introduction of
+    [SolarPanelForecastingTutorial](https://github.com/Microsoft/acceleratoRs/blob/master/SolarPanelForecasting/Code/SolarPanelForecastingTutorial.Rmd) provides a general introduction of
     the accelerator and codes for setting up an experimental environment
-    on Azure DSVM; the second one titled **SolarPanelForecastingCode**
+    on Azure DSVM; the second one titled [SolarPanelForecastingCode](https://github.com/Microsoft/acceleratoRs/blob/master/SolarPanelForecasting/Code/SolarPanelForecastingCode.Rmd)
     wraps codes and step-by-step tutorials on build a LSTM model for
     forecasting from end to end. 
 - **Docs** Blogs and decks will be added soon. 
