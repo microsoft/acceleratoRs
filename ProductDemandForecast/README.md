@@ -52,7 +52,7 @@ forecasting demand of all products in total, by category and by individual.
 
 ## Modeling
 
-Forecasting hierarchical time series data [link](https://www.otexts.org/fpp/9/4)is challenging 
+[Forecasting hierarchical time series](https://www.otexts.org/fpp/9/4) is challenging 
 because the generated forecasts need to satisfy the aggregate requirement, that is, 
 lower-level forecasts need to sum up to the higher-level forecasts. 
 
