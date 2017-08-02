@@ -59,7 +59,7 @@ lower-level forecasts need to sum up to the higher-level forecasts.
 There are many approaches that solve this problem, differing in the way they aggregate individual time series forecasts 
 across the groups or the hierarchy: bottom-up, top-down, or middle-out.
 
-Here, we use time series cross validation to choose the optimal aggregation method and other model parameters and then do forecasting. 
+Here, we use time series cross validation to choose the optimal aggregation method and base forecasting model and then do the final forecasting. 
 
 Parallel computing is used to speed up the parameter tuning and time series cross validation.
 
