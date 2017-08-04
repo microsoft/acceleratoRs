@@ -14,7 +14,7 @@ deploy a [Ubuntu Data Science Virtual
 Machine](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview)
 through the [Azure Portal](https://ms.portal.azure.com). You can then
 connect to the server's [Jupyter Notebook](http://jupyter.org/) instance
-through a local web browser via ```http://<ip address>:8000```. Another 
+through a local web browser via ```https://<ip address>:8000```. Another 
 alternative is to launch a remote desktop via X2Go (if it is a Linux DSVM), 
 and then run the code in a Rstudio desktop version.
 **NOTE**: there is an issue with OpenSSL certificate so remote access to an R session with RStudio Server does not work.
