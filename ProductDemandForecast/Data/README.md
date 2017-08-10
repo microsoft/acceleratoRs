@@ -10,8 +10,8 @@
 
 |  Data Set Name | Link to the Full Data Set   | Full Data Set Size (KB)  | Link to Report |
 | ---:| ---: | ---: | ---: |
-| productQuantity.csv | [link] | 4 | N/A|
-| productCategory.csv | [link] | 1 | N/A|
+| productQuantity.csv | [link](https://github.com/Microsoft/acceleratoRs/blob/master/ProductDemandForecast/Data/productQuantity.csv) | 4 | N/A|
+| productCategory.csv | [link](https://github.com/Microsoft/acceleratoRs/blob/master/ProductDemandForecast/Data/productCategory.csv) | 1 | N/A|
 
 
 # Description of the simulated data sets
