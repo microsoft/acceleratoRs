@@ -20,7 +20,7 @@ knitr::opts_chunk$set(fig.width = 6,
 
 ```
 
-# Introducation
+# Introduction
 
 Welcome to the Data Science Design Pattern for Student Drop Out. This pattern provides a starting point for the data scientist exploring a new dataset. By no means is it the end point of the data science journey. The pattern is under regular revision and improvement and is provided as is.
 
@@ -69,7 +69,8 @@ We use the studentDropIndia dataset simulated from student data in UCI repositor
 
 # Identify the source location of the dataset.
 
-dspath <- "../../Data/studentDropIndia_20161215.csv"
+#dspath <- "../../Data/studentDropIndia_20161215.csv"
+dspath <- file.path("C:/Demo/EducationAnalytics/Data/studentDropIndia_20161215.csv")
 
 # Ingest the dataset.
 
@@ -527,7 +528,7 @@ form <- formula(target %s+% " ~ .") %T>% print()
 # Use correlation search to identify key variables.
 # Could be useful to decide which variables to retain.
 
-cfs(form, ds[vars])
+#cfs(form, ds[vars])
 ```
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
@@ -541,9 +542,9 @@ Or, we can use the function information.gain() to identify varaible importance a
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 # Use information gain to identify variable importance.
 
-information.gain(form, ds[vars]) %>%
-  rownames_to_column() %>%
-  arrange(attr_importance)
+#information.gain(form, ds[vars]) %>%
+#  rownames_to_column() %>%
+#  arrange(attr_importance)
 
 # Any variables to remove because not useful?
 
@@ -818,5 +819,6 @@ save(ds, dsname, dspath, dsdate, nobs,
      vars, target, id, ignore, omit, 
      inputi, inputs, numi, numc, cati, catc, 
      file=dsrdata)
+
 ```
 

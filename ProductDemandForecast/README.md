@@ -49,6 +49,8 @@ normally taken into consideration.
 Such time series demand data can often be disaggregated by attributes of interest to 
 form groups of time series or a hierarchy. In this example, we might be interested in 
 forecasting demand of all products in total, by category and by individual.
+![Diagram of the time series hierarchy](Docs/misc/hierarchy.png)
+
 
 ## Modeling
 

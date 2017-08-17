@@ -20,7 +20,7 @@ knitr::opts_chunk$set(fig.width = 6,
 
 ```
 
-# Introducation
+# Introduction
 
 Welcome to the Data Science Design Pattern for Student Drop Out. This pattern provides a starting point for the data scientist exploring a new dataset. By no means is it the end point of the data science journey. The pattern is under regular revision and improvement and is provided as is. 
 
@@ -342,27 +342,27 @@ return(result)
 Let's run the experiments using the algorihtms rpart (Therneau and Atkinson, 2014), randomForest (Breiman et al., 2012), ada (Culp et al., 2012), ctree() from party (Hothorn et al., 2013). In such way, we can conveniently implement those models and compare their performance. 
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
-# Source experi.R 
-
-source("http://onepager.togaware.com/experi.R")
-
-# Set the times of loops
-
-n <- 10
-
-# Run experiments
-
-ex.rp <- experi(form, ds[vars], dsname, target, "rpart", "1", n=n, keep=TRUE)
-ex.rf <- experi(form, ds[vars], dsname, target, "randomForest", "500", n=n, keep=TRUE,         control=list(na.action=na.omit))
-ex.ad <- experi(form, ds[vars], dsname, target, "ada", "50", n=n, keep=TRUE)
-ex.ct <- experi(form, ds[vars], dsname, target, "ctree", "1", n=n, keep=TRUE)
-
-# Compare results
-
-results <- rbind(ex.rp, ex.rf, ex.ad, ex.ct)
-rownames(results) <- results$modeller
-results$modeller <- NULL
-results
+# # Source experi.R 
+# 
+# source("http://onepager.togaware.com/experi.R")
+# 
+# # Set the times of loops
+# 
+# n <- 10
+# 
+# # Run experiments
+# 
+# ex.rp <- experi(form, ds[vars], dsname, target, "rpart", "1", n=n, keep=TRUE)
+# ex.rf <- experi(form, ds[vars], dsname, target, "randomForest", "500", n=n, keep=TRUE, control=list(na.action=na.omit))
+# ex.ad <- experi(form, ds[vars], dsname, target, "ada", "50", n=n, keep=TRUE)
+# ex.ct <- experi(form, ds[vars], dsname, target, "ctree", "1", n=n, keep=TRUE)
+# 
+# # Compare results
+# 
+# results <- rbind(ex.rp, ex.rf, ex.ad, ex.ct)
+# rownames(results) <- results$modeller
+# results$modeller <- NULL
+# results
 ```
 
 # Step 7.1: Other Models - Support Vector Machine Model
@@ -372,15 +372,15 @@ Except for the above commonly used binary classification models, we could also t
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 # Tune hyper-parameters
 
-system.time({
-m.svm.cv <- tune.svm(form, 
-                     data=ds[train, vars], 
-                     gamma=2^(-3:1), 
-                     cost=2^(2:6), 
-                     type="C-classification",
-                     probability=TRUE,
-                     scale=FALSE)
-})
+ system.time({
+ m.svm.cv <- tune.svm(form,
+                      data=ds[train, vars],
+                      gamma=2^(-1:1),
+                      cost=2^(2:4),
+                      type="C-classification",
+                      probability=TRUE,
+                      scale=FALSE)
+ })
 
 print(m.svm.cv$best.performance)
 ```
@@ -391,8 +391,8 @@ print(m.svm.cv$best.performance)
 system.time({
   m.svm <- svm(form, 
                data=ds[train, vars], 
-               gamma=m.svm.cv$best.parameters[1], 
-               cost=m.svm.cv$best.parameters[2],
+               gamma=as.numeric(m.svm.cv$best.parameters[1]), 
+               cost=as.numeric(m.svm.cv$best.parameters[2]),
                type="C-classification",
                probability = TRUE,
                scale = FALSE)
@@ -454,8 +454,8 @@ print(m.nnet.cv$best.performance)
 system.time({
   m.nnet <- nnet(formula=form,
                  data=ds[train, vars],
-                 size=m.nnet.cv$best.parameters[1], 
-                 decay=m.nnet.cv$best.parameters[2], 
+                 size=as.numeric(m.nnet.cv$best.parameters[1]), 
+                 decay=as.numeric(m.nnet.cv$best.parameters[2]), 
                  rang=0.1,
                  maxit=200)
 })
@@ -523,8 +523,8 @@ cv.ctrl <- trainControl(method="cv",
                         allowParallel=TRUE)
 
 grid.xgb <- expand.grid(nrounds=2,
-                        max_depth=2^(1:5),
-                        eta=1*10^(-4:0),
+                        max_depth=2^(1:3),
+                        eta=1*10^(-2:0),
                         min_child_weight=1,
                         colsample_bytree=1,
                         subsample=1,
