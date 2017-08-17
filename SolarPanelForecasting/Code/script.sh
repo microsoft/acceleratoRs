@@ -15,10 +15,10 @@ echo 'Sys.setenv(KERAS_BACKEND="cntk")' > /etc/skel/.Rprofile
 echo 'Sys.setenv(KERAS_PYTHON="/anaconda/envs/py35/bin/python3.5")' >> /etc/skel/.Rprofile
 echo '.libPaths(c(.libPaths(), "~/R/lib"))' >> /etc/skel/.Rprofile
 
-# Create a new user. This is to illustrate that configurations for Keras + CNTK will be distributed to all users under /home directory. 
+# Create a new user. This is to illustrate that configurations for Keras + CNTK will be distributed to all users under /home directory.
 
-useradd -m -d /home/newuser newuser
-echo "newuser:Not$ecure123" | sudo chpasswd
+# useradd -m -d /home/newuser newuser
+# echo "newuser:Not$ecure123" | sudo chpasswd
 
 # Copy /etc/skel to home directory of all users.
 
