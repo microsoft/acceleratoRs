@@ -4,7 +4,7 @@
 
 sudo mkdir /etc/skel/R
 sudo mkdir /etc/skel/R/lib
-sudo Rscript -e 'library(devtools);library(withr);withr::with_libpaths(new="/etc/skel/R/lib", install_github(c("rstudio/reticulate", "gaborcsardi/debugme", "r-lib/processx", "rstudio/tfruns", "rstudio/keras")))'
+sudo Rscript -e 'library(devtools);library(withr);withr::with_libpaths(new="/etc/skel/R/lib/", install_github(c("rstudio/reticulate", "gaborcsardi/debugme", "r-lib/processx", "rstudio/tfruns", "rstudio/keras")))'
 
 # Create keras config json file.
 
