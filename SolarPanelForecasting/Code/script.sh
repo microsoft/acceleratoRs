@@ -30,7 +30,7 @@ for u in ${USR}; do
   DBASE="/home/$u/"
   
   cp -rf /etc/skel/.keras ${DBASE}/
-  cp -rf /etc/skel/R/lib ${DBASE}/
+  cp -rf /etc/skel/R ${DBASE}/
   cat /etc/skel/.Rprofile >> ${DBASE}/.Rprofile
   
   chown -R $u.$u ${DBASE}/.keras
