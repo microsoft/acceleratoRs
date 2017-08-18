@@ -2,7 +2,7 @@
 
 # install R libraries.
 
-sudo Rscript -e 'library(devtools);install_github(c("rstudio/reticulate", "gaborcsardi/debugme", "r-lib/processx", "rstudio/tfruns", "rstudio/keras"))'
+sudo Rscript -e 'library(devtools);with_libpaths(new="~/R/lib", install_github(c("rstudio/reticulate", "gaborcsardi/debugme", "r-lib/processx", "rstudio/tfruns", "rstudio/keras")))'
 
 # Create keras config json file.
 
