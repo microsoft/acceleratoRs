@@ -39,7 +39,7 @@ library(pROC)
 
 # natural language processing
 
-library(msLanguageR)
+# library(msLanguageR) 
 library(tm)
 library(jiebaR)
 
@@ -201,7 +201,7 @@ imp_list <- rownames(imp$importance)[order(imp$importance$Overall, decreasing=TR
 # drop the low ranking variables. Here the last 3 variables are dropped. 
 
 top_var <- 
-  imp_list[1:(ncol(df) - 3)] %>%
+  imp_list[1:(length(imp_list) - 3)] %>%
   as.character() 
 
 top_var
@@ -376,6 +376,16 @@ df_comp <-
              Time=time_consumption) %T>%
              {head(.) %>% print()}
 ```
+
+The stacking model is then saved for future reference.
+
+```{r}
+save(model_stack, file="model.RData")
+```
+
+A rigorous approach is to manage model in a data base. For simplicity purpose,
+in this tutorial, the model is preserved on Azure Storage Account as a [blob](https://azure.microsoft.com/en-us/services/storage/blobs/). Blob storage
+does not restrict file format and it allows easy management on access control.
 
 ### 2.2 Sentiment analysis
 
@@ -650,7 +660,8 @@ Sentiment analysis on text data can also be done with Text Analytics API of Micr
 ```{r}
 # Install devtools
 if(!require("devtools")) install.packages("devtools")
-devtools::install_github("yueguoguo/Azure-R-Interface/utils/msLanguageR")
+devtools::install_url("https://github.com/yueguoguo/Azure-R-Interface/raw/master/utils/msLanguageR_0.1.0.tar.gz")
+
 library(msLanguageR)
 ```
 
