@@ -584,6 +584,13 @@ public IP address with corresponding port number.
 
 The following snapshots show the deployed Shiny apps. 
 
+* Front page.
+![About](../Docs/Misc/pics/about.png)
+* Data exploration.
+![About](../Docs/Misc/pics/datavisual.png)
+* Model training.
+![About](../Docs/Misc/pics/model.png)
+
 The readers can find Dockerfile as well as Shiny R codes in the directories. 
 Images built based on them are pre-published on Dockerhub - `yueguoguo/hrdata`
 and `yueguoguo/hrmodel`, corresponding to the data exploration application and
