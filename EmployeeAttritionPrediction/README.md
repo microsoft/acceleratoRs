@@ -29,3 +29,10 @@ In the data-driven employee attrition prediction model, normally two types of da
 
 1. Prediction models are created based on classification algorithms such as random forest. Ensemble method is applied to enhance prediction performance. Resampling techniques (e.g., SMOTE) are applied to deal with imbalance in the training set for model building.
 2. Term frequency (TF) or term frequency-inverse document frequency are extracted from text as features for sentiment analysis. Translation or language-specific tokenization methods are used for multi-lingual text analysis.
+
+## Operationalization
+
+The accelerator also contains a tutorial on how to deploy Shiny App web service
+with the analytics hosted on a Kubernetes cluster with Azure Container Service.
+Two Shiny Apps are developed which provides GUI-based interactive web interface
+for doing simply data analytics and model training, respectively.
