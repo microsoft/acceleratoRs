@@ -596,11 +596,18 @@ public IP address with corresponding port number.
 
 The following snapshots show the deployed Shiny apps. 
 
-* Front page.
+* Front page - brief introduction of the Shiny apps. The pic below shows the 
+Shiny app opened in a web browser with the IP address and port number specified
+in the Dockerfile and Shiny Server configuration file.
 ![About](../Docs/Misc/pics/about.png)
-* Data exploration.
+* Data exploration - the application is for simple interactive data explorative
+analytics, e.g., visualization of discrete and continuous variables against two
+types of attrition status of employee data. Parameters of these plots can be 
+set interactively on the web.
 ![About](../Docs/Misc/pics/datavisual.png)
-* Model training.
+* Model training - it can be done with the selected hyper parameters. Clicking
+the button will train the model on line and generate a ROC curve based on the
+validation results against testing data set.
 ![About](../Docs/Misc/pics/model.png)
 
 The readers can find Dockerfile as well as Shiny R codes in the directories. 
