@@ -260,13 +260,13 @@ After balancing the training set, a model can be created for prediction. For com
 Three algorithms, support vector machine with radial basis function kernel, random forest, and extreme gradient boosting (xgboost), are used for model building.
 ```{r, echo=TRUE, message=FALSE, warning=FALSE}
 # initialize training control. 
-tc <- trainControl(method="boot", 
-                   number=3, 
-                   repeats=3, 
-                   search="grid",
-                   classProbs=TRUE,
-                   savePredictions="final",
-                   summaryFunction=twoClassSummary)
+tc <- trainControl(method="repeatedcv", 
+                   number=3,
+                   repeats=1,
+                   search="random",
+                   summaryFunction=twoClassSummary,
+                   classProbs=TRUE, 
+                   savePredictions=TRUE)
 
 # SVM model.
 
@@ -274,16 +274,16 @@ time_svm <- system.time(
   model_svm <- train(Attrition ~ .,
                      df_train,
                      method="svmRadial",
-                     trainControl=tc)
+                     trControl=tc)
 )
 
 # random forest model
 
 time_rf <- system.time(
   model_rf <- train(Attrition ~ .,
-                     df_train,
-                     method="rf",
-                     trainControl=tc)
+                    data=df_train,
+                    method="rf",
+                    trControl=tc)
 )
 
 # xgboost model.
@@ -292,7 +292,7 @@ time_xgb <- system.time(
   model_xgb <- train(Attrition ~ .,
                      df_train,
                      method="xgbLinear",
-                     trainControl=tc)
+                     trControl=tc)
 )
 ```
 2. Ensemble of models.
@@ -642,7 +642,7 @@ SVM with RBF kernel is used as an illustration.
 model_svm <- train(Attrition ~ .,
                    df_txt_train,
                    method="svmRadial",
-                   trainControl=tc)
+                   trControl=tc)
 ```
 ```{r}
 # model evaluation

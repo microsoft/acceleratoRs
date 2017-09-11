@@ -1,0 +1,65 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: hrmodel
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: hrmodel
+    spec:
+      containers:
+      - name: hrmodel
+        image: yueguoguo/hrmodel 
+        ports:
+        - containerPort: 3838
+        resources:
+          requests:
+            cpu: 250m
+          limits:
+            cpu: 500m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hrmodel
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 3838
+  selector:
+    app: hrmodel
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: hrdata
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: hrdata
+    spec:
+      containers:
+      - name: hrdata
+        image: yueguoguo/hrdata 
+        ports:
+        - containerPort: 3030
+        resources:
+          requests:
+            cpu: 250m
+          limits:
+            cpu: 500m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hrdata
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 3030
+  selector:
+    app: hrdata
