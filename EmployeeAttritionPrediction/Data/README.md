@@ -1,9 +1,9 @@
 # List of data sets
 |  Data Set Name | Link to the Full Data Set   | Full Data Set Size (KB)  | Link to Report |
 | ---:| ---: | ---: | ---: |
-| DataSet1.csv | [link](https://projectsdisks415.blob.core.windows.net/data/DataSet1.csv) | 213 | N/A|
-| DataSet2.csv | [link](https://projectsdisks415.blob.core.windows.net/data/DataSet2.csv) | 195 | N/A|
-| DataSet3.csv | [link](https://projectsdisks415.blob.core.windows.net/data/DataSet3.csv) | 195 | N/A|
+| DataSet1.csv | [link](https://zhledata.blob.core.windows.net/employee/DataSet1.csv) | 213 | N/A|
+| DataSet2.csv | [link](https://zhledata.blob.core.windows.net/employee/DataSet2.csv) | 195 | N/A|
+| DataSet3.csv | [link](https://zhledata.blob.core.windows.net/employee/DataSet3.csv) | 195 | N/A|
 
 # Description of data sets
 
