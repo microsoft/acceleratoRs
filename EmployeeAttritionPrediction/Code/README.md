@@ -32,3 +32,12 @@ make <filename>.<supported format>
 ```
 
 The geneated files can be removed by `make clean` or `make realclean`
+
+Template for data analytics can be found in `EmployeeAttritionPrediction.Rmd` 
+while that for pipeline operationalization can be found in 
+`EmployeeAttritionPredictionOperationalization.Rmd`. The former contains codes
+for data exploration, model creation, and model evaluation - more of a "how-to"
+on applying data science on attrition prediction problem. The latter is a 
+tutorial of operationalizing the analytics with Azure services. A Data Science
+VM (DSVM) is used for R analytics, while Azure Container Service is used for
+deploying analytics into interactive web-based applications.

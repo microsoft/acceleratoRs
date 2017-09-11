@@ -325,6 +325,9 @@ preserved. This enables the real-world scenario where R-user data scientists and
 data analysts are working within the same infrascture but tasks for each can be 
 de-coupled loosely.
 
+Samples of Dockerfile, configuration files for Shiny Server, and Shiny App R
+scripts can be found at `hrDataExploration` and `hrModelCreation`, respectively.
+
 The whole architecture is depicted as follows.
 
 ##### Step 1 - Create Docker images
@@ -412,7 +415,9 @@ RUN wget --no-verbose https://zhledata.blob.core.windows.net/employee/model.RDat
 CMD ["/usr/bin/shiny-server.sh"
 ```
 All of the layers are the same as those in the original rocker/shiny image, except for installation of additional R packages and their required 
-run time libraries (e.g., caretEnsemble, xgboost, etc.).
+run time libraries (e.g., caretEnsemble, xgboost, etc.). It is worth noting that
+the port number should also be specified in Shiny Server configuration file. 
+Details can be found in the folder of these files. 
 
 Docker images can be built similar to the rocker/shiny image. After the images
 are built, they can be pushed onto a public repository such as on [Dockerhub](https://hub.docker.com/) or a private repository on [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/).
@@ -437,6 +442,13 @@ docker push <dockerhub_account_name>/<name_of_repo>
 ```
 
 In this case, both of the two images are pushed on Dockerhub.
+
+To run the image as a container, use
+```
+docker run <dockerhub_account_name>/<name_of_repo> -p 3838:3838
+```
+Ideally the Shiny App should be accessible on the browser with `localhost:3838`
+if it is run on a locally hosted docker container.
 
 ##### Step 2 - Create Azure Container Service
 
