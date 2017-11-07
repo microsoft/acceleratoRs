@@ -207,6 +207,10 @@ df_panel_seq <-
   filter(row_number() <= 14) %>%
   mutate(ndata = n()) %T>%
   print()
+
+# Append group ID for the sequence data. 
+
+df_panel_seq$day_id <- group_indices(df_panel_seq)
 ```
 
 According to the data format, for each day, the first sequence is composed by 
