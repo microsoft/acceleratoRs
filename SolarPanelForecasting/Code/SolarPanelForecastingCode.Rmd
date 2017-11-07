@@ -359,8 +359,8 @@ fine tune the model performance.
 ```{r}
 # Large sizes of epoch and batch will induce longer training time.
 
-epoch_size <- 200
-batch_size <- 1
+epoch_size <- 10
+batch_size <- 5
 
 # Validating sets can be used to validate the model.
 
