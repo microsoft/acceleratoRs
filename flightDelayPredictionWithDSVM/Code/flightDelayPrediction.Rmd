@@ -66,11 +66,30 @@ library(magrittr)
 
 Import credentials.
 ```{r}
-source("credentials.R")
+# AzureSMR.config is a json format file where credentials such as TIC, CID, and 
+# authentication key are preserved. It is located at ~/.azuresmr/, and AzureSMR
+# will scan that directory looking for the json file.
+
+settingsfile <- getOption("AzureSMR.config")
+config <- read.AzureSMR.config()
+```
+
+Do authentication against Azure account.
+```{r}
+
+context <- AzureSMR::createAzureContext()
+
+with(config,
+     setAzureContext(context, tenantID=tenantID, clientID=clientID, authKey=authKey)
+)
+AzureSMR::azureAuthenticate(context)
 ```
 
 A few global parameters to use.
 ```{r}
+Sys.getenv("USERNAME") %T>%
+  {sprintf("User name:\t\t%s", .) %>% cat("\n")} ->
+USER
 
 runif(2, 1, 26) %>%
   round() %>%
@@ -112,12 +131,6 @@ cat("\n")
 
 Create the resource group.
 ```{r}
-
-# Connect to the Azure subscription and use this as the context for
-# our activities.
-
-context <- createAzureContext(tenantID=TID, clientID=CID, authKey=KEY)
-
 # Check if the resource group already exists. Take note this script
 # will not remove the resource group if it pre-existed.
 
@@ -146,24 +159,31 @@ Fire up the three DSVMs. It took approximately 2 minutes, 37 minutes, and 8 minu
 
 deployDSVM(context, 
            resource.group=RG, 
+           os="Ubuntu",
            size="Standard_F16",
            location=LOC,
            hostname=HOST1,
            username=USER,
-           authen="Password", 
-           password=PWD, 
+           authen="Password",
+           password=config$PASSWORD,
+           # authen="Key", 
+           # pubkey=config$PUBKEY, 
            mode="Async")
 
 # Windows based DSVM for deep learning neural network model training.
 
 deployDSVM(context, 
            resource.group=RG, 
-           os="DeepLearning",
+           # os="DeepLearning",
+           os="Ubuntu",
            size="Standard_NC6",
            location=LOC,
            hostname=HOST2,
            username=USER,
-           password=PWD,
+           authen="Password",
+           password=config$PASSWORD,
+           # authen="Key", 
+           # pubkey=config$PUBKEY, 
            mode="Async")
 
 # Windows based DSVM for MRS web server.
@@ -175,14 +195,9 @@ deployDSVM(context,
            hostname=HOST3,
            username=USER,
            authen="Password",
-           password=PWD)
-```
-
-Check status of the machines.
-```{r}
-azureListVM(context, RG)
-
-operateDSVM(context, RG, c(HOST1, HOST2, HOST3), operation="Check")
+           password=config$PASSWORD)
+           # authen="Key",
+           # pubkey=config$PUBKEY)
 ```
 
 ### Setup
@@ -191,6 +206,38 @@ After the deployment, there are several setups needed for the three provisioned 
 
 1. **GPU toolkit configuration** - A Windows based DSVM does not come with an installed CUDA Toolkit and cuDNN library. Therefore one needs to manually install and configure both of the two. Guidelines for doing this can be found in the [introduction of `rxNeuralNet` function, the `acceleration` argument](https://msdn.microsoft.com/en-us/microsoft-r/microsoftml/packagehelp/neuralnet. 
 2. **One-box configuration** - [One-box configuration](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial) is to enable remote execution and web service API calls of a DSVM which is used an R server. 
+
+Credentials.
+```{r}
+PWD <- config$PASSWORD
+TID <- config$tenantID
+CID <- config$clientID
+KEY <- config$authKey
+```
+
+One-box configuration.
+```{r}
+mrsOneBoxConfiguration(context, 
+                       resource.group=RG,
+                       hostname=HOST1, 
+                       location=LOC, 
+                       username=USER, 
+                       password=PWD)
+
+mrsOneBoxConfiguration(context, 
+                       resource.group=RG,
+                       hostname=HOST2, 
+                       location=LOC, 
+                       username=USER, 
+                       password=PWD)
+
+mrsOneBoxConfiguration(context, 
+                       resource.group=RG,
+                       hostname=HOST3, 
+                       location=LOC, 
+                       username=USER, 
+                       password=PWD)
+```
 
 ### Experiment.
 
@@ -265,7 +312,7 @@ Switch back to local R session and execute the demo script.
 
 # remote execution of scripts located at local.
 
-results <- remoteScript("../codes/dsvm_codes/sparkDemo/demo.R") 
+results <- remoteScript("sparkDemo/demo.R") 
 
 remoteLogout()
 ```
@@ -302,7 +349,7 @@ resume()
 
 # remote execution of scripts located at local.
 
-remoteScript("../codes/dsvm_codes/deepLearningDemo/demo.R") 
+remoteScript("deepLearningDemo/demo.R") 
 ```
 
 Elapsed time may vary from run to run but generally this is an obvious improvement of computation performance by using GPU as an accelerator.
@@ -452,8 +499,9 @@ The service also supports swagger to generate a JSON format description for REST
 
 Once the project is finished, delete the resource group to avoid any additional cost.
 ```{r}
-if (! rg_pre_exists)
+if (! rg_pre_exists) {
   azureDeleteResourceGroup(context, RG)
+}
 ```
 
 ## Cost 
