@@ -281,7 +281,7 @@ A Docker image can be built by using the Dockerfile with
 ```
 docker build -t <image_name> <path_to_the_dockerfile>
 ```
-and run with
+and run with (NOTE the port number should be the same as that is exposed in the dockerfile. In this case, it is 3838.)
 
 ```
 docker run --rm -p 3838:3838 <image_name>
@@ -490,7 +490,7 @@ Kubernetes cluster. This can be done via copy the `config` file located at
 `~/.kube` on master node of the Kubernetes cluster to `~/.kube/` of the local
 machine.
 
-Each of the two applications can be deployed individually as follows.
+Each of the two applications can be deployed individually as follows (NOTE the port number should be the same as that is exposed in the dockerfile. In this case, it is 3838).
 ```
 kubectl run <name_of_deployment> --image <dockerhub_account_name>/<name_of_repo>
 --port=3838 --replicas=3
