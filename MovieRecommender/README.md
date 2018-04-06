@@ -1,31 +1,34 @@
-# Data Science Accelerator - *name of the accelerator.*
+# Data Science Accelerator - *Spark based movie recommender*
 
 ## Overview
 
-*A brief introduction of the acclerator.* 
+The accelerator is to illustrate how to efficiently build a movie recommendation system within 30 minutes!
 
 The repository contains three parts
 
-- **Data** This contains the provided sample data. 
-- **Code** This contains the R development code. They are displayed in R markdown files which can yield files of various formats. 
-- **Docs** This contains the documents, like blog, installation instructions, etc. 
+- **Data** Schemas and references to sample data used in the accelerator. 
+- **Code** Codes for training and scoring a movie recommender.
+- **Docs** Documents helping to build a recommender with Azure Machine Learning Service.
 
 ## Business domain
 
-*Business domain of the data science problem. For example, predictive maintainence, customer churn, etc. It is better to use keywords instead of verbose description.*
+Recommendation (e-commerce, entertainment, retail, etc.).
 
 ## Data science problem
 
-*How the problem is formalized. For instance, a data science problem in a preditive maintenance application scenario may be to predict whether a machine is going to fail in operation after a certain number of running cycles.*
+The problem a recommendation system tries to resolve is
+**Given historical observations of user preferences (i.e., ratings) on a set of items, how to predict and generate a set of items that the users will like most probably.**
 
 ## Data understanding
 
-*A brief introduction of data used in the problem. Dont' have to be verbose as more detailed introduction will be put in the directory of /Data.*
+Typically data in a recommendation system has a schema of 
+|user|item|rating|[timestamp]|
+where user, item, and rating refer to user ID, item ID, and ratings given by a user towards an item.
 
 ## Modeling
 
-*How statistical or machine learning techniques are applied to resolve the data science problem.* 
+A recommender is built by using Spark built-in collaborative filtering algorithm, which is a matrix factorization typed algorithm that is regularized by alternating least squares technique.
 
 ## Solution architecture
 
-*Overall solution architecture of the accelator. For instance, how a development pipeline is architectured for data pre-processing, model creating, and model deploying, for the data science problem.*
+The whole recommendation solution consists of Azure services such as Azure Data Science Virtual Machine, Azure blob storage, Azure Container Registry, Azure Container Services, etc. The building process is completed with Azure Machine Learning Service. 
