@@ -17,6 +17,7 @@ Recommendation (e-commerce, entertainment, retail, etc.).
 ## Data science problem
 
 The problem a recommendation system tries to resolve is
+
 **Given historical observations of user preferences (i.e., ratings) on a set of items, how to predict and generate a set of items that the users will like most probably.**
 
 ## Data understanding
