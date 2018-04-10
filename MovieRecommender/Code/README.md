@@ -2,7 +2,7 @@
 
 The code is written in Python. Python dependencies are listed as belows
 
-* pyspark, scikit-learn 
+* pyspark, scikit-learn, pandas, numpy 
 * azure-cli, azure-cli-ml
 
 # Use of template
@@ -59,7 +59,7 @@ NOTE:
 
 The following shows an RMSE-vs-rank performance for trained models. 
 
-![RMSE vs Rank](../Doc/pics/rmse_rank.png)
+![RMSE vs Rank](https://github.com/Microsoft/acceleratoRs/blob/master/MovieRecommender/Docs/pics/rmse_rank.png?raw=true)
 
 One important step in this illustrative work is cross validation, where a model is validated against a split of data and then tested on an actual data. This can be simply done by splitting data into more than two sets.
 
