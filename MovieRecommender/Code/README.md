@@ -26,16 +26,30 @@ Compute target can be specified in AMLW so that different computing resources ca
 
 In this demonstration, a [Data Science Virtual Machine](https://docs.microsoft.com/en-us/azure/machine-learning/data-science-virtual-machine/overview) is primarily used for developing and deploying models. 
 
-To configure a DSVM based remote compute target, one needs to firstly spin off a new DSVM under subscription. Then he needs to attache the DSVM within AMLW. A detailed instruction can be found [here](https://docs.microsoft.com/en-us/azure/machine-learning/preview/experimentation-service-configuration).
+To configure a DSVM based remote compute target, one needs to firstly spin off a new DSVM under subscription. Then he needs to attache the DSVM within AMLW. 
+
+The simplest way is to open command-line tools within AMLW to configure such attachment, by running
+
+```sh
+az ml computetarget attach remotedocker --name "remotevm" --address "remotevm_IP_address" --username "sshuser" --password "sshpassword" 
+```
+
+A detailed instruction can be found [here](https://docs.microsoft.com/en-us/azure/machine-learning/preview/experimentation-service-configuration).
 
 NOTE the runtime for computing resource by default supports 
 * Python 3.5.2
 * Spark 2.1.11
 For adding other Python dependencies, one can modify the files of `conda_dependencies.yml` and `spark_dependencies.yml` under `aml_config` directory.
 
+Two files of `[remotevm].compute` and `[remotevm].runconfig` will be automatically created after an attachment of remote DSVM. One can edit these two files to meet the specific requirements of experimentation. 
+
 ## Model training
 
-After configuration of compute target, one can run model training on that computing resource. The script of codes can be navigated in AMLW directly. To run a script, press button `Run` at top of AMLW pane. 
+After configuration of compute target, one can run model training on that computing resource. The script of codes can be navigated in AMLW directly. To run a script (say the script is named `myscript.py`), press button `Run` at top of AMLW pane, or submit an experiment by typing command as follows,
+
+```sh
+az ml experiment submit -c remotevm myscript.py
+```
 
 Following are the codes for training a model.
 
@@ -55,7 +69,7 @@ Following are the codes for training a model.
 ```
 NOTE: 
 * AMLW supports visualizing experimentation results of model training with different hyperparameters. So in the actual code parameters of the model trainer (e.g., in our case it is `rank` for Spark collaborative filtering method) can be swept to understand how it affects model performance measured by certain metrics (e.g., RMSE). 
-* Model should be trained by using Spark 2.1.11. It can be done by configuring based Docker image for remoting computation to `microsoft/mmlspark:plus-0.7.9`.
+* Model should be trained by using Spark 2.1.11. It can be done by configuring based Docker image for remoting computation to `microsoft/mmlspark:plus-0.7.9` in the file of `[remotevm].runconfig`. 
 
 The following shows an RMSE-vs-rank performance for trained models. 
 
@@ -69,8 +83,36 @@ After model building, it is important to deploy it onto a web service so that it
 
 This is achieved by creating an image of the pre-built model and deploy it as a Docker container on Azure Container Services. It is made simply by using Azure machine learning command line tools. 
 
-* Firstly set up a model management account and register a deployment environment (see [here](https://docs.microsoft.com/en-us/azure/machine-learning/preview/deployment-setup-configuration)).
-* Then develop a script for scoring purpose. NOTE two functions of `init()` and `run()` should contained in such score script. In our case, the `init()` and `run()` functions are shonw as follows.
+### Setup
+
+Firstly set up a model management account and register a deployment environment.
+
+#### Register Azure services 
+
+Register the following services for deploying model.
+```sh
+az provider register -n Microsoft.MachineLearningCompute
+az provider register -n Microsoft.ContainerRegistry
+az provider register -n Microsoft.ContainerService
+```
+
+#### Set up deployment environment
+
+For local deployment, set up an environment by doing
+```sh
+az ml env setup -l [Azure Region, e.g. eastus2] -n [your environment name] [-g [existing resource group]]
+```
+
+For cluster deployment (on Azure Container Services), set up an environment by doing
+```sh
+az ml env setup --cluster -n [your environment name] -l [Azure region e.g. eastus2] [-g [resource group]]
+```
+
+Details of setting up environments can be found [here](https://docs.microsoft.com/en-us/azure/machine-learning/preview/deployment-setup-configuration).
+
+### Deployment
+
+Then develop a script for scoring purpose. NOTE two functions of `init()` and `run()` should contained in such score script. In our case, the `init()` and `run()` functions are shonw as follows.
 
 ```python
 def init():
@@ -113,6 +155,15 @@ generate_schema(
 )
  ```
 
-After the scripts are ready, a web service can be created either locally (by using a Docker container running on local machine) or remotely (by using a Docker container orchestrated by remote Azure Container Services). 
+After the scripts are ready, a web service can be created either locally (by using a Docker container running on local machine) or remotely (by using a Docker container orchestrated by remote Azure Container Services). This can be done by running the command as follows:
+```sh
+az ml service create realtime --model-file als_model -f score.py -n [service name] -s service_schema.json -r spark-py -c conda_dependencies.yml
+```
 
-This can be done by following the instructions [here](https://docs.microsoft.com/en-us/azure/machine-learning/preview/model-management-service-deploy)
+To test the service, the following command can be run
+```sh
+az ml service run realtime -i <service id> -d "{\"user_ids\": [1]}"
+```
+where user ID is 1.
+
+Detailed instructions can be found [here](https://docs.microsoft.com/en-us/azure/machine-learning/preview/model-management-service-deploy)
