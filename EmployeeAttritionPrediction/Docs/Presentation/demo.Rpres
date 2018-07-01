@@ -639,6 +639,38 @@ Step 9 Orchestrate Shiny Applications
     - `kubectl run <name_of_deployment> --image <dockerhub_account_name>/<name_of_repo> --port=3838 --replicas=3`
     - `kubectl expose deployments <name_of_deployment> --port=3838 --type=LoadBalancer`
     
+Step 10 Scaling Shiny Applications
+========================================================
+- Formulae to Kubernetes cluster (https://blogs.technet.microsoft.com/machinelearning/2018/03/20/scaling-azure-container-service-cluster/). 
+    - Determine number of pods. 
+    
+    $$
+      \text{#Pods}=\text{RequestPerSecond}\times\frac{\text{Latency}}{\text{MaxReplicaConcurrency}}
+    $$
+    - Determine agent node VM size. 
+    
+    $$
+      \text{#CPUPerVM}\times \text{ClusterSize}=\text{#Pods}\times\text{CPUAllocation}
+    $$
+- Example
+    - #CPUPerVM: 2 for Azure Standard DS2 VM.
+    - CPUAllocation: 0.5.
+    - RequestPerSecond: 24.
+    - Latency: 500 ms. 
+    - MaxReplicaConcurrency: 1.
+    
+ClusterSize = $(50\times\frac{500}{1000})/1)\times0.5/2$ which is 3.
+
+Step 10 Scaling Shiny Applications (Cont'd)
+========================================================
+- Shiny application latency.
+    - Profiling Shiny applications.
+    - `profvis` package.
+    - `profvis({runApp("myApp")})` to profile. E.g., the model training application takes ~55,000 ms for launching.
+- Determine other design parameters (i.e., RequestPerSecond, etc.) for sizing Kubernetes cluster.
+
+<center>![](./demo-figure/app_profile.png)
+    
 Demo
 ========================================================
 The Shiny applications.
