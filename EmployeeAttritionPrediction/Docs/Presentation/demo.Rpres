@@ -1,4 +1,4 @@
-Employee Attrition Prediction with R Accelerator
+Develop An Employee Attrition Prediction Application with Kubernetes on Azure
 ========================================================
 author: Le Zhang, Data Scientist at Microsoft
 date: `r Sys.Date()`
@@ -63,72 +63,72 @@ load("./models.RData")
 - How to predict employee attrition?
 - Walk-through of an R "accelerator".
 
-Introduction
-========================================================
+<!-- Introduction -->
+<!-- ======================================================== -->
 
-- Microsoft Algorithms and Data Science (ADS).
+<!-- - Microsoft Algorithms and Data Science (ADS). -->
 
-```{r, echo=FALSE, fig.align="center", fig.width=15, fig.height=8}
+<!-- ```{r, echo=FALSE, fig.align="center", fig.width=15, fig.height=8} -->
 
-location <- c("Seatle", "Sunnyvale", "Boston", "London", "Singapore", "Melbourne")
-ll_location <- geocode(location)
-location_x <- ll_location$lon
-location_y <- ll_location$lat
+<!-- location <- c("Redmond", "Sunnyvale", "Boston", "London", "Singapore", "Melbourne") -->
+<!-- ll_location <- geocode(location) -->
+<!-- location_x <- ll_location$lon -->
+<!-- location_y <- ll_location$lat -->
 
-df <- data.frame(
-  location=location,
-  location_x=location_x,
-  location_y=location_y,
-  adsap=as.factor(c(rep(FALSE, 4), rep(TRUE, 2)))
-)
+<!-- df <- data.frame( -->
+<!--   location=location, -->
+<!--   location_x=location_x, -->
+<!--   location_y=location_y, -->
+<!--   adsap=as.factor(c(rep(FALSE, 4), rep(TRUE, 2))) -->
+<!-- ) -->
 
-mp <- NULL
+<!-- mp <- NULL -->
 
-mapWorld <- borders("world", colour="gray50", fill="gray50") 
+<!-- mapWorld <- borders("world", colour="gray50", fill="gray50")  -->
 
-mp <- 
-  ggplot(data=df, aes(x=location_x, y=location_y, label=location)) + 
-  mapWorld +
-  geom_label(color=df$adsap, size=10) +
-  theme_bw() +
-  scale_x_continuous(breaks=NULL, labels=NULL) +
-  scale_y_continuous(breaks=NULL, labels=NULL) +
-  xlab("") +
-  ylab("") 
+<!-- mp <-  -->
+<!--   ggplot(data=df, aes(x=location_x, y=location_y, label=location)) +  -->
+<!--   mapWorld + -->
+<!--   geom_label(color=df$adsap, size=10) + -->
+<!--   theme_bw() + -->
+<!--   scale_x_continuous(breaks=NULL, labels=NULL) + -->
+<!--   scale_y_continuous(breaks=NULL, labels=NULL) + -->
+<!--   xlab("") + -->
+<!--   ylab("")  -->
 
-mp
-```
+<!-- mp -->
+<!-- ``` -->
 
-- ADS Asia Pacific. 
-    - Data science solution templates to resolve real-world problems.
-    - Scalable tools & algorithms for high performance advanced analytics.
+<!-- - ADS Asia Pacific.  -->
+<!--     - Data science solution templates to resolve real-world problems. -->
+<!--     - Scalable tools & algorithms for high performance advanced analytics. -->
 
-Data science and machine learning
-========================================================
+<!-- Data science and machine learning -->
+<!-- ======================================================== -->
 
-- Data science & Machine learning
-- A review on iris data.
+<!-- - Data science & Machine learning -->
+<!-- - A review on iris data. -->
 
-```{r, echo=FALSE, fig.height=8, fig.width=10}
+<!-- ```{r, echo=FALSE, fig.height=8, fig.width=10} -->
 
-ggplot(data=iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) +
-  geom_jitter(size=5) +
-  theme_bw() +
-  theme(text=element_text(size=30))
+<!-- ggplot(data=iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) + -->
+<!--   geom_jitter(size=5) + -->
+<!--   theme_bw() + -->
+<!--   theme(text=element_text(size=30)) -->
 
-rattle::fancyRpartPlot(model_iris, main="Decision tree model built on iris data.")
-```
+<!-- rattle::fancyRpartPlot(model_iris, main="Decision tree model built on iris data.") -->
+<!-- ``` -->
 
-- Is that all?
+<!-- - Is that all? -->
 
-Real-world data science project
-========================================================
+<!-- Real-world data science project -->
+<!-- ======================================================== -->
 
-- Team Data Science Process (TDSP) https://github.com/Azure/Microsoft-TDSP.
-    - Collaborative.
-    - Iterative.
+<!-- - Team Data Science Process (TDSP) https://github.com/Azure/Microsoft-TDSP. -->
+<!--     - Collaborative. -->
+<!--     - Iterative. -->
 
-![](./demo-figure/tdsp.png)    
+<!-- ![](./demo-figure/tdsp.png)     -->
 
 Use case - employee attrition prediction
 ========================================================
@@ -246,14 +246,14 @@ Model creation and validation
     - F Score.
     - Area-Under-Curve.
 
-Employee attrition prediction - R accelerator
-========================================================
+<!-- Employee attrition prediction - R accelerator -->
+<!-- ======================================================== -->
 
-- What is R "accelerator"
-    - Lightweight end-to-end solution template.
-    - Follows Microsoft Team Data Science Process (TDSP) format, in a simplified version.
-    - Easy for prototyping, presenting, and documenting.
-    - Github repo https://github.com/Microsoft/acceleratoRs
+<!-- - What is R "accelerator" -->
+<!--     - Lightweight end-to-end solution template. -->
+<!--     - Follows Microsoft Team Data Science Process (TDSP) format, in a simplified version. -->
+<!--     - Easy for prototyping, presenting, and documenting. -->
+<!--     - Github repo https://github.com/Microsoft/acceleratoRs -->
 
 Step 0 Setup
 ========================================================
@@ -589,126 +589,179 @@ df_comp
 - Analysis
     - Diversity of model affects ensemble performance.
     - Data size also impacts.
-
-Step 6 Sentiment analysis - a glimpse of data
+    
+Step 6 Model operationalization
 ========================================================
-```{r}
-# getting the data.
-
-head(df2$Feedback, 5)
-```
-
-Step 7 Sentiment analysis - feature extraction
+- Deploy model onto a web service.
+    - Model based API.
+    - R Shiny application.
+    - Deploy as a container based service.
+- Container based Shiny application to develop a model-as-a-service.
+    - Manageable.
+    - Modular.
+    - Extensiable.
+    - Scalable (if it comes with Kubernetes).
+    
+Step 7 Develop Shiny applications
 ========================================================
-
-- General methods
-    - Initial transformation 
-        - Removal of unnecessary elements (stopwords, numbers, punctuations, etc.).
-            - Stopwords: yes, no, you, I, etc.
-        - Translation or sentence/word alignment.
-        - Part-Of-Speech tagging.
-    - Bag-of-words model
-        - n-Grams.
-        - Term frequency (TF) or Term frequency inverse-document frequency (TF-IDF).
-    - Model creation
-
-Step 7 Sentiment analysis - feature extraction (Cont'd)
+- App1: Data exploration
+    - Visualization of employee data.
+    - Simple statistics.
+- App2: Model creation
+    - Training of model with different algorithms and parameter setups.
+    - Evaluating model (ROC is used).
+    
+Step 7 Develop Shiny application (cont'd)
 ========================================================
+- Data exploration
+![](./demo-figure/datavisual.png)
 
-```{r}
-# create a corpus based upon the text data.
-
-corp_text <- Corpus(VectorSource(df2$Feedback))
-```
-
-```{r}
-# transformation on the corpus.
-
-corp_text %<>%
-  tm_map(removeNumbers) %>%
-  tm_map(content_transformer(tolower)) %>%
-  tm_map(removeWords, stopwords("english")) %>%
-  tm_map(removePunctuation) %>%
-  tm_map(stripWhitespace) 
-```
-
-```{r}
-dtm_txt_tf <- 
-  DocumentTermMatrix(corp_text, control=list(wordLengths=c(1, Inf), weighting=weightTf)) 
-```
-
-```{r}
-# remove sparse terms.
-
-dtm_txt <-
-  removeSparseTerms(dtm_txt_tf, 0.99)
-```
-
-Step 7 Sentiment analysis - feature extraction (Cont'd)
+Step 7 Develop Shiny application (cont'd)
 ========================================================
+- Model creation 
+![](./demo-figure/model.png)
 
-- Convert corpus to term frequency matrix.
-
-```{r}
-dtm_txt_sample <- removeSparseTerms(dtm_txt_tf, 0.85)
-inspect(dtm_txt_sample[1:10, ]) 
-```
-
-```{r, echo=FALSE, include=FALSE}
-df_txt <- 
-  inspect(dtm_txt) %>%
-  as.data.frame()
-```
-
-Step 8 Sentiment analysis - model creation and validation
+Step 8 Containerize Shiny applications
 ========================================================
+- Create Docker images for the Shiny applications.
+    - Customize by using an existing [Shiny image](https://hub.docker.com/r/rocker/shiny/).
+    - Specify `ui.R` and `server.R` scripts.
+    - Build the image by `docker build -t <image_name> <path_to_the_dockerfile>`. 
+    - Test the image with a local run by `docker run --rm -p 3838:3838 <image_name>`.
+- Push built images onto Docker hub or a private repo.
 
-- Create and validate a classification model.
-
-```{r}
-# form the data set
-
-df_txt %<>% cbind(Attrition=df2$Attrition)
-```
-```{r}
-# split data set into training and testing set.
-
-train_index <- 
-  createDataPartition(df_txt$Attrition,
-                      times=1,
-                      p=.7) %>%
-  unlist()
-
-df_txt_train <- df_txt[train_index, ]
-df_txt_test <- df_txt[-train_index, ]
-```
-
-Step 8 Sentiment analysis - model creation and validation (Cont'd)
+Step 9 Orchestrate Shiny Applications
 ========================================================
+<center>![](./demo-figure/k8s_diagram.png)
 
-- SVM is used.
-
-```{r, eval=FALSE}
-# model building
-
-model_sent <- train(Attrition ~ .,
-                    df_txt_train,
-                    method="svmRadial",
-                    trainControl=tc)
-```
-
-```{r}
-prediction <- predict(model_sent, newdata=select(df_txt_test, -Attrition))
-```
-
-Step 8 Sentiment analysis - model creation and validation (Cont'd)
+- Create Kubernetes cluster by using Azure Container Service.
+- Deploy and expose Shiny applications on the Kubernetes cluster.
+    - `kubectl run <name_of_deployment> --image <dockerhub_account_name>/<name_of_repo> --port=3838 --replicas=3`
+    - `kubectl expose deployments <name_of_deployment> --port=3838 --type=LoadBalancer`
+    
+Demo
 ========================================================
+The Shiny applications.
 
-```{r, echo=FALSE}
-confusionMatrix(prediction,
-                reference=df_txt_test$Attrition,
-                positive="Yes")
-```
+<!-- Step 6 Sentiment analysis - a glimpse of data -->
+<!-- ======================================================== -->
+<!-- ```{r} -->
+<!-- # getting the data. -->
+
+<!-- head(df2$Feedback, 5) -->
+<!-- ``` -->
+
+<!-- Step 7 Sentiment analysis - feature extraction -->
+<!-- ======================================================== -->
+
+<!-- - General methods -->
+<!--     - Initial transformation  -->
+<!--         - Removal of unnecessary elements (stopwords, numbers, punctuations, etc.). -->
+<!--             - Stopwords: yes, no, you, I, etc. -->
+<!--         - Translation or sentence/word alignment. -->
+<!--         - Part-Of-Speech tagging. -->
+<!--     - Bag-of-words model -->
+<!--         - n-Grams. -->
+<!--         - Term frequency (TF) or Term frequency inverse-document frequency (TF-IDF). -->
+<!--     - Model creation -->
+
+<!-- Step 7 Sentiment analysis - feature extraction (Cont'd) -->
+<!-- ======================================================== -->
+
+<!-- ```{r} -->
+<!-- # create a corpus based upon the text data. -->
+
+<!-- corp_text <- Corpus(VectorSource(df2$Feedback)) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- # transformation on the corpus. -->
+
+<!-- corp_text %<>% -->
+<!--   tm_map(removeNumbers) %>% -->
+<!--   tm_map(content_transformer(tolower)) %>% -->
+<!--   tm_map(removeWords, stopwords("english")) %>% -->
+<!--   tm_map(removePunctuation) %>% -->
+<!--   tm_map(stripWhitespace)  -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- dtm_txt_tf <-  -->
+<!--   DocumentTermMatrix(corp_text, control=list(wordLengths=c(1, Inf), weighting=weightTf))  -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- # remove sparse terms. -->
+
+<!-- dtm_txt <- -->
+<!--   removeSparseTerms(dtm_txt_tf, 0.99) -->
+<!-- ``` -->
+
+<!-- Step 7 Sentiment analysis - feature extraction (Cont'd) -->
+<!-- ======================================================== -->
+
+<!-- - Convert corpus to term frequency matrix. -->
+
+<!-- ```{r} -->
+<!-- dtm_txt_sample <- removeSparseTerms(dtm_txt_tf, 0.85) -->
+<!-- inspect(dtm_txt_sample[1:10, ])  -->
+<!-- ``` -->
+
+<!-- ```{r, echo=FALSE, include=FALSE} -->
+<!-- df_txt <-  -->
+<!--   inspect(dtm_txt) %>% -->
+<!--   as.data.frame() -->
+<!-- ``` -->
+
+<!-- Step 8 Sentiment analysis - model creation and validation -->
+<!-- ======================================================== -->
+
+<!-- - Create and validate a classification model. -->
+
+<!-- ```{r} -->
+<!-- # form the data set -->
+
+<!-- df_txt %<>% cbind(Attrition=df2$Attrition) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- # split data set into training and testing set. -->
+
+<!-- train_index <-  -->
+<!--   createDataPartition(df_txt$Attrition, -->
+<!--                       times=1, -->
+<!--                       p=.7) %>% -->
+<!--   unlist() -->
+
+<!-- df_txt_train <- df_txt[train_index, ] -->
+<!-- df_txt_test <- df_txt[-train_index, ] -->
+<!-- ``` -->
+
+<!-- Step 8 Sentiment analysis - model creation and validation (Cont'd) -->
+<!-- ======================================================== -->
+
+<!-- - SVM is used. -->
+
+<!-- ```{r, eval=FALSE} -->
+<!-- # model building -->
+
+<!-- model_sent <- train(Attrition ~ ., -->
+<!--                     df_txt_train, -->
+<!--                     method="svmRadial", -->
+<!--                     trainControl=tc) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- prediction <- predict(model_sent, newdata=select(df_txt_test, -Attrition)) -->
+<!-- ``` -->
+
+<!-- Step 8 Sentiment analysis - model creation and validation (Cont'd) -->
+<!-- ======================================================== -->
+
+<!-- ```{r, echo=FALSE} -->
+<!-- confusionMatrix(prediction, -->
+<!--                 reference=df_txt_test$Attrition, -->
+<!--                 positive="Yes") -->
+<!-- ``` -->
 
 Takeaways
 ========================================================
@@ -716,7 +769,7 @@ Takeaways
 - Feature engineering takes majority of time.
 - Model creation and validation.
 - Sentiment analysis on text data.
-- All resources available on Github! https://github.com/Microsoft/acceleratoRs/tree/master/EmployeeAttritionPrediction/Docs/FOSSAsiaMeetup
+https://github.com/Microsoft/acceleratoRs/tree/master/EmployeeAttritionPrediction/Docs/Presentation
 
 References
 ========================================================
