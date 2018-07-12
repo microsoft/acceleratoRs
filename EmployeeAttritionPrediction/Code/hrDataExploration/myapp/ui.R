@@ -9,7 +9,6 @@ navbarPage(
       column(
         6,
         img(class="img-polaroid",
-            # src=paste0("https://careers.microsoft.com/content/images/services/HomePage_Hero1_Tim.jpg"))
             src=paste0("https://zhledata.blob.core.windows.net/employee/forest.jpg"))
       )
     )
