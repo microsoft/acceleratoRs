@@ -29,7 +29,7 @@
   variables. The columns of “transactionID” and
   “accountID” are identifiers at transaction level and account
   level, respectively. Each account may have more than one transaction
-  occuring at different times. These transactions record information
+  occurring at different times. These transactions record information
   about the transaction amount, transaction type, location, merchant
   and so on.
 
