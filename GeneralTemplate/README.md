@@ -12,7 +12,7 @@ The repository contains three parts
 
 ## Business domain
 
-*Business domain of the data science problem. For example, predictive maintainence, customer churn, etc. It is better to use keywords instead of verbose description.*
+*Business domain of the data science problem. For example, predictive maintenance, customer churn, etc. It is better to use keywords instead of verbose description.*
 
 ## Data science problem
 

@@ -9,7 +9,7 @@ financial insights as it is a randomly generated dataset. A data
 scientist can first replicate the process using the dataset supplied
 here and then replace the datasets with their own actual datasets and
 replicate the processing, tuning it to suit their own needs, as the
-starting point for the advanced developement of machine learning
+starting point for the advanced development of machine learning
 models for credit risk prediction.
 
 ## Introduction
@@ -83,7 +83,7 @@ generally static or change little over time.
 features which capture transaction dimensions at industry level and
 emphasize customer financial behaviors.
    
-2. Binning analytics are optionally choosen to recode variables, thus
+2. Binning analytics are optionally chosen to recode variables, thus
 eliminating the effect of extreme values.
 
 ## Modeling
