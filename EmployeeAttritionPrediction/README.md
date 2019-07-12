@@ -22,7 +22,7 @@ Normally employee attrition prediction is categorized as a classification proble
 
 In the data-driven employee attrition prediction model, normally two types of data are taken into consideration. 
 
-1. First type refers to the demographic and organizational information of an employee such as *age*, *gender*, *title*, etc. The characteristics of this group of data is that **within a certain interval, they don't change or solely increment deterministically over time**. For example, gender will never change for an individual, and other factors such as *years of service* increments every year. 
+1. First type refers to the demographic and organizational information of an employee such as *age*, *gender*, *title*, etc. The characteristics of this group of data is that **within a certain interval, they don't change or solely increment deterministically over time**. For example, gender may not change for an individual, and other factors such as *years of service* increments every year. 
 2. Second type of data is the dynamically involving information about an employee. Recent [studies](http://www.wsj.com/articles/how-do-employees-really-feel-about-their-companies-1444788408) report that *sentiment* is playing a critical role in employee attrition prediction. Classical measures of sentiment include *job satisfaction*, *environment satisfaction*, *relationship satisfaction*, etc. With the machine learning techniques, sentiment patterns can be exploited from daily activities such as text posts on social media for predicting churn inclination.
 
 ## Modeling
